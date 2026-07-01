@@ -19,11 +19,21 @@ export default function UploadPage() {
     maxWidth: 900,
   };
 
+  const formGridStyle = {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+    gap: 16,
+    alignItems: "start",
+  };
+
+  const fieldStyle = {
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: 6,
+  };
+
   const inputStyle = {
     width: "100%",
-    maxWidth: 520,
-    marginTop: 6,
-    marginBottom: 14,
   };
 
   const buttonStyle = {
@@ -254,7 +264,14 @@ export default function UploadPage() {
           <section style={cardStyle}>
             <h2>Perustiedot</h2>
 
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: 12,
+                flexWrap: "wrap",
+                marginBottom: 20,
+              }}
+            >
               <button onClick={() => setEditMode(!editMode)} style={buttonStyle}>
                 ✏️ {editMode ? "Valmis" : "Muokkaa"}
               </button>
@@ -264,92 +281,115 @@ export default function UploadPage() {
               </button>
             </div>
 
-            <br />
+            <div style={formGridStyle}>
+              <div style={fieldStyle}>
+                <label>Kuvaus</label>
+                <input
+                  value={aiData.description || ""}
+                  onChange={(e) => updateField("description", e.target.value)}
+                  placeholder="Esim. Sähköremontti keittiössä"
+                  disabled={!editMode}
+                  style={inputStyle}
+                />
+              </div>
 
-            <label>Kuvaus</label>
-            <input
-              value={aiData.description || ""}
-              onChange={(e) => updateField("description", e.target.value)}
-              placeholder="Esim. Sähköremontti keittiössä"
-              disabled={!editMode}
-              style={inputStyle}
-            />
+              <div style={fieldStyle}>
+                <label>Tapahtumapäivä</label>
+                <input
+                  type="date"
+                  value={aiData.event_date || ""}
+                  onChange={(e) => updateField("event_date", e.target.value)}
+                  disabled={!editMode}
+                  style={inputStyle}
+                />
+              </div>
 
-            <label>Tapahtumapäivä</label>
-            <input
-              type="date"
-              value={aiData.event_date || ""}
-              onChange={(e) => updateField("event_date", e.target.value)}
-              disabled={!editMode}
-              style={inputStyle}
-            />
+              <div style={fieldStyle}>
+                <label>Huollon tyyppi</label>
+                <select
+                  value={aiData.maintenance_type || ""}
+                  onChange={(e) =>
+                    updateField("maintenance_type", e.target.value)
+                  }
+                  disabled={!editMode}
+                  style={inputStyle}
+                >
+                  <option value="">Valitse</option>
+                  {Object.entries(typeLabels).map(([key, label]) => (
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <label>Huollon tyyppi</label>
-            <select
-              value={aiData.maintenance_type || ""}
-              onChange={(e) => updateField("maintenance_type", e.target.value)}
-              disabled={!editMode}
-              style={inputStyle}
-            >
-              <option value="">Valitse</option>
-              {Object.entries(typeLabels).map(([key, label]) => (
-                <option key={key} value={key}>
-                  {label}
-                </option>
-              ))}
-            </select>
+              <div style={fieldStyle}>
+                <label>Yritys</label>
+                <input
+                  value={aiData.company || ""}
+                  onChange={(e) => updateField("company", e.target.value)}
+                  disabled={!editMode}
+                  style={inputStyle}
+                />
+              </div>
 
-            <label>Yritys</label>
-            <input
-              value={aiData.company || ""}
-              onChange={(e) => updateField("company", e.target.value)}
-              disabled={!editMode}
-              style={inputStyle}
-            />
-
-            <label>Kohde</label>
-            <input
-              value={aiData.location || ""}
-              onChange={(e) => updateField("location", e.target.value)}
-              disabled={!editMode}
-              style={inputStyle}
-            />
+              <div style={fieldStyle}>
+                <label>Kohde</label>
+                <input
+                  value={aiData.location || ""}
+                  onChange={(e) => updateField("location", e.target.value)}
+                  disabled={!editMode}
+                  style={inputStyle}
+                />
+              </div>
+            </div>
           </section>
 
           <section style={cardStyle}>
             <h2>Laskutiedot</h2>
 
-            {[
-              ["date", "Laskun päivä"],
-              ["due_date", "Eräpäivä"],
-              ["invoice_number", "Laskunumero"],
-              ["total_amount", "Summa (€)"],
-              ["vat", "ALV (€)"],
-              ["work_amount", "Työn osuus (€)"],
-            ].map(([key, label]) => (
-              <div key={key}>
-                <label>{label}</label>
-                <input
-                  type={key === "date" || key === "due_date" ? "date" : "text"}
-                  value={aiData[key] || ""}
-                  onChange={(e) => updateField(key, e.target.value)}
-                  disabled={!editMode}
-                  style={inputStyle}
-                />
-              </div>
-            ))}
+            <div style={formGridStyle}>
+              {[
+                ["date", "Laskun päivä"],
+                ["due_date", "Eräpäivä"],
+                ["invoice_number", "Laskunumero"],
+                ["total_amount", "Summa (€)"],
+                ["vat", "ALV (€)"],
+                ["work_amount", "Työn osuus (€)"],
+              ].map(([key, label]) => (
+                <div key={key} style={fieldStyle}>
+                  <label>{label}</label>
+                  <input
+                    type={
+                      key === "date" || key === "due_date" ? "date" : "text"
+                    }
+                    value={aiData[key] || ""}
+                    onChange={(e) => updateField(key, e.target.value)}
+                    disabled={!editMode}
+                    style={inputStyle}
+                  />
+                </div>
+              ))}
 
-            <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <input
-                type="checkbox"
-                checked={aiData.is_household_deduction || false}
-                onChange={(e) =>
-                  updateField("is_household_deduction", e.target.checked)
-                }
-                disabled={!editMode}
-              />
-              Kotitalousvähennys
-            </label>
+              <label
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  alignItems: "center",
+                  marginTop: 8,
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={aiData.is_household_deduction || false}
+                  onChange={(e) =>
+                    updateField("is_household_deduction", e.target.checked)
+                  }
+                  disabled={!editMode}
+                />
+                Kotitalousvähennys
+              </label>
+            </div>
           </section>
 
           <section style={cardStyle}>
@@ -361,7 +401,7 @@ export default function UploadPage() {
                   display: "flex",
                   gap: 8,
                   flexWrap: "wrap",
-                  marginBottom: 14,
+                  marginBottom: 16,
                 }}
               >
                 {[1, 3, 6, 12].map((months) => (
@@ -377,62 +417,81 @@ export default function UploadPage() {
               </div>
             )}
 
-            <label>Tarkistuspäivä</label>
-            <input
-              type="date"
-              value={aiData.reminder_date || ""}
-              onChange={(e) => updateField("reminder_date", e.target.value)}
-              disabled={!editMode}
-              style={inputStyle}
-            />
+            <div style={formGridStyle}>
+              <div style={fieldStyle}>
+                <label>Tarkistuspäivä</label>
+                <input
+                  type="date"
+                  value={aiData.reminder_date || ""}
+                  onChange={(e) => updateField("reminder_date", e.target.value)}
+                  disabled={!editMode}
+                  style={inputStyle}
+                />
+              </div>
 
-            <label>Muistutus</label>
-            <input
-              value={aiData.reminder_text || ""}
-              onChange={(e) => updateField("reminder_text", e.target.value)}
-              placeholder="Esim. Tarkista suodatin / tilaa huolto"
-              disabled={!editMode}
-              style={inputStyle}
-            />
+              <div style={fieldStyle}>
+                <label>Muistutus</label>
+                <input
+                  value={aiData.reminder_text || ""}
+                  onChange={(e) => updateField("reminder_text", e.target.value)}
+                  placeholder="Esim. Tarkista suodatin / tilaa huolto"
+                  disabled={!editMode}
+                  style={inputStyle}
+                />
+              </div>
+            </div>
           </section>
 
           <section style={cardStyle}>
             <h2>Lisätiedot</h2>
 
-            <label>Yhteenveto</label>
-            <textarea
-              value={aiData.notes_short || ""}
-              onChange={(e) => updateField("notes_short", e.target.value)}
-              disabled={!editMode}
-              style={{ ...inputStyle, minHeight: 90 }}
-            />
+            <div style={formGridStyle}>
+              <div style={fieldStyle}>
+                <label>Yhteenveto</label>
+                <textarea
+                  value={aiData.notes_short || ""}
+                  onChange={(e) => updateField("notes_short", e.target.value)}
+                  disabled={!editMode}
+                  style={{ ...inputStyle, minHeight: 90 }}
+                />
+              </div>
 
-            <label>Lisätiedot</label>
-            <textarea
-              value={aiData.additional_notes || ""}
-              onChange={(e) => updateField("additional_notes", e.target.value)}
-              disabled={!editMode}
-              style={{ ...inputStyle, minHeight: 120 }}
-            />
+              <div style={fieldStyle}>
+                <label>Lisätiedot</label>
+                <textarea
+                  value={aiData.additional_notes || ""}
+                  onChange={(e) =>
+                    updateField("additional_notes", e.target.value)
+                  }
+                  disabled={!editMode}
+                  style={{ ...inputStyle, minHeight: 120 }}
+                />
+              </div>
+            </div>
 
             <h3>🛠️ Highlights</h3>
-            {aiData.highlights?.map((h: string, i: number) => (
-              <div key={i}>
-                {editMode ? (
-                  <input
-                    value={h}
-                    onChange={(e) => {
-                      const arr = [...aiData.highlights];
-                      arr[i] = e.target.value;
-                      updateField("highlights", arr);
-                    }}
-                    style={inputStyle}
-                  />
-                ) : (
-                  <p>✅ {h}</p>
-                )}
-              </div>
-            ))}
+
+            {aiData.highlights?.length > 0 ? (
+              aiData.highlights.map((h: string, i: number) => (
+                <div key={i} style={{ marginBottom: 8 }}>
+                  {editMode ? (
+                    <input
+                      value={h}
+                      onChange={(e) => {
+                        const arr = [...aiData.highlights];
+                        arr[i] = e.target.value;
+                        updateField("highlights", arr);
+                      }}
+                      style={inputStyle}
+                    />
+                  ) : (
+                    <p>✅ {h}</p>
+                  )}
+                </div>
+              ))
+            ) : (
+              <p>Ei highlight-tietoja.</p>
+            )}
           </section>
         </>
       )}
