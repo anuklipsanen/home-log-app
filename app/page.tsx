@@ -77,7 +77,7 @@ export default function HomePage() {
 
   return (
     <main>
-      <h1>🏠 Home Log</h1>
+      <h1>🏠 Kotiapplikaatio</h1>
 
       <p style={{ marginBottom: 24 }}>
         Kodin huoltojen, dokumenttien ja muistutusten hallinta yhdessä paikassa.

@@ -23,21 +23,23 @@ export default function RootLayout({
             zIndex: 1000,
           }}
         >
-          <Link href="/" style={{ fontWeight: "bold" }}>
-            🏠 Koti
-          </Link>
+          <Link href="/">🏠 Koti</Link>
 
-          <Link href="/upload">
-            📤 Upload
-          </Link>
+<Link href="/events/new">
+  ➕ Lisää tapahtuma
+</Link>
 
-          <Link href="/events">
-            📋 Tapahtumat
-          </Link>
+<Link href="/upload">
+  📤 Upload
+</Link>
 
-          <Link href="/calendar">
-            📅 Kalenteri
-          </Link>
+<Link href="/events">
+  📋 Tapahtumat
+</Link>
+
+<Link href="/calendar">
+  📅 Kalenteri
+</Link>
         </header>
 
         {/* PAGE CONTENT */}
