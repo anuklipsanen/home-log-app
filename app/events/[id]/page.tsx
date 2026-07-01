@@ -13,6 +13,39 @@ export default function EventDetail() {
   const [eventData, setEventData] = useState<any>(null);
   const [editMode, setEditMode] = useState(false);
 
+  const inputStyle = {
+    background: "#f3f4f6",
+    color: "#111",
+    border: "1px solid #9ca3af",
+    borderRadius: 6,
+    padding: "6px 8px",
+    fontSize: 16,
+  };
+
+  const buttonStyle = {
+    border: "1px solid #9ca3af",
+    borderRadius: 8,
+    padding: "8px 12px",
+    fontSize: 16,
+    cursor: "pointer",
+    background: "#f3f4f6",
+    color: "#111",
+  };
+
+  const primaryButtonStyle = {
+    ...buttonStyle,
+    background: "#2563eb",
+    color: "white",
+    border: "1px solid #1d4ed8",
+  };
+
+  const dangerButtonStyle = {
+    ...buttonStyle,
+    background: "#dc2626",
+    color: "white",
+    border: "1px solid #991b1b",
+  };
+
   useEffect(() => {
     if (id) fetchEvent();
   }, [id]);
@@ -37,6 +70,22 @@ export default function EventDetail() {
       ...prev,
       [field]: value,
     }));
+  }
+
+  function addMonthsToEventDate(months: number) {
+    if (!eventData?.event_date && !eventData?.date) {
+      alert("Lisää ensin tapahtumapäivä.");
+      return;
+    }
+
+    const baseDate = new Date(eventData.event_date || eventData.date);
+    baseDate.setMonth(baseDate.getMonth() + months);
+
+    const y = baseDate.getFullYear();
+    const m = String(baseDate.getMonth() + 1).padStart(2, "0");
+    const d = String(baseDate.getDate()).padStart(2, "0");
+
+    update("reminder_date", `${y}-${m}-${d}`);
   }
 
   function formatHelsinkiTime(dateString: string) {
@@ -91,6 +140,7 @@ export default function EventDetail() {
       alert("❌ Päivitys epäonnistui");
     } else {
       alert("✅ Päivitetty!");
+      setEditMode(false);
     }
   }
 
@@ -115,180 +165,176 @@ export default function EventDetail() {
 
   return (
     <div style={{ padding: 20, maxWidth: 900 }}>
-      {/* NAV */}
-      <div style={{ marginBottom: 10 }}>
-        <button onClick={() => router.back()}>⬅️ Takaisin</button>
-        <button
-          onClick={() => router.push("/upload")}
-          style={{ marginLeft: 10 }}
-        >
+      <div style={{ marginBottom: 20, display: "flex", gap: 10 }}>
+        <button onClick={() => router.back()} style={buttonStyle}>
+          ⬅️ Takaisin
+        </button>
+
+        <button onClick={() => router.push("/upload")} style={buttonStyle}>
           🏠 Upload
         </button>
       </div>
 
-      {/* KUVAUS */}
       <h2>
         {editMode ? (
           <input
             value={eventData.description || ""}
-            onChange={(e) =>
-              update("description", e.target.value)
-            }
-            style={{ width: "100%" }}
+            onChange={(e) => update("description", e.target.value)}
+            style={{ ...inputStyle, width: "100%" }}
           />
         ) : (
           eventData.description || "Ei kuvausta"
         )}
       </h2>
 
-      {/* ACTIONS */}
-      <button onClick={() => setEditMode(!editMode)}>
-        ✏️ {editMode ? "Valmis" : "Muokkaa"}
-      </button>
+      <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
+        <button onClick={() => setEditMode(!editMode)} style={buttonStyle}>
+          ✏️ {editMode ? "Valmis" : "Muokkaa"}
+        </button>
 
-      <button onClick={handleSave} style={{ marginLeft: 10 }}>
-        💾 Tallenna
-      </button>
+        <button onClick={handleSave} style={primaryButtonStyle}>
+          💾 Tallenna
+        </button>
 
-      <button
-        onClick={handleDelete}
-        style={{
-          marginLeft: 10,
-          backgroundColor: "#b00020",
-          color: "white",
-        }}
-      >
-        🗑 Poista
-      </button>
+        <button onClick={handleDelete} style={dangerButtonStyle}>
+          🗑 Poista
+        </button>
+      </div>
 
-      {/* LISÄYS AIKA */}
       <p style={{ fontSize: 12 }}>
         Lisätty: {formatHelsinkiTime(eventData.created_at)}
       </p>
 
-      {/* TIEDOSTO */}
       {eventData.file_url && (
         <a href={eventData.file_url} target="_blank">
           📄 Avaa tiedosto
         </a>
       )}
 
-      {/* HUOLLON TYYPPI */}
       <p>
         <b>Tyyppi:</b>{" "}
         {editMode ? (
           <select
             value={eventData.maintenance_type || ""}
-            onChange={(e) =>
-              update("maintenance_type", e.target.value)
-            }
+            onChange={(e) => update("maintenance_type", e.target.value)}
+            style={inputStyle}
           >
-            {Object.entries(typeLabels).map(
-              ([key, label]) => (
-                <option key={key} value={key}>
-                  {label}
-                </option>
-              )
-            )}
+            {Object.entries(typeLabels).map(([key, label]) => (
+              <option key={key} value={key}>
+                {label}
+              </option>
+            ))}
           </select>
         ) : (
           typeLabels[eventData.maintenance_type] || "📄 Muu"
         )}
       </p>
 
-      {/* ✅ TAPAHTUMAPÄIVÄ (UUSI TÄRKEIN) */}
       <p>
         <b>Tapahtumapäivä:</b>{" "}
         {editMode ? (
           <input
             type="date"
             value={eventData.event_date || ""}
-            onChange={(e) =>
-              update("event_date", e.target.value)
-            }
+            onChange={(e) => update("event_date", e.target.value)}
+            style={inputStyle}
           />
         ) : (
           eventData.event_date || "-"
         )}
       </p>
 
-      {/* ✅ MUISTUTUS */}
       <h3>🔔 Muistutus</h3>
 
-      <p>
+      <div>
         <b>Tarkistuspäivä:</b>{" "}
         {editMode ? (
-          <input
-            type="date"
-            value={eventData.reminder_date || ""}
-            onChange={(e) =>
-              update("reminder_date", e.target.value)
-            }
-          />
+          <div style={{ display: "inline-flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <button type="button" onClick={() => addMonthsToEventDate(1)} style={buttonStyle}>
+                1 kk
+              </button>
+              <button type="button" onClick={() => addMonthsToEventDate(3)} style={buttonStyle}>
+                3 kk
+              </button>
+              <button type="button" onClick={() => addMonthsToEventDate(6)} style={buttonStyle}>
+                6 kk
+              </button>
+              <button type="button" onClick={() => addMonthsToEventDate(12)} style={buttonStyle}>
+                1 v
+              </button>
+            </div>
+
+            <input
+              type="date"
+              value={eventData.reminder_date || ""}
+              onChange={(e) => update("reminder_date", e.target.value)}
+              style={inputStyle}
+            />
+          </div>
         ) : (
           eventData.reminder_date || "-"
         )}
-      </p>
+      </div>
 
       <p>
         <b>Muistutus:</b>{" "}
         {editMode ? (
           <input
             value={eventData.reminder_text || ""}
-            onChange={(e) =>
-              update("reminder_text", e.target.value)
-            }
+            onChange={(e) => update("reminder_text", e.target.value)}
+            placeholder="Esim. Tarkista suodatin / tilaa huolto"
+            style={{ ...inputStyle, minWidth: 320 }}
           />
         ) : (
           eventData.reminder_text || "-"
         )}
       </p>
 
-      {/* PERUSTIEDOT */}
       {[
-        ["date", "Laskun päivä"],
-        ["due_date", "Eräpäivä"],
-        ["company", "Yritys"],
-        ["invoice_number", "Laskunumero"],
-        ["location", "Kohde"],
-        ["total_amount", "Summa"],
-        ["vat", "ALV"],
-        ["work_amount", "Työn osuus"],
-      ].map(([key, label]) => (
-        <p key={key}>
-          <b>{label}:</b>{" "}
-          {editMode ? (
-            <input
-              value={eventData[key] || ""}
-              onChange={(e) =>
-                update(key as string, e.target.value)
-              }
-            />
-          ) : (
-            `${eventData[key] || "-"}${
-              key.includes("amount") || key === "vat"
-                ? " €"
-                : ""
-            }`
-          )}
-        </p>
-      ))}
+  ["date", "Laskun päivä"],
+  ["due_date", "Eräpäivä"],
+  ["company", "Yritys"],
+  ["invoice_number", "Laskunumero"],
+  ["location", "Kohde"],
+  ["total_amount", "Summa"],
+  ["vat", "ALV"],
+  ["work_amount", "Työn osuus"],
+].map(([key, label]) => (
+  <p key={key}>
+    <b>{label}:</b>{" "}
 
-      {/* BOOLEAN */}
+    {editMode ? (
+      key === "date" || key === "due_date" ? (
+        <input
+          type="date"
+          value={eventData[key] || ""}
+          onChange={(e) => update(key as string, e.target.value)}
+          style={inputStyle}
+        />
+      ) : (
+        <input
+          value={eventData[key] || ""}
+          onChange={(e) => update(key as string, e.target.value)}
+          style={inputStyle}
+        />
+      )
+    ) : (
+      `${eventData[key] || "-"}${
+        key.includes("amount") || key === "vat" ? " €" : ""
+      }`
+    )}
+  </p>
+))}
+
       <p>
         <b>Kotitalousvähennys:</b>{" "}
         {editMode ? (
           <input
             type="checkbox"
-            checked={
-              eventData.is_household_deduction || false
-            }
-            onChange={(e) =>
-              update(
-                "is_household_deduction",
-                e.target.checked
-              )
-            }
+            checked={eventData.is_household_deduction || false}
+            onChange={(e) => update("is_household_deduction", e.target.checked)}
+            style={{ width: 18, height: 18 }}
           />
         ) : eventData.is_household_deduction ? (
           "✅ Kyllä"
@@ -297,35 +343,35 @@ export default function EventDetail() {
         )}
       </p>
 
-      {/* HIGHLIGHTS */}
       <h3>🛠️ Highlights</h3>
-      {eventData.highlights?.map(
-        (h: string, i: number) => (
-          <div key={i}>
-            {editMode ? (
-              <input
-                value={h}
-                onChange={(e) => {
-                  const arr = [...eventData.highlights];
-                  arr[i] = e.target.value;
-                  update("highlights", arr);
-                }}
-              />
-            ) : (
-              <p>✅ {h}</p>
-            )}
-          </div>
-        )
-      )}
+      {eventData.highlights?.map((h: string, i: number) => (
+        <div key={i}>
+          {editMode ? (
+            <input
+              value={h}
+              onChange={(e) => {
+                const arr = [...eventData.highlights];
+                arr[i] = e.target.value;
+                update("highlights", arr);
+              }}
+              style={inputStyle}
+            />
+          ) : (
+            <p>✅ {h}</p>
+          )}
+        </div>
+      ))}
 
-      {/* LISÄTIEDOT */}
       <h3>📄 Lisätiedot</h3>
       {editMode ? (
         <textarea
           value={eventData.additional_notes || ""}
-          onChange={(e) =>
-            update("additional_notes", e.target.value)
-          }
+          onChange={(e) => update("additional_notes", e.target.value)}
+          style={{
+            ...inputStyle,
+            width: "100%",
+            minHeight: 120,
+          }}
         />
       ) : (
         <pre>{eventData.additional_notes}</pre>

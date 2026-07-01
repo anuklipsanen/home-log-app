@@ -22,7 +22,7 @@ export default function RootLayout({
         >
           <Link href="/upload">Upload</Link>
           <Link href="/events">Tapahtumat</Link>
-          <Link href="/events/calendar">Kalenteri</Link>
+          <Link href="/calendar">Kalenteri</Link>
         </div>
 
         {/* ✅ PAGE CONTENT */}

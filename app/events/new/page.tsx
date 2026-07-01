@@ -10,7 +10,7 @@ export default function NewEventPage() {
 
   const [form, setForm] = useState<any>({
     description: "",
-    event_date: new Date().toISOString().split("T")[0], // ✅ oletus tänään
+    event_date: new Date().toISOString().split("T")[0],
     date: "",
     due_date: "",
     company: "",
@@ -24,7 +24,7 @@ export default function NewEventPage() {
     additional_notes: "",
     reminder_date: "",
     reminder_text: "",
-    is_household_deduction: false
+    is_household_deduction: false,
   });
 
   function update(field: string, value: any) {
@@ -32,6 +32,22 @@ export default function NewEventPage() {
       ...prev,
       [field]: value,
     }));
+  }
+
+  function addMonthsToEventDate(months: number) {
+    if (!form.event_date && !form.date) {
+      alert("Lisää ensin tapahtumapäivä.");
+      return;
+    }
+
+    const baseDate = new Date(form.event_date || form.date);
+    baseDate.setMonth(baseDate.getMonth() + months);
+
+    const y = baseDate.getFullYear();
+    const m = String(baseDate.getMonth() + 1).padStart(2, "0");
+    const d = String(baseDate.getDate()).padStart(2, "0");
+
+    update("reminder_date", `${y}-${m}-${d}`);
   }
 
   async function handleSave() {
@@ -70,8 +86,6 @@ export default function NewEventPage() {
       <h1>➕ Lisää uusi tapahtuma</h1>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-
-        {/* ✅ KUVAUS */}
         <div>
           <label>Kuvaus</label>
           <input
@@ -80,7 +94,6 @@ export default function NewEventPage() {
           />
         </div>
 
-        {/* ✅ TAPAHTUMAPÄIVÄ (TÄRKEIN) */}
         <div>
           <label>Tapahtumapäivä</label>
           <input
@@ -90,7 +103,6 @@ export default function NewEventPage() {
           />
         </div>
 
-        {/* ✅ PERUSTIEDOT */}
         <div>
           <label>Laskun päivä</label>
           <input
@@ -157,14 +169,11 @@ export default function NewEventPage() {
           />
         </div>
 
-        {/* ✅ HUOLLON TYYPPI */}
         <div>
           <label>Huollon tyyppi</label>
           <select
             value={form.maintenance_type}
-            onChange={(e) =>
-              update("maintenance_type", e.target.value)
-            }
+            onChange={(e) => update("maintenance_type", e.target.value)}
           >
             <option value="">Valitse</option>
             {Object.entries(typeLabels).map(([key, label]) => (
@@ -175,7 +184,6 @@ export default function NewEventPage() {
           </select>
         </div>
 
-        {/* ✅ BOOLEAN */}
         <div>
           <label>
             <input
@@ -189,7 +197,6 @@ export default function NewEventPage() {
           </label>
         </div>
 
-        {/* ✅ YHTEENVETO */}
         <div>
           <label>Yhteenveto</label>
           <textarea
@@ -198,28 +205,40 @@ export default function NewEventPage() {
           />
         </div>
 
-        {/* ✅ LISÄTIEDOT */}
         <div>
           <label>Lisätiedot</label>
           <textarea
             value={form.additional_notes}
-            onChange={(e) =>
-              update("additional_notes", e.target.value)
-            }
+            onChange={(e) => update("additional_notes", e.target.value)}
           />
         </div>
 
-        {/* ✅ MUISTUTUS */}
         <h3>🔔 Muistutus</h3>
+
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <button type="button" onClick={() => addMonthsToEventDate(1)}>
+            1 kk välein
+          </button>
+
+          <button type="button" onClick={() => addMonthsToEventDate(3)}>
+            3 kk välein
+          </button>
+
+          <button type="button" onClick={() => addMonthsToEventDate(6)}>
+            6 kk välein
+          </button>
+
+          <button type="button" onClick={() => addMonthsToEventDate(12)}>
+            1 v välein
+          </button>
+        </div>
 
         <div>
           <label>Tarkistuspäivä</label>
           <input
             type="date"
             value={form.reminder_date}
-            onChange={(e) =>
-              update("reminder_date", e.target.value)
-            }
+            onChange={(e) => update("reminder_date", e.target.value)}
           />
         </div>
 
@@ -227,22 +246,16 @@ export default function NewEventPage() {
           <label>Muistutus</label>
           <input
             value={form.reminder_text}
-            onChange={(e) =>
-              update("reminder_text", e.target.value)
-            }
+            onChange={(e) => update("reminder_text", e.target.value)}
+            placeholder="Esim. Tarkista suodatin / tilaa huolto"
           />
         </div>
-
       </div>
 
-      {/* ✅ ACTIONS */}
       <div style={{ marginTop: 15 }}>
         <button onClick={handleSave}>💾 Tallenna</button>
 
-        <button
-          onClick={() => router.push("/events")}
-          style={{ marginLeft: 10 }}
-        >
+        <button onClick={() => router.push("/events")} style={{ marginLeft: 10 }}>
           ⬅️ Peruuta
         </button>
       </div>
