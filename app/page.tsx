@@ -1,8 +1,82 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
+
+type Event = {
+  id: string;
+  description?: string | null;
+  event_date?: string | null;
+  reminder_date?: string | null;
+  reminder_text?: string | null;
+  company?: string | null;
+};
 
 export default function HomePage() {
+  const [events, setEvents] = useState<Event[]>([]);
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  async function fetchEvents() {
+    const { data, error } = await supabase
+      .from("events")
+      .select("id, description, event_date, reminder_date, reminder_text, company")
+      .order("event_date", { ascending: false });
+
+    if (error) {
+      console.error("Home fetch error:", error);
+      return;
+    }
+
+    setEvents(data || []);
+  }
+
+  const today = new Date();
+
+  const weekAgo = new Date(today);
+  weekAgo.setDate(today.getDate() - 7);
+
+  const threeWeeksAhead = new Date(today);
+  threeWeeksAhead.setDate(today.getDate() + 21);
+
+  function toDateString(date: Date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+
+  function formatDate(date?: string | null) {
+    if (!date) return "-";
+    return new Date(date).toLocaleDateString("fi-FI");
+  }
+
+  const weekAgoString = toDateString(weekAgo);
+  const todayString = toDateString(today);
+  const threeWeeksAheadString = toDateString(threeWeeksAhead);
+
+  const recentEvents = events.filter(
+    (event) =>
+      event.event_date &&
+      event.event_date >= weekAgoString &&
+      event.event_date <= todayString
+  );
+
+  const upcomingItems = events.filter(
+    (event) =>
+      (event.event_date &&
+        event.event_date > todayString &&
+        event.event_date <= threeWeeksAheadString) ||
+      (event.reminder_date &&
+        event.reminder_date >= todayString &&
+        event.reminder_date <= threeWeeksAheadString)
+  );
+
   return (
-    <main style={{ padding: 24, maxWidth: 900 }}>
+    <main>
       <h1>🏠 Home Log</h1>
 
       <p style={{ marginBottom: 24 }}>
@@ -35,10 +109,47 @@ export default function HomePage() {
 
       <section style={summaryStyle}>
         <h2>Yhteenveto</h2>
-        <p>
-          Aloita lataamalla uusi dokumentti tai siirry tarkastelemaan jo
-          tallennettuja tapahtumia.
-        </p>
+
+        <h3>Viimeisen 7 päivän tapahtumat</h3>
+        {recentEvents.length === 0 ? (
+          <p>Ei tapahtumia viimeisen viikon ajalta.</p>
+        ) : (
+          recentEvents.map((event) => (
+            <p key={`recent-${event.id}`}>
+              <b>{formatDate(event.event_date)}</b> –{" "}
+              {event.description || event.company || "Ei kuvausta"}
+            </p>
+          ))
+        )}
+
+        <h3>Tulevat 3 viikkoa</h3>
+        {upcomingItems.length === 0 ? (
+          <p>Ei tulevia tapahtumia tai muistutuksia seuraavan 3 viikon aikana.</p>
+        ) : (
+          upcomingItems.map((event) => (
+            <div key={`upcoming-${event.id}`} style={{ marginBottom: 8 }}>
+              {event.event_date &&
+                event.event_date > todayString &&
+                event.event_date <= threeWeeksAheadString && (
+                  <p>
+                    📌 <b>{formatDate(event.event_date)}</b> –{" "}
+                    {event.description || event.company || "Ei kuvausta"}
+                  </p>
+                )}
+
+              {event.reminder_date &&
+                event.reminder_date >= todayString &&
+                event.reminder_date <= threeWeeksAheadString && (
+                  <p>
+                    🔔 <b>{formatDate(event.reminder_date)}</b> –{" "}
+                    {event.reminder_text ||
+                      event.description ||
+                      "Muistutus"}
+                  </p>
+                )}
+            </div>
+          ))
+        )}
       </section>
     </main>
   );

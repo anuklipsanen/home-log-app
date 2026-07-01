@@ -45,7 +45,6 @@ export default function RootLayout({
           style={{
             padding: 24,
             maxWidth: 1200,
-            margin: "0 auto",
           }}
         >
           {children}
