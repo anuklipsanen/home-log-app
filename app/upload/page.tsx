@@ -76,11 +76,14 @@ export default function UploadPage() {
         const parsed = JSON.parse(json.parsed);
 
         setAiData({
-          ...parsed,
-          reminder_date: parsed.reminder_date || "",
-          reminder_text: parsed.reminder_text || "",
-          event_date: parsed.event_date || todayString(),
-        });
+  ...parsed,
+  reminder_date: parsed.reminder_date || "",
+  reminder_text: parsed.reminder_text || "",
+  event_date: parsed.event_date || todayString(),
+});
+
+setEditMode(true);
+
       } catch (err) {
   console.error("JSON parse error:", err);
 
