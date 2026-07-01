@@ -1,6 +1,13 @@
 import "./globals.css";
 import Link from "next/link";
 
+const navLinkStyle = {
+  color: "#ffffff",
+  textDecoration: "none",
+  fontWeight: 600,
+  whiteSpace: "nowrap" as const,
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -8,41 +15,28 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fi">
-      <body style={{ margin: 0 }}>
-        {/* TOP NAV */}
+      <body style={{ margin: 0, background: "#0f0f0f", color: "#f5f5f5" }}>
         <header
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 20,
+            gap: 14,
             padding: "14px 24px",
             borderBottom: "1px solid #444",
             background: "#111",
             position: "sticky",
             top: 0,
             zIndex: 1000,
+            overflowX: "auto",
           }}
         >
-          <Link href="/">🏠 Koti</Link>
-
-<Link href="/events/new">
-  ➕ Lisää tapahtuma
-</Link>
-
-<Link href="/upload">
-  📤 Upload
-</Link>
-
-<Link href="/events">
-  📋 Tapahtumat
-</Link>
-
-<Link href="/calendar">
-  📅 Kalenteri
-</Link>
+          <Link href="/" style={navLinkStyle}>🏠 Koti</Link>
+          <Link href="/events/new" style={navLinkStyle}>➕ Lisää tapahtuma</Link>
+          <Link href="/upload" style={navLinkStyle}>📤 Upload</Link>
+          <Link href="/events" style={navLinkStyle}>📋 Tapahtumat</Link>
+          <Link href="/calendar" style={navLinkStyle}>📅 Kalenteri</Link>
         </header>
 
-        {/* PAGE CONTENT */}
         <main
           style={{
             padding: 24,
