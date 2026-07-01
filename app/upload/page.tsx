@@ -82,9 +82,34 @@ export default function UploadPage() {
           event_date: parsed.event_date || todayString(),
         });
       } catch (err) {
-        console.error("JSON parse error:", err);
-        alert("❌ AI-vastauksen käsittely epäonnistui");
-      }
+  console.error("JSON parse error:", err);
+
+  setAiData({
+    description: "",
+    date: "",
+    due_date: "",
+    company: "",
+    invoice_number: "",
+    total_amount: "",
+    vat: "",
+    work_amount: "",
+    is_household_deduction: false,
+    location: "",
+    notes_short: "",
+    maintenance_type: "",
+    highlights: [],
+    items: [],
+    document_notes: [],
+    additional_notes: "",
+    reminder_date: "",
+    reminder_text: "",
+    event_date: todayString(),
+  });
+
+  setEditMode(true);
+
+  alert("AI ei tunnistanut tietoja. Voit täyttää tiedot käsin.");
+}
     } catch (err) {
       console.error("General error:", err);
       alert("❌ Virhe tiedoston käsittelyssä");
@@ -94,47 +119,49 @@ export default function UploadPage() {
   }
 
   async function handleSave() {
-    if (!aiData) return;
+  if (!aiData) return;
 
-    const finalDescription =
-      aiData.description ||
-      aiData.notes_short ||
-      aiData.highlights?.[0] ||
-      "Huoltotoimenpide";
+  const finalDescription =
+    aiData.description ||
+    aiData.notes_short ||
+    aiData.highlights?.[0] ||
+    "Huoltotoimenpide";
 
-    const { error } = await supabase.from("events").insert([
-      {
-        description: finalDescription,
-        date: aiData.date || "",
-        due_date: aiData.due_date || "",
-        company: aiData.company || "",
-        invoice_number: aiData.invoice_number || "",
-        total_amount: aiData.total_amount || "",
-        vat: aiData.vat || "",
-        work_amount: aiData.work_amount || "",
-        is_household_deduction: aiData.is_household_deduction || false,
-        location: aiData.location || "",
-        notes_short: aiData.notes_short || "",
-        maintenance_type: aiData.maintenance_type || "",
-        highlights: aiData.highlights || [],
-        items: aiData.items || [],
-        document_notes: aiData.document_notes || [],
-        additional_notes: aiData.additional_notes || "",
-        event_date: aiData.event_date || "",
-        reminder_date: aiData.reminder_date || "",
-        reminder_text: aiData.reminder_text || "",
-        data: aiData,
-        file_url: fileUrl,
-      },
-    ]);
+  const payload = {
+    description: finalDescription,
+    date: aiData.date || "",
+    due_date: aiData.due_date || "",
+    company: aiData.company || "",
+    invoice_number: aiData.invoice_number || "",
+    total_amount: aiData.total_amount || "",
+    vat: aiData.vat || "",
+    work_amount: aiData.work_amount || "",
+    is_household_deduction: aiData.is_household_deduction || false,
+    location: aiData.location || "",
+    notes_short: aiData.notes_short || "",
+    maintenance_type: aiData.maintenance_type || "",
+    highlights: aiData.highlights || [],
+    items: aiData.items || [],
+    document_notes: aiData.document_notes || [],
+    additional_notes: aiData.additional_notes || "",
+    event_date: aiData.event_date || "",
+    reminder_date: aiData.reminder_date || "",
+    reminder_text: aiData.reminder_text || "",
+    data: aiData,
+    file_url: fileUrl,
+  };
 
-    if (error) {
-      console.error(error);
-      alert("❌ Tallennus epäonnistui");
-    } else {
-      alert("✅ Tallennettu!");
-    }
+  const { error } = await supabase.from("events").insert([payload]);
+
+  if (error) {
+    console.error(error);
+    alert("❌ Tallennus epäonnistui");
+    return;
   }
+
+  alert("✅ Tallennettu!");
+  window.location.href = "/events";
+}
 
   return (
     <div style={{ padding: 20 }}>
