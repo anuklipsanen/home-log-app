@@ -93,12 +93,7 @@ export default function HomePage() {
           marginBottom: 32,
         }}
       >
-        <Link href="/events/new" style={cardStyle}>
-  <h2>➕ Lisää tapahtuma</h2>
-  <p>
-    Luo uusi tapahtuma käsin ilman tiedoston lataamista.
-  </p>
-</Link>
+        
 <Link href="/events/new" style={cardStyle}>
   <h2>➕ Lisää tapahtuma</h2>
   <p>Luo uusi tapahtuma käsin ilman tiedoston lataamista.</p>
