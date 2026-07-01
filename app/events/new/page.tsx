@@ -2,263 +2,440 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { useRouter } from "next/navigation";
 import { typeLabels } from "@/lib/typeLabels";
 
-export default function NewEventPage() {
-  const router = useRouter();
+export default function UploadPage() {
+  const [aiData, setAiData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [fileUrl, setFileUrl] = useState("");
 
-  const [form, setForm] = useState<any>({
-    description: "",
-    event_date: new Date().toISOString().split("T")[0],
-    date: "",
-    due_date: "",
-    company: "",
-    invoice_number: "",
-    location: "",
-    total_amount: "",
-    vat: "",
-    work_amount: "",
-    maintenance_type: "",
-    notes_short: "",
-    additional_notes: "",
-    reminder_date: "",
-    reminder_text: "",
-    is_household_deduction: false,
-  });
+  const cardStyle = {
+    border: "1px solid #333",
+    borderRadius: 14,
+    padding: 24,
+    background: "#181818",
+    marginBottom: 20,
+    maxWidth: 900,
+  };
 
-  function update(field: string, value: any) {
-    setForm((prev: any) => ({
+  const inputStyle = {
+    width: "100%",
+    maxWidth: 520,
+    marginTop: 6,
+    marginBottom: 14,
+  };
+
+  const buttonStyle = {
+    padding: "12px 18px",
+    borderRadius: 10,
+    border: "1px solid #555",
+    background: "#2d2d2d",
+    color: "#fff",
+    fontWeight: 700,
+    cursor: "pointer",
+    fontSize: 16,
+  };
+
+  const primaryButtonStyle = {
+    ...buttonStyle,
+    background: "#2563eb",
+    border: "1px solid #1d4ed8",
+  };
+
+  function todayString() {
+    return new Date().toISOString().split("T")[0];
+  }
+
+  function updateField(field: string, value: any) {
+    setAiData((prev: any) => ({
       ...prev,
       [field]: value,
     }));
   }
 
   function addMonthsToEventDate(months: number) {
-    if (!form.event_date && !form.date) {
+    if (!aiData?.event_date && !aiData?.date) {
       alert("Lisää ensin tapahtumapäivä.");
       return;
     }
 
-    const baseDate = new Date(form.event_date || form.date);
+    const baseDate = new Date(aiData.event_date || aiData.date);
     baseDate.setMonth(baseDate.getMonth() + months);
 
     const y = baseDate.getFullYear();
     const m = String(baseDate.getMonth() + 1).padStart(2, "0");
     const d = String(baseDate.getDate()).padStart(2, "0");
 
-    update("reminder_date", `${y}-${m}-${d}`);
+    updateField("reminder_date", `${y}-${m}-${d}`);
+  }
+
+  async function handleUpload(e: any) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setLoading(true);
+    setAiData(null);
+    setEditMode(false);
+
+    try {
+      const safeName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
+
+      const { data, error } = await supabase.storage
+        .from("attachments")
+        .upload(`files/${Date.now()}-${safeName}`, file);
+
+      if (error || !data?.path) {
+        console.error("Upload error:", error);
+        alert("❌ Tiedoston lataus epäonnistui");
+        return;
+      }
+
+      const url = supabase.storage
+        .from("attachments")
+        .getPublicUrl(data.path).data.publicUrl;
+
+      setFileUrl(url);
+
+      const res = await fetch("/api/ai/parse", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ fileUrl: url }),
+      });
+
+      const json = await res.json();
+
+      try {
+        const parsed = JSON.parse(json.parsed);
+
+        setAiData({
+          ...parsed,
+          reminder_date: parsed.reminder_date || "",
+          reminder_text: parsed.reminder_text || "",
+          event_date: parsed.event_date || todayString(),
+        });
+
+        setEditMode(true);
+      } catch (err) {
+        console.error("JSON parse error:", err);
+
+        setAiData({
+          description: "",
+          date: "",
+          due_date: "",
+          company: "",
+          invoice_number: "",
+          total_amount: "",
+          vat: "",
+          work_amount: "",
+          is_household_deduction: false,
+          location: "",
+          notes_short: "",
+          maintenance_type: "",
+          highlights: [],
+          items: [],
+          document_notes: [],
+          additional_notes: "",
+          reminder_date: "",
+          reminder_text: "",
+          event_date: todayString(),
+        });
+
+        setEditMode(true);
+        alert("AI ei tunnistanut tietoja. Voit täyttää tiedot käsin.");
+      }
+    } catch (err) {
+      console.error("General error:", err);
+      alert("❌ Virhe tiedoston käsittelyssä");
+    }
+
+    setLoading(false);
   }
 
   async function handleSave() {
-    const { error } = await supabase.from("events").insert([
-      {
-        description: form.description || "",
-        event_date: form.event_date || "",
-        date: form.date || "",
-        due_date: form.due_date || "",
-        company: form.company || "",
-        invoice_number: form.invoice_number || "",
-        location: form.location || "",
-        total_amount: form.total_amount || "",
-        vat: form.vat || "",
-        work_amount: form.work_amount || "",
-        maintenance_type: form.maintenance_type || "",
-        notes_short: form.notes_short || "",
-        additional_notes: form.additional_notes || "",
-        reminder_date: form.reminder_date || "",
-        reminder_text: form.reminder_text || "",
-        is_household_deduction: form.is_household_deduction || false,
-      },
-    ]);
+    if (!aiData) return;
+
+    const finalDescription =
+      aiData.description ||
+      aiData.notes_short ||
+      aiData.highlights?.[0] ||
+      "Huoltotoimenpide";
+
+    const payload = {
+      description: finalDescription,
+      date: aiData.date || "",
+      due_date: aiData.due_date || "",
+      company: aiData.company || "",
+      invoice_number: aiData.invoice_number || "",
+      total_amount: aiData.total_amount || "",
+      vat: aiData.vat || "",
+      work_amount: aiData.work_amount || "",
+      is_household_deduction: aiData.is_household_deduction || false,
+      location: aiData.location || "",
+      notes_short: aiData.notes_short || "",
+      maintenance_type: aiData.maintenance_type || "",
+      highlights: aiData.highlights || [],
+      items: aiData.items || [],
+      document_notes: aiData.document_notes || [],
+      additional_notes: aiData.additional_notes || "",
+      event_date: aiData.event_date || "",
+      reminder_date: aiData.reminder_date || "",
+      reminder_text: aiData.reminder_text || "",
+      data: aiData,
+      file_url: fileUrl,
+    };
+
+    const { error } = await supabase.from("events").insert([payload]);
 
     if (error) {
       console.error(error);
       alert("❌ Tallennus epäonnistui");
-    } else {
-      alert("✅ Tapahtuma lisätty");
-      router.push("/events");
+      return;
     }
+
+    alert("✅ Tallennettu!");
+    window.location.href = "/events";
   }
 
   return (
-    <div style={{ padding: 20, maxWidth: 700 }}>
-      <h1>➕ Lisää uusi tapahtuma</h1>
+    <main style={{ maxWidth: 900 }}>
+      <h1>📤 Upload tiedosto</h1>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        <div>
-          <label>Kuvaus</label>
+      <section style={cardStyle}>
+        <h2>Valitse dokumentti</h2>
+
+        <p>
+          Lataa lasku, kuitti tai muu dokumentti. AI yrittää tunnistaa tiedot,
+          mutta voit muokata kaikkea ennen tallennusta.
+        </p>
+
+        <label
+          style={{
+            display: "inline-block",
+            marginTop: 12,
+            padding: "14px 20px",
+            borderRadius: 12,
+            border: "1px solid #1d4ed8",
+            background: "#2563eb",
+            color: "#fff",
+            fontWeight: 700,
+            cursor: "pointer",
+            fontSize: 16,
+          }}
+        >
+          📁 Valitse tiedosto
           <input
-            value={form.description}
-            onChange={(e) => update("description", e.target.value)}
+            type="file"
+            onChange={handleUpload}
+            style={{ display: "none" }}
           />
-        </div>
+        </label>
 
-        <div>
-          <label>Tapahtumapäivä</label>
-          <input
-            type="date"
-            value={form.event_date}
-            onChange={(e) => update("event_date", e.target.value)}
-          />
-        </div>
+        {fileUrl && (
+          <p style={{ marginTop: 14 }}>
+            ✅ Upload valmis:{" "}
+            <a href={fileUrl} target="_blank" rel="noopener noreferrer">
+              Avaa tiedosto
+            </a>
+          </p>
+        )}
+      </section>
 
-        <div>
-          <label>Laskun päivä</label>
-          <input
-            type="date"
-            value={form.date}
-            onChange={(e) => update("date", e.target.value)}
-          />
-        </div>
+      {loading && (
+        <section style={{ ...cardStyle, border: "1px solid #3b82f6" }}>
+          ⏳ AI analysoi dokumenttia...
+        </section>
+      )}
 
-        <div>
-          <label>Eräpäivä</label>
-          <input
-            type="date"
-            value={form.due_date}
-            onChange={(e) => update("due_date", e.target.value)}
-          />
-        </div>
+      {aiData && (
+        <>
+          <section style={cardStyle}>
+            <h2>Perustiedot</h2>
 
-        <div>
-          <label>Yritys</label>
-          <input
-            value={form.company}
-            onChange={(e) => update("company", e.target.value)}
-          />
-        </div>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              <button onClick={() => setEditMode(!editMode)} style={buttonStyle}>
+                ✏️ {editMode ? "Valmis" : "Muokkaa"}
+              </button>
 
-        <div>
-          <label>Laskunumero</label>
-          <input
-            value={form.invoice_number}
-            onChange={(e) => update("invoice_number", e.target.value)}
-          />
-        </div>
+              <button onClick={handleSave} style={primaryButtonStyle}>
+                💾 Tallenna
+              </button>
+            </div>
 
-        <div>
-          <label>Kohde / sijainti</label>
-          <input
-            value={form.location}
-            onChange={(e) => update("location", e.target.value)}
-          />
-        </div>
+            <br />
 
-        <div>
-          <label>Summa (€)</label>
-          <input
-            value={form.total_amount}
-            onChange={(e) => update("total_amount", e.target.value)}
-          />
-        </div>
-
-        <div>
-          <label>ALV (€)</label>
-          <input
-            value={form.vat}
-            onChange={(e) => update("vat", e.target.value)}
-          />
-        </div>
-
-        <div>
-          <label>Työn osuus (€)</label>
-          <input
-            value={form.work_amount}
-            onChange={(e) => update("work_amount", e.target.value)}
-          />
-        </div>
-
-        <div>
-          <label>Huollon tyyppi</label>
-          <select
-            value={form.maintenance_type}
-            onChange={(e) => update("maintenance_type", e.target.value)}
-          >
-            <option value="">Valitse</option>
-            {Object.entries(typeLabels).map(([key, label]) => (
-              <option key={key} value={key}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label>
+            <label>Kuvaus</label>
             <input
-              type="checkbox"
-              checked={form.is_household_deduction}
-              onChange={(e) =>
-                update("is_household_deduction", e.target.checked)
-              }
+              value={aiData.description || ""}
+              onChange={(e) => updateField("description", e.target.value)}
+              placeholder="Esim. Sähköremontti keittiössä"
+              disabled={!editMode}
+              style={inputStyle}
             />
-            Kotitalousvähennys
-          </label>
-        </div>
 
-        <div>
-          <label>Yhteenveto</label>
-          <textarea
-            value={form.notes_short}
-            onChange={(e) => update("notes_short", e.target.value)}
-          />
-        </div>
+            <label>Tapahtumapäivä</label>
+            <input
+              type="date"
+              value={aiData.event_date || ""}
+              onChange={(e) => updateField("event_date", e.target.value)}
+              disabled={!editMode}
+              style={inputStyle}
+            />
 
-        <div>
-          <label>Lisätiedot</label>
-          <textarea
-            value={form.additional_notes}
-            onChange={(e) => update("additional_notes", e.target.value)}
-          />
-        </div>
+            <label>Huollon tyyppi</label>
+            <select
+              value={aiData.maintenance_type || ""}
+              onChange={(e) => updateField("maintenance_type", e.target.value)}
+              disabled={!editMode}
+              style={inputStyle}
+            >
+              <option value="">Valitse</option>
+              {Object.entries(typeLabels).map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </select>
 
-        <h3>🔔 Muistutus</h3>
+            <label>Yritys</label>
+            <input
+              value={aiData.company || ""}
+              onChange={(e) => updateField("company", e.target.value)}
+              disabled={!editMode}
+              style={inputStyle}
+            />
 
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <button type="button" onClick={() => addMonthsToEventDate(1)}>
-            1 kk välein
-          </button>
+            <label>Kohde</label>
+            <input
+              value={aiData.location || ""}
+              onChange={(e) => updateField("location", e.target.value)}
+              disabled={!editMode}
+              style={inputStyle}
+            />
+          </section>
 
-          <button type="button" onClick={() => addMonthsToEventDate(3)}>
-            3 kk välein
-          </button>
+          <section style={cardStyle}>
+            <h2>Laskutiedot</h2>
 
-          <button type="button" onClick={() => addMonthsToEventDate(6)}>
-            6 kk välein
-          </button>
+            {[
+              ["date", "Laskun päivä"],
+              ["due_date", "Eräpäivä"],
+              ["invoice_number", "Laskunumero"],
+              ["total_amount", "Summa (€)"],
+              ["vat", "ALV (€)"],
+              ["work_amount", "Työn osuus (€)"],
+            ].map(([key, label]) => (
+              <div key={key}>
+                <label>{label}</label>
+                <input
+                  type={key === "date" || key === "due_date" ? "date" : "text"}
+                  value={aiData[key] || ""}
+                  onChange={(e) => updateField(key, e.target.value)}
+                  disabled={!editMode}
+                  style={inputStyle}
+                />
+              </div>
+            ))}
 
-          <button type="button" onClick={() => addMonthsToEventDate(12)}>
-            1 v välein
-          </button>
-        </div>
+            <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <input
+                type="checkbox"
+                checked={aiData.is_household_deduction || false}
+                onChange={(e) =>
+                  updateField("is_household_deduction", e.target.checked)
+                }
+                disabled={!editMode}
+              />
+              Kotitalousvähennys
+            </label>
+          </section>
 
-        <div>
-          <label>Tarkistuspäivä</label>
-          <input
-            type="date"
-            value={form.reminder_date}
-            onChange={(e) => update("reminder_date", e.target.value)}
-          />
-        </div>
+          <section style={cardStyle}>
+            <h2>🔔 Muistutus</h2>
 
-        <div>
-          <label>Muistutus</label>
-          <input
-            value={form.reminder_text}
-            onChange={(e) => update("reminder_text", e.target.value)}
-            placeholder="Esim. Tarkista suodatin / tilaa huolto"
-          />
-        </div>
-      </div>
+            {editMode && (
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  flexWrap: "wrap",
+                  marginBottom: 14,
+                }}
+              >
+                {[1, 3, 6, 12].map((months) => (
+                  <button
+                    key={months}
+                    type="button"
+                    onClick={() => addMonthsToEventDate(months)}
+                    style={buttonStyle}
+                  >
+                    {months === 12 ? "1 v välein" : `${months} kk välein`}
+                  </button>
+                ))}
+              </div>
+            )}
 
-      <div style={{ marginTop: 15 }}>
-        <button onClick={handleSave}>💾 Tallenna</button>
+            <label>Tarkistuspäivä</label>
+            <input
+              type="date"
+              value={aiData.reminder_date || ""}
+              onChange={(e) => updateField("reminder_date", e.target.value)}
+              disabled={!editMode}
+              style={inputStyle}
+            />
 
-        <button onClick={() => router.push("/events")} style={{ marginLeft: 10 }}>
-          ⬅️ Peruuta
-        </button>
-      </div>
-    </div>
+            <label>Muistutus</label>
+            <input
+              value={aiData.reminder_text || ""}
+              onChange={(e) => updateField("reminder_text", e.target.value)}
+              placeholder="Esim. Tarkista suodatin / tilaa huolto"
+              disabled={!editMode}
+              style={inputStyle}
+            />
+          </section>
+
+          <section style={cardStyle}>
+            <h2>Lisätiedot</h2>
+
+            <label>Yhteenveto</label>
+            <textarea
+              value={aiData.notes_short || ""}
+              onChange={(e) => updateField("notes_short", e.target.value)}
+              disabled={!editMode}
+              style={{ ...inputStyle, minHeight: 90 }}
+            />
+
+            <label>Lisätiedot</label>
+            <textarea
+              value={aiData.additional_notes || ""}
+              onChange={(e) => updateField("additional_notes", e.target.value)}
+              disabled={!editMode}
+              style={{ ...inputStyle, minHeight: 120 }}
+            />
+
+            <h3>🛠️ Highlights</h3>
+            {aiData.highlights?.map((h: string, i: number) => (
+              <div key={i}>
+                {editMode ? (
+                  <input
+                    value={h}
+                    onChange={(e) => {
+                      const arr = [...aiData.highlights];
+                      arr[i] = e.target.value;
+                      updateField("highlights", arr);
+                    }}
+                    style={inputStyle}
+                  />
+                ) : (
+                  <p>✅ {h}</p>
+                )}
+              </div>
+            ))}
+          </section>
+        </>
+      )}
+    </main>
   );
 }
