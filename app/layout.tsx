@@ -8,28 +8,48 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fi">
-      <body>
-
-        {/* ✅ TOP NAV */}
-        <div
+      <body style={{ margin: 0 }}>
+        {/* TOP NAV */}
+        <header
           style={{
             display: "flex",
-            gap: 16,
-            padding: 12,
+            alignItems: "center",
+            gap: 20,
+            padding: "14px 24px",
             borderBottom: "1px solid #444",
-            marginBottom: 20,
+            background: "#111",
+            position: "sticky",
+            top: 0,
+            zIndex: 1000,
           }}
         >
-          <Link href="/upload">Upload</Link>
-          <Link href="/events">Tapahtumat</Link>
-          <Link href="/calendar">Kalenteri</Link>
-        </div>
+          <Link href="/" style={{ fontWeight: "bold" }}>
+            🏠 Koti
+          </Link>
 
-        {/* ✅ PAGE CONTENT */}
-        <div style={{ padding: 20 }}>
+          <Link href="/upload">
+            📤 Upload
+          </Link>
+
+          <Link href="/events">
+            📋 Tapahtumat
+          </Link>
+
+          <Link href="/calendar">
+            📅 Kalenteri
+          </Link>
+        </header>
+
+        {/* PAGE CONTENT */}
+        <main
+          style={{
+            padding: 24,
+            maxWidth: 1200,
+            margin: "0 auto",
+          }}
+        >
           {children}
-        </div>
-
+        </main>
       </body>
     </html>
   );
