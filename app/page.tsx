@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { typeLabels } from "@/lib/typeLabels";
 
 type Event = {
   id: string;
+  maintenance_type?: string | null;
   description?: string | null;
   event_date?: string | null;
   reminder_date?: string | null;
@@ -23,7 +25,7 @@ export default function HomePage() {
   async function fetchEvents() {
     const { data, error } = await supabase
       .from("events")
-      .select("id, description, event_date, reminder_date, reminder_text, company")
+      .select("id, description, event_date, reminder_date, reminder_text, company, maintenance_type")
       .order("event_date", { ascending: false });
 
     if (error) {
@@ -91,6 +93,16 @@ export default function HomePage() {
           marginBottom: 32,
         }}
       >
+        <Link href="/events/new" style={cardStyle}>
+  <h2>➕ Lisää tapahtuma</h2>
+  <p>
+    Luo uusi tapahtuma käsin ilman tiedoston lataamista.
+  </p>
+</Link>
+<Link href="/events/new" style={cardStyle}>
+  <h2>➕ Lisää tapahtuma</h2>
+  <p>Luo uusi tapahtuma käsin ilman tiedoston lataamista.</p>
+</Link>
         <Link href="/upload" style={cardStyle}>
           <h2>📤 Upload</h2>
           <p>Lataa lasku, kuitti tai dokumentti ja anna AI:n tulkita tiedot.</p>
@@ -141,11 +153,15 @@ export default function HomePage() {
                 event.reminder_date >= todayString &&
                 event.reminder_date <= threeWeeksAheadString && (
                   <p>
-                    🔔 <b>{formatDate(event.reminder_date)}</b> –{" "}
-                    {event.reminder_text ||
-                      event.description ||
-                      "Muistutus"}
-                  </p>
+  🔔 <b>{formatDate(event.reminder_date)}</b> –{" "}
+  <b>
+    {typeLabels[event.maintenance_type || ""] ||
+      event.maintenance_type ||
+      "Tapahtuma"}
+  </b>
+  {" – "}
+  {event.reminder_text || event.description || "Muistutus"}
+</p>
                 )}
             </div>
           ))
