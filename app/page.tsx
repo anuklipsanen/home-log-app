@@ -1,112 +1,62 @@
-"use client";
+import Link from "next/link";
 
-import { useState } from "react";
-import { supabase } from "@/lib/supabase";
-
-export default function UploadPage() {
-  const [fileUrl, setFileUrl] = useState("");
-  const [aiData, setAiData] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-
-  async function handleUpload(e: any) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    setLoading(true);
-    setAiData(null);
-
-    try {
-      const safeName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
-
-      const { data, error } = await supabase.storage
-        .from("attachments")
-        .upload(`files/${Date.now()}-${safeName}`, file);
-
-      if (error) {
-        console.error("Upload error:", error);
-        setLoading(false);
-        return;
-      }
-
-      const url = supabase.storage
-        .from("attachments")
-        .getPublicUrl(data.path).data.publicUrl;
-
-      setFileUrl(url);
-
-      const res = await fetch("/api/ai/parse", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ fileUrl: url })
-      });
-
-      const json = await res.json();
-
-      try {
-        const parsed = JSON.parse(json.parsed);
-        setAiData(parsed);
-      } catch (err) {
-        console.error("JSON parse error:", err);
-      }
-
-    } catch (err) {
-      console.error("Error:", err);
-    }
-
-    setLoading(false);
-  }
-
+export default function HomePage() {
   return (
-    <div style={{ padding: 20, maxWidth: 900 }}>
-      <h1>Upload tiedosto</h1>
+    <main style={{ padding: 24, maxWidth: 900 }}>
+      <h1>🏠 Home Log</h1>
 
-      <input type="file" onChange={handleUpload} />
+      <p style={{ marginBottom: 24 }}>
+        Kodin huoltojen, dokumenttien ja muistutusten hallinta yhdessä paikassa.
+      </p>
 
-      {loading && <p>⏳ Analysoidaan...</p>}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+          gap: 16,
+          marginBottom: 32,
+        }}
+      >
+        <Link href="/upload" style={cardStyle}>
+          <h2>📤 Upload</h2>
+          <p>Lataa lasku, kuitti tai dokumentti ja anna AI:n tulkita tiedot.</p>
+        </Link>
 
-      {/* ✅ Upload */}
-      {fileUrl && (
-        <div>
-          <p>✅ Upload valmis</p>
+        <Link href="/events" style={cardStyle}>
+          <h2>📋 Tapahtumat</h2>
+          <p>Selaa ja muokkaa tallennettuja huoltoja ja tapahtumia.</p>
+        </Link>
 
-          <a href={fileUrl} target="_blank" rel="noopener noreferrer">
-            {fileUrl}
-          </a>
-        </div>
-      )}
+        <Link href="/calendar" style={cardStyle}>
+          <h2>📅 Kalenteri</h2>
+          <p>Näe tapahtumat ja muistutukset kalenterinäkymässä.</p>
+        </Link>
+      </div>
 
-      {/* 🤖 AI DATA */}
-      {aiData && (
-        <div style={{ marginTop: 20 }}>
-          <h2>🤖 AI tunnisti</h2>
-
-          {/* ⭐ Tärkeät huomiot */}
-          {aiData.highlights?.length > 0 && (
-            <div style={{ marginTop: 20 }}>
-              <h3>⭐ Tärkeät huomiot</h3>
-              <ul>
-                {aiData.highlights.map((h: string, i: number) => (
-                  <li key={i}>{h}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          <p><b>Kuvaus:</b> {aiData.description}</p>
-          <p><b>Päivä:</b> {aiData.date}</p>
-          <p><b>Yritys:</b> {aiData.company}</p>
-          <p><b>Summa:</b> {aiData.total_amount} €</p>
-
-          {aiData.additional_notes && (
-            <div style={{ marginTop: 20 }}>
-              <h3>📄 Lisätiedot</h3>
-              <pre>{aiData.additional_notes}</pre>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+      <section style={summaryStyle}>
+        <h2>Yhteenveto</h2>
+        <p>
+          Aloita lataamalla uusi dokumentti tai siirry tarkastelemaan jo
+          tallennettuja tapahtumia.
+        </p>
+      </section>
+    </main>
   );
 }
+
+const cardStyle = {
+  display: "block",
+  padding: 18,
+  border: "1px solid #333",
+  borderRadius: 12,
+  textDecoration: "none",
+  color: "inherit",
+  background: "#111",
+};
+
+const summaryStyle = {
+  padding: 18,
+  border: "1px solid #333",
+  borderRadius: 12,
+  background: "#111",
+};
