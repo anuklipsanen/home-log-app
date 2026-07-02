@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { getEventTypeLabel, getEventTypeColor } from "@/lib/typeLabels";
+import { parseAmount, formatEuro } from "@/lib/costUtils";
 
 type Event = {
   id: string;
@@ -62,18 +63,6 @@ export default function HomePage() {
     });
   }
 
-  function parseAmount(value?: string | number | null) {
-    if (value === null || value === undefined || value === "") return 0;
-    if (typeof value === "number") return value;
-
-    const normalized = value
-      .replace("€", "")
-      .replace(/\s/g, "")
-      .replace(",", ".");
-
-    const parsed = Number(normalized);
-    return Number.isFinite(parsed) ? parsed : 0;
-  }
 
   function costsByType(start: string, end: string) {
     const totals: Record<string, number> = {};
@@ -268,7 +257,7 @@ function CostBars({
               }}
             >
               <span>{item.label}</span>
-              <strong>{item.total.toFixed(2)} €</strong>
+              <strong>{formatEuro(item.total)}</strong>
             </div>
 
             <div

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useParams, useRouter } from "next/navigation";
 import { eventTypes, getEventTypeLabel } from "@/lib/typeLabels";
+import { reminderPresets } from "@/lib/reminderPresets";
+import { usagePlaces, getUsagePlaceLabel } from "@/lib/usagePlaces";
 
 export default function EventDetail() {
   const params = useParams();
@@ -113,6 +115,7 @@ export default function EventDetail() {
     const { error } = await supabase
       .from("events")
       .update({
+        usage_place: eventData.usage_place || "muu",
         description: eventData.description,
         event_date: eventData.event_date,
         date: eventData.date,
@@ -210,7 +213,25 @@ export default function EventDetail() {
           📄 Avaa tiedosto
         </a>
       )}
-
+<p>
+  <b>Käyttöpaikka</b>
+  <br /> 
+  {editMode ? (
+    <select
+      value={eventData.usage_place || "muu"}
+      onChange={(e) => update("usage_place", e.target.value)}
+      style={inputStyle}
+    >
+      {Object.entries(usagePlaces).map(([key, value]) => (
+        <option key={key} value={key}>
+          {value.label}
+        </option>
+      ))}
+    </select>
+  ) : (
+    getUsagePlaceLabel(eventData.usage_place)
+  )}
+</p>
       <p>
         <b>Tyyppi:</b>{" "}
         {editMode ? (
@@ -251,19 +272,17 @@ export default function EventDetail() {
         {editMode ? (
           <div style={{ display: "inline-flex", flexDirection: "column", gap: 8 }}>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <button type="button" onClick={() => addMonthsToEventDate(1)} style={buttonStyle}>
-                1 kk
-              </button>
-              <button type="button" onClick={() => addMonthsToEventDate(3)} style={buttonStyle}>
-                3 kk
-              </button>
-              <button type="button" onClick={() => addMonthsToEventDate(6)} style={buttonStyle}>
-                6 kk
-              </button>
-              <button type="button" onClick={() => addMonthsToEventDate(12)} style={buttonStyle}>
-                1 v
-              </button>
-            </div>
+  {reminderPresets.map((preset) => (
+    <button
+      key={preset.months}
+      type="button"
+      onClick={() => addMonthsToEventDate(preset.months)}
+      style={buttonStyle}
+    >
+      {preset.label}
+    </button>
+  ))}
+</div>
 
             <input
               type="date"
@@ -277,19 +296,28 @@ export default function EventDetail() {
         )}
       </div>
 
-      <p>
-        <b>Muistutus:</b>{" "}
-        {editMode ? (
-          <input
-            value={eventData.reminder_text || ""}
-            onChange={(e) => update("reminder_text", e.target.value)}
-            placeholder="Esim. Tarkista suodatin / tilaa huolto"
-            style={{ ...inputStyle, minWidth: 320 }}
-          />
-        ) : (
-          eventData.reminder_text || "-"
-        )}
-      </p>
+      <div style={{ marginTop: 12 }}>
+  <div style={{ fontWeight: 600, marginBottom: 4 }}>
+    🔔 Muistutus
+  </div>
+
+  {editMode ? (
+    <input
+      value={eventData.reminder_text || ""}
+      onChange={(e) => update("reminder_text", e.target.value)}
+      style={{ ...inputStyle, minWidth: 320 }}
+    />
+  ) : (
+    <div
+      style={{
+        fontStyle: "italic",
+        color: "#d4d4d4",
+      }}
+    >
+      {eventData.reminder_text || "—"}
+    </div>
+  )}
+</div>
 
       {[
   ["date", "Laskun päivä"],

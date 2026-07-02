@@ -4,11 +4,14 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import { eventTypes } from "@/lib/typeLabels";
+import { reminderPresets } from "@/lib/reminderPresets";
+import { usagePlaces } from "@/lib/usagePlaces";
 
 export default function NewEventPage() {
   const router = useRouter();
 
   const [form, setForm] = useState<any>({
+    usage_place: "muu",
     description: "",
     event_date: new Date().toISOString().split("T")[0],
     date: "",
@@ -96,6 +99,7 @@ export default function NewEventPage() {
   async function handleSave() {
     const { error } = await supabase.from("events").insert([
       {
+        usage_place: form.usage_place || "muu",
         description: form.description || "",
         event_date: form.event_date || "",
         date: form.date || "",
@@ -131,8 +135,25 @@ export default function NewEventPage() {
 
       <section style={cardStyle}>
         <h2>Perustiedot</h2>
-
+        
         <div style={formGridStyle}>
+          
+          <div style={fieldStyle}>
+  <label>Käyttöpaikka</label>
+
+  <select
+    value={form.usage_place || "muu"}
+    onChange={(e) => update("usage_place", e.target.value)}
+    style={inputStyle}
+  >
+    {Object.entries(usagePlaces).map(([key, value]) => (
+      <option key={key} value={key}>
+        {value.label}
+      </option>
+    ))}
+  </select>
+</div>
+          
           <div style={fieldStyle}>
             <label>Kuvaus</label>
             <input
@@ -280,17 +301,15 @@ export default function NewEventPage() {
     marginBottom: 16,
   }}
 >
-  {[1, 2, 3, 6, 12, 24].map((months) => (
-    <button
-      key={months}
-      type="button"
-      onClick={() => addMonthsToEventDate(months)}
-    >
-      {months < 12
-        ? `${months} kk välein`
-        : `${months / 12} v välein`}
-    </button>
-  ))}
+  {reminderPresets.map((preset) => (
+  <button
+    key={preset.months}
+    type="button"
+    onClick={() => addMonthsToEventDate(preset.months)}
+  >
+    {preset.label}
+  </button>
+))}
 </div>
 
         <div style={formGridStyle}>

@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { eventTypes } from "@/lib/typeLabels";
+import { reminderPresets } from "@/lib/reminderPresets";
+import { usagePlaces } from "@/lib/usagePlaces";
 
 export default function UploadPage() {
   const [aiData, setAiData] = useState<any>(null);
@@ -122,6 +124,7 @@ export default function UploadPage() {
 
         setAiData({
           ...parsed,
+          usage_place: parsed.usage_place || "muu",
           reminder_date: parsed.reminder_date || "",
           reminder_text: parsed.reminder_text || "",
           event_date: parsed.event_date || todayString(),
@@ -132,6 +135,7 @@ export default function UploadPage() {
         console.error("JSON parse error:", err);
 
         setAiData({
+          usage_place: "muu",
           description: "",
           date: "",
           due_date: "",
@@ -174,6 +178,7 @@ export default function UploadPage() {
       "Huoltotoimenpide";
 
     const payload = {
+      usage_place: aiData.usage_place || "muu",
       description: finalDescription,
       date: aiData.date || "",
       due_date: aiData.due_date || "",
@@ -282,6 +287,23 @@ export default function UploadPage() {
             </div>
 
             <div style={formGridStyle}>
+              <div style={fieldStyle}>
+  <label>Käyttöpaikka</label>
+
+  <select
+    value={aiData.usage_place || "muu"}
+    onChange={(e) => updateField("usage_place", e.target.value)}
+    disabled={!editMode}
+    style={inputStyle}
+  >
+    {Object.entries(usagePlaces).map(([key, value]) => (
+      <option key={key} value={key}>
+        {value.label}
+      </option>
+    ))}
+  </select>
+</div>
+              
               <div style={fieldStyle}>
                 <label>Kuvaus</label>
                 <input
@@ -404,17 +426,15 @@ export default function UploadPage() {
     marginBottom: 16,
   }}
 >
-  {[1, 2, 3, 6, 12, 24].map((months) => (
-    <button
-      key={months}
-      type="button"
-      onClick={() => addMonthsToEventDate(months)}
-    >
-      {months < 12
-        ? `${months} kk välein`
-        : `${months / 12} v välein`}
-    </button>
-  ))}
+  {reminderPresets.map((preset) => (
+  <button
+    key={preset.months}
+    type="button"
+    onClick={() => addMonthsToEventDate(preset.months)}
+  >
+    {preset.label}
+  </button>
+))}
 </div>
             )}
 
