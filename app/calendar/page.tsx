@@ -190,7 +190,7 @@ export default function CalendarPage() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(7, 120px)",
+              gridTemplateColumns: "repeat(7, 140px)",
               gap: 6,
               fontWeight: "bold",
             }}
@@ -203,8 +203,8 @@ export default function CalendarPage() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(7, 120px)",
-              gap: 8,
+              gridTemplateColumns: "repeat(7, 140px)",
+              gap: 6,
               marginTop: 8,
             }}
           >

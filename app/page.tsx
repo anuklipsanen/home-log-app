@@ -13,6 +13,13 @@ type Event = {
   reminder_text?: string | null;
   company?: string | null;
   maintenance_type?: string | null;
+  total_amount?: string | number | null;
+};
+
+type CostItem = {
+  type: string;
+  label: string;
+  total: number;
 };
 
 export default function HomePage() {
@@ -23,7 +30,7 @@ export default function HomePage() {
       const { data, error } = await supabase
         .from("events")
         .select(
-          "id, description, event_date, reminder_date, reminder_text, company, maintenance_type"
+          "id, description, event_date, reminder_date, reminder_text, company, maintenance_type, total_amount"
         )
         .order("event_date", { ascending: false });
 
@@ -47,7 +54,49 @@ export default function HomePage() {
 
   function formatDate(date?: string | null) {
     if (!date) return "-";
-    return new Date(date).toLocaleDateString("fi-FI");
+
+    return new Date(date).toLocaleDateString("fi-FI", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  }
+
+  function parseAmount(value?: string | number | null) {
+    if (value === null || value === undefined || value === "") return 0;
+    if (typeof value === "number") return value;
+
+    const normalized = value
+      .replace("€", "")
+      .replace(/\s/g, "")
+      .replace(",", ".");
+
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  function costsByType(start: string, end: string) {
+    const totals: Record<string, number> = {};
+
+    events.forEach((event) => {
+      if (!event.event_date) return;
+      if (event.event_date < start || event.event_date > end) return;
+
+      const type = event.maintenance_type || "muu";
+      const amount = parseAmount(event.total_amount);
+
+      if (!amount) return;
+
+      totals[type] = (totals[type] || 0) + amount;
+    });
+
+    return Object.entries(totals)
+      .map(([type, total]) => ({
+        type,
+        label: getEventTypeLabel(type),
+        total,
+      }))
+      .sort((a, b) => b.total - a.total);
   }
 
   function eventType(event: Event) {
@@ -62,9 +111,17 @@ export default function HomePage() {
   const threeWeeksAhead = new Date(today);
   threeWeeksAhead.setDate(today.getDate() + 21);
 
+  const yearAgo = new Date(today);
+  yearAgo.setFullYear(today.getFullYear() - 1);
+
+  const yearAhead = new Date(today);
+  yearAhead.setFullYear(today.getFullYear() + 1);
+
   const weekAgoString = toDateString(weekAgo);
   const todayString = toDateString(today);
   const threeWeeksAheadString = toDateString(threeWeeksAhead);
+  const yearAgoString = toDateString(yearAgo);
+  const yearAheadString = toDateString(yearAhead);
 
   const recentEvents = events.filter(
     (event) =>
@@ -82,6 +139,9 @@ export default function HomePage() {
         event.reminder_date >= todayString &&
         event.reminder_date <= threeWeeksAheadString)
   );
+
+  const pastCosts = costsByType(yearAgoString, todayString);
+  const futureCosts = costsByType(todayString, yearAheadString);
 
   return (
     <main>
@@ -112,6 +172,16 @@ export default function HomePage() {
           <p>Näe tapahtumat ja muistutukset kalenterinäkymässä.</p>
         </Link>
       </div>
+
+      <section style={summaryStyle}>
+        <h2>Rahankäyttö luokittain</h2>
+
+        <h3>Viimeiset 12 kuukautta</h3>
+        <CostBars items={pastCosts} />
+
+        <h3>Seuraavat 12 kuukautta</h3>
+        <CostBars items={futureCosts} />
+      </section>
 
       <section style={summaryStyle}>
         <h2>Yhteenveto</h2>
@@ -162,6 +232,57 @@ export default function HomePage() {
   );
 }
 
+function CostBars({ items }: { items: CostItem[] }) {
+  if (items.length === 0) {
+    return <p>Ei kustannustietoja.</p>;
+  }
+
+  const max = Math.max(...items.map((item) => item.total));
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      {items.map((item) => {
+        const width =
+          max > 0 ? `${Math.max((item.total / max) * 100, 4)}%` : "0%";
+
+        return (
+          <div key={item.type}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 12,
+                marginBottom: 4,
+              }}
+            >
+              <span>{item.label}</span>
+              <strong>{item.total.toFixed(2)} €</strong>
+            </div>
+
+            <div
+              style={{
+                height: 12,
+                borderRadius: 999,
+                background: "#2a2a2a",
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  width,
+                  height: "100%",
+                  borderRadius: 999,
+                  background: "#3b82f6",
+                }}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 const cardStyle = {
   display: "block",
   padding: 24,
@@ -177,4 +298,5 @@ const summaryStyle = {
   border: "1px solid #333",
   borderRadius: 14,
   background: "#181818",
+  marginBottom: 24,
 };
