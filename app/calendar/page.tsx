@@ -4,6 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { eventTypes, getEventTypeLabel } from "@/lib/typeLabels";
+import {
+  usagePlaces,
+  getUsagePlaceLabel,
+  getUsagePlaceColor,
+} from "@/lib/usagePlaces";
 
 type Event = {
   id: string;
@@ -15,6 +20,7 @@ type Event = {
   reminder_text?: string | null;
   maintenance_type?: string | null;
   company?: string | null;
+  usage_place?: string | null;
 };
 
 type CalendarEntry = {
@@ -26,24 +32,25 @@ export default function CalendarPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEntry, setSelectedEntry] = useState<CalendarEntry | null>(null);
+  const [selectedPlaces, setSelectedPlaces] = useState<string[]>([]);
 
   useEffect(() => {
-    async function fetchEvents() {
-      const { data, error } = await supabase
-        .from("events")
-        .select("*")
-        .order("event_date", { ascending: true });
-
-      if (error) {
-        console.error("Calendar fetch error:", error);
-        return;
-      }
-
-      setEvents(data || []);
-    }
-
     fetchEvents();
   }, []);
+
+  async function fetchEvents() {
+    const { data, error } = await supabase
+      .from("events")
+      .select("*")
+      .order("event_date", { ascending: true });
+
+    if (error) {
+      console.error("Calendar fetch error:", error);
+      return;
+    }
+
+    setEvents(data || []);
+  }
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -61,6 +68,7 @@ export default function CalendarPage() {
     const result: (Date | null)[] = [];
 
     for (let i = 0; i < startOffset; i++) result.push(null);
+
     for (let day = 1; day <= lastDay.getDate(); day++) {
       result.push(new Date(year, month, day));
     }
@@ -75,15 +83,30 @@ export default function CalendarPage() {
     return `${y}-${m}-${d}`;
   }
 
+  function togglePlace(place: string) {
+    setSelectedPlaces((prev) =>
+      prev.includes(place)
+        ? prev.filter((item) => item !== place)
+        : [...prev, place]
+    );
+  }
+
   function entriesForDay(date: Date): CalendarEntry[] {
     const dateString = toDateString(date);
 
     return events.flatMap((event) => {
+      if (
+        selectedPlaces.length > 0 &&
+        !selectedPlaces.includes(event.usage_place || "muu")
+      ) {
+        return [];
+      }
+
       const entries: CalendarEntry[] = [];
 
       if (event.event_date === dateString) {
-  entries.push({ event, kind: "event" });
-}
+        entries.push({ event, kind: "event" });
+      }
 
       if (event.reminder_date === dateString) {
         entries.push({ event, kind: "reminder" });
@@ -98,21 +121,24 @@ export default function CalendarPage() {
     return toDateString(date) === toDateString(today);
   }
 
-  function getEntryStyle(kind: "event" | "reminder", maintenanceType?: string | null) {
-  if (kind === "reminder") {
+  function getEntryStyle(
+    kind: "event" | "reminder",
+    maintenanceType?: string | null
+  ) {
+    if (kind === "reminder") {
+      return {
+        background: "#fff7ed",
+        border: "1px solid #fed7aa",
+      };
+    }
+
     return {
-      background: "#fff7ed",
-      border: "1px solid #fed7aa",
+      background:
+        eventTypes[maintenanceType as keyof typeof eventTypes]?.color ??
+        eventTypes.muu.color,
+      border: "1px solid #ddd",
     };
   }
-
-  return {
-    background:
-  eventTypes[maintenanceType as keyof typeof eventTypes]?.color ??
-  eventTypes.muu.color,
-    border: "1px solid #ddd",
-  };
-}
 
   function getEntryText(entry: CalendarEntry) {
     const { event, kind } = entry;
@@ -125,9 +151,7 @@ export default function CalendarPage() {
           {event.description && (
             <>
               <br />
-              <span style={{ opacity: 0.7 }}>
-                {event.description}
-              </span>
+              <span style={{ opacity: 0.75 }}>{event.description}</span>
             </>
           )}
         </>
@@ -139,11 +163,11 @@ export default function CalendarPage() {
 
   return (
     <main
-  style={{
-    minWidth: 1100,
-    background: "#0f0f0f",
-  }}
->
+      style={{
+        minWidth: 1100,
+        background: "#0f0f0f",
+      }}
+    >
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <h1>📅 Kalenteri</h1>
         <Link href="/events/new">➕ Lisää tapahtuma</Link>
@@ -177,6 +201,71 @@ export default function CalendarPage() {
           →
         </button>
       </div>
+
+      <section
+        style={{
+          border: "1px solid #333",
+          borderRadius: 12,
+          padding: 14,
+          background: "#181818",
+          marginBottom: 20,
+          maxWidth: 1000,
+        }}
+      >
+        <div style={{ fontWeight: 700, marginBottom: 10 }}>Käyttöpaikka</div>
+
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {Object.entries(usagePlaces).map(([key, value]) => {
+            const selected = selectedPlaces.includes(key);
+
+            return (
+              <label
+                key={key}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "7px 10px",
+                  borderRadius: 999,
+                  border: selected ? "1px solid #93c5fd" : "1px solid #444",
+                  background: selected ? "#1f2937" : "#111",
+                  cursor: "pointer",
+                  userSelect: "none",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={selected}
+                  onChange={() => togglePlace(key)}
+                />
+
+                <span
+                  style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: "50%",
+                    background: getUsagePlaceColor(key),
+                    display: "inline-block",
+                    flexShrink: 0,
+                  }}
+                />
+
+                <span>{value.label}</span>
+              </label>
+            );
+          })}
+        </div>
+
+        {selectedPlaces.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setSelectedPlaces([])}
+            style={{ marginTop: 12 }}
+          >
+            Tyhjennä käyttöpaikkasuodatin
+          </button>
+        )}
+      </section>
 
       <div
         style={{
@@ -289,40 +378,40 @@ export default function CalendarPage() {
 
         {selectedEntry && (
           <aside
-  style={{
-    padding: 18,
-    borderRadius: 12,
-    background:
-      selectedEntry.kind === "reminder"
-        ? "#fff7ed"
-        : getEntryStyle(
-            selectedEntry.kind,
-            selectedEntry.event.maintenance_type
-          ).background,
-    border:
-      selectedEntry.kind === "reminder"
-        ? "1px solid #fed7aa"
-        : getEntryStyle(
-            selectedEntry.kind,
-            selectedEntry.event.maintenance_type
-          ).border,
-    color: "#111",
-    height: "fit-content",
-    boxShadow: "0 4px 12px rgba(0,0,0,.15)",
-  }}
->
+            style={{
+              padding: 18,
+              borderRadius: 12,
+              background:
+                selectedEntry.kind === "reminder"
+                  ? "#fff7ed"
+                  : getEntryStyle(
+                      selectedEntry.kind,
+                      selectedEntry.event.maintenance_type
+                    ).background,
+              border:
+                selectedEntry.kind === "reminder"
+                  ? "1px solid #fed7aa"
+                  : getEntryStyle(
+                      selectedEntry.kind,
+                      selectedEntry.event.maintenance_type
+                    ).border,
+              color: "#111",
+              height: "fit-content",
+              boxShadow: "0 4px 12px rgba(0,0,0,.15)",
+            }}
+          >
             <button
-  onClick={() => setSelectedEntry(null)}
-  style={{
-    float: "right",
-    cursor: "pointer",
-    border: "none",
-    background: "transparent",
-    color: "#555",
-    fontSize: 22,
-    fontWeight: 700,
-  }}
->
+              onClick={() => setSelectedEntry(null)}
+              style={{
+                float: "right",
+                cursor: "pointer",
+                border: "none",
+                background: "transparent",
+                color: "#555",
+                fontSize: 22,
+                fontWeight: 700,
+              }}
+            >
               ✕
             </button>
 
@@ -335,6 +424,30 @@ export default function CalendarPage() {
             <p>
               <strong>Tyyppi:</strong>{" "}
               {getEventTypeLabel(selectedEntry.event.maintenance_type)}
+            </p>
+
+            <p>
+              <strong>Käyttöpaikka:</strong>{" "}
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                <span
+                  style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: "50%",
+                    background: getUsagePlaceColor(
+                      selectedEntry.event.usage_place
+                    ),
+                    display: "inline-block",
+                  }}
+                />
+                {getUsagePlaceLabel(selectedEntry.event.usage_place)}
+              </span>
             </p>
 
             <p>
@@ -360,17 +473,17 @@ export default function CalendarPage() {
             </p>
 
             <Link
-  href={`/events/${selectedEntry.event.id}`}
-  style={{
-    display: "inline-block",
-    marginTop: 16,
-    color: "#2563eb",
-    fontWeight: 600,
-    textDecoration: "none",
-  }}
->
-  Avaa tapahtuma →
-</Link>
+              href={`/events/${selectedEntry.event.id}`}
+              style={{
+                display: "inline-block",
+                marginTop: 16,
+                color: "#2563eb",
+                fontWeight: 600,
+                textDecoration: "none",
+              }}
+            >
+              Avaa tapahtuma →
+            </Link>
           </aside>
         )}
       </div>
