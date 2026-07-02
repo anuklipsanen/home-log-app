@@ -1,37 +1,24 @@
 export const eventTypes = {
+  // 🚗 Auto
   auton_katsastus: {
-  label: "🚗 Auton katsastus",
-  color: "#e0f2fe",
-},
-
-auton_maaraaikaishuolto: {
-  label: "🔧 Auton määräaikaishuolto",
-  color: "#dbeafe",
-},
-
-auton_renkaat: {
-  label: "🛞 Auton renkaat",
-  color: "#e5e7eb",
-},
-  
-  nuohous: {
-    label: "🔥 Nuohous",
-    color: "#ffe5d0",
+    label: "🚗 Auton katsastus",
+    color: "#e0f2fe",
   },
 
-  likakaivo: {
-    label: "💧 Likakaivo / harmaavesi",
+  auton_maaraaikaishuolto: {
+    label: "🔧 Auton määräaikaishuolto",
     color: "#dbeafe",
   },
 
-  jatehuolto: {
-    label: "🗑 Sekajäteastian tyhjennys",
+  auton_renkaat: {
+    label: "🛞 Auton renkaat",
     color: "#e5e7eb",
   },
 
-  biojatehuolto: {
-    label: "🌱 Biojäteastian tyhjennys",
-    color: "#dcfce7",
+  // 🏠 Talotekniikka ja huollot
+  nuohous: {
+    label: "🔥 Nuohous",
+    color: "#ffe5d0",
   },
 
   suodatin: {
@@ -49,6 +36,33 @@ auton_renkaat: {
     color: "#dbeafe",
   },
 
+  maalämpö: {
+    label: "🌡 Maalämpö",
+    color: "#fde68a",
+  },
+
+  sauna: {
+    label: "🧖 Sauna",
+    color: "#fed7aa",
+  },
+
+  // 💧 Vesi ja viemäri
+  likakaivo: {
+    label: "💧 Likakaivo / harmaavesi",
+    color: "#dbeafe",
+  },
+
+  vesi: {
+    label: "🚿 Vesityö",
+    color: "#dbeafe",
+  },
+
+  juomavesi: {
+    label: "🚰 Kaivo / käyttövesi",
+    color: "#bfdbfe",
+  },
+
+  // ⚡ Sähkö
   sähkö: {
     label: "⚡ Sähkötyö",
     color: "#fef3c7",
@@ -64,34 +78,42 @@ auton_renkaat: {
     color: "#fde68a",
   },
 
-  vesi: {
-    label: "🚿 Vesityö",
+  // 🌿 Piha ja ulkoalueet
+  piha: {
+    label: "🌿 Piha / pihatyöt",
+    color: "#dcfce7",
+  },
+
+  polttopuut: {
+    label: "🪵 Polttopuut",
+    color: "#f5e6c8",
+  },
+
+  laituri: {
+    label: "🛶 Laituri",
     color: "#dbeafe",
-  },
-
-  juomavesi: {
-    label: "🚰 Kaivo / käyttövesi",
-    color: "#bfdbfe",
-  },
-
-  maalämpö: {
-    label: "🌡 Maalämpö",
-    color: "#fde68a",
-  },
-
-  sauna: {
-    label: "🧖 Sauna",
-    color: "#fed7aa",
-  },
-
-  rakennus: {
-    label: "🧱 Rakennustyö",
-    color: "#e7e5e4",
   },
 
   tienhoitomaksu: {
     label: "🚜 Tienhoitomaksu",
     color: "#ede9fe",
+  },
+
+  // ♻️ Jätehuolto
+  jatehuolto: {
+    label: "🗑 Sekajäteastian tyhjennys",
+    color: "#e5e7eb",
+  },
+
+  biojatehuolto: {
+    label: "🌱 Biojäteastian tyhjennys",
+    color: "#dcfce7",
+  },
+
+  // 🧱 Rakennus ja kiinteistö
+  rakennus: {
+    label: "🧱 Rakennustyö",
+    color: "#e7e5e4",
   },
 
   kiinteistovero: {
