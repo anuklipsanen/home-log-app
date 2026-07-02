@@ -24,9 +24,10 @@ export default function EventsPage() {
 
     if (error) {
       console.error("Fetch error:", error);
-    } else {
-      setEvents(data || []);
+      return;
     }
+
+    setEvents(data || []);
   }
 
   function formatDate(dateString: string) {
@@ -39,57 +40,8 @@ export default function EventsPage() {
     });
   }
 
-  function addMonths(dateString: string, months: number) {
-    if (!dateString) return "";
-
-    const date = new Date(dateString);
-    date.setMonth(date.getMonth() + months);
-
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, "0");
-    const d = String(date.getDate()).padStart(2, "0");
-
-    return `${y}-${m}-${d}`;
-  }
-
-  async function quickSetReminder(
-    eventId: string,
-    baseDate: string,
-    months: number
-  ) {
-    if (!baseDate) {
-      alert("Tapahtumalta puuttuu tapahtumapäivä.");
-      return;
-    }
-
-    const reminderDate = addMonths(baseDate, months);
-
-    const { error } = await supabase
-      .from("events")
-      .update({
-        reminder_date: reminderDate,
-      })
-      .eq("id", eventId);
-
-    if (error) {
-      console.error(error);
-      alert("❌ Muistutuksen päivitys epäonnistui");
-      return;
-    }
-
-    setEvents((prev) =>
-      prev.map((event) =>
-        event.id === eventId
-          ? { ...event, reminder_date: reminderDate }
-          : event
-      )
-    );
-  }
-
   const filteredEvents = events.filter((e) => {
-    const matchesFilter =
-      filter === "all" || e.maintenance_type === filter;
-
+    const matchesFilter = filter === "all" || e.maintenance_type === filter;
     const searchLower = search.toLowerCase();
 
     const matchesSearch =
@@ -103,14 +55,14 @@ export default function EventsPage() {
   });
 
   return (
-    <div style={{ padding: 20 }}>
+    <main style={{ padding: 20 }}>
       <h1>📋 Tapahtumat</h1>
 
       <div
         style={{
-          marginBottom: 15,
+          marginBottom: 20,
           display: "flex",
-          gap: 10,
+          gap: 12,
           justifyContent: "space-between",
           alignItems: "center",
           flexWrap: "wrap",
@@ -126,20 +78,16 @@ export default function EventsPage() {
             placeholder="Hae (yritys, kuvaus, muistutus...)"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={{ padding: 6 }}
           />
 
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-          >
+          <select value={filter} onChange={(e) => setFilter(e.target.value)}>
             <option value="all">Kaikki</option>
 
             {Object.entries(eventTypes).map(([key, value]) => (
-  <option key={key} value={key}>
-    {value.label}
-  </option>
-))}
+              <option key={key} value={key}>
+                {value.label}
+              </option>
+            ))}
           </select>
         </div>
       </div>
@@ -154,92 +102,62 @@ export default function EventsPage() {
             key={e.id}
             style={{
               border: "1px solid #444",
-              padding: 12,
-              marginBottom: 10,
-              borderRadius: 6,
+              padding: 14,
+              marginBottom: 12,
+              borderRadius: 8,
+              background: "#111",
             }}
           >
             <Link
               href={`/events/${e.id}`}
               style={{ color: "inherit", textDecoration: "none" }}
             >
-              <b>{e.description || "Ei kuvausta"}</b>
+              <h2 style={{ margin: "0 0 8px", fontSize: 20 }}>
+                {e.description || "Ei kuvausta"}
+              </h2>
 
-              <p>
-                <b>Tyyppi:</b>{" "}
-                {getEventTypeLabel(e.maintenance_type)}
+              <p style={{ margin: "4px 0" }}>
+                <b>Tyyppi:</b> {getEventTypeLabel(e.maintenance_type)}
               </p>
 
-              <p>
+              <p style={{ margin: "4px 0" }}>
                 <b>Yritys:</b> {e.company || "-"}
               </p>
 
-              <p>
+              <p style={{ margin: "4px 0" }}>
                 <b>Tapahtumapäivä:</b>{" "}
                 {baseDate ? formatDate(baseDate) : "-"}
               </p>
             </Link>
 
-            <div
-              style={{
-                marginTop: 10,
-                padding: 10,
-                borderRadius: 6,
-                background: "#fff7ed",
-                border: "1px solid #fed7aa",
-              }}
-            >
-              <b>🔔 Muistutus</b>
-
-              <p style={{ margin: "6px 0" }}>
-                <b>Päivä:</b>{" "}
-                {e.reminder_date ? formatDate(e.reminder_date) : "-"}
-              </p>
-
-              <p style={{ margin: "6px 0" }}>
-                <b>Teksti:</b> {e.reminder_text || "-"}
-              </p>
-
+            {(e.reminder_date || e.reminder_text) && (
               <div
                 style={{
-                  display: "flex",
-                  gap: 8,
-                  flexWrap: "wrap",
-                  marginTop: 8,
+                  marginTop: 12,
+                  padding: 12,
+                  borderRadius: 8,
+                  background: "#fff7ed",
+                  border: "1px solid #fed7aa",
+                  color: "#111827",
                 }}
               >
-                <button
-                  type="button"
-                  onClick={() => quickSetReminder(e.id, baseDate, 1)}
-                >
-                  1 kk välein
-                </button>
+                <p style={{ margin: "0 0 8px" }}>
+                  🔔 <b>Muistutus</b>
+                </p>
 
-                <button
-                  type="button"
-                  onClick={() => quickSetReminder(e.id, baseDate, 3)}
-                >
-                  3 kk välein
-                </button>
+                <p style={{ margin: "6px 0" }}>
+                  <b>Päivä:</b>{" "}
+                  {e.reminder_date ? formatDate(e.reminder_date) : "-"}
+                </p>
 
-                <button
-                  type="button"
-                  onClick={() => quickSetReminder(e.id, baseDate, 6)}
-                >
-                  6 kk välein
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => quickSetReminder(e.id, baseDate, 12)}
-                >
-                  1 v välein
-                </button>
+                <p style={{ margin: "6px 0" }}>
+                  <b>Teksti:</b> {e.reminder_text || "-"}
+                </p>
               </div>
-            </div>
+            )}
           </div>
         );
       })}
-    </div>
+    </main>
   );
 }
