@@ -4,14 +4,19 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { eventTypes, getEventTypeLabel } from "@/lib/typeLabels";
+import {
+  usagePlaces,
+  getUsagePlaceLabel,
+  getUsagePlaceColor,
+} from "@/lib/usagePlaces";
 import { useRouter } from "next/navigation";
 
 export default function EventsPage() {
   const [events, setEvents] = useState<any[]>([]);
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [selectedPlaces, setSelectedPlaces] = useState<string[]>([]);
   const router = useRouter();
-  const [usagePlace, setUsagePlace] = useState("muu");
 
   useEffect(() => {
     fetchData();
@@ -41,6 +46,14 @@ export default function EventsPage() {
     });
   }
 
+  function togglePlace(place: string) {
+    setSelectedPlaces((prev) =>
+      prev.includes(place)
+        ? prev.filter((item) => item !== place)
+        : [...prev, place]
+    );
+  }
+
   const filteredEvents = events.filter((e) => {
     const matchesFilter = filter === "all" || e.maintenance_type === filter;
     const searchLower = search.toLowerCase();
@@ -52,7 +65,11 @@ export default function EventsPage() {
       e.notes_short?.toLowerCase().includes(searchLower) ||
       e.reminder_text?.toLowerCase().includes(searchLower);
 
-    return matchesFilter && matchesSearch;
+    const matchesPlace =
+      selectedPlaces.length === 0 ||
+      selectedPlaces.includes(e.usage_place || "muu");
+
+    return matchesFilter && matchesSearch && matchesPlace;
   });
 
   return (
@@ -82,7 +99,7 @@ export default function EventsPage() {
           />
 
           <select value={filter} onChange={(e) => setFilter(e.target.value)}>
-            <option value="all">Kaikki</option>
+            <option value="all">Kaikki tyypit</option>
 
             {Object.entries(eventTypes).map(([key, value]) => (
               <option key={key} value={key}>
@@ -92,6 +109,70 @@ export default function EventsPage() {
           </select>
         </div>
       </div>
+
+      <section
+        style={{
+          border: "1px solid #333",
+          borderRadius: 12,
+          padding: 14,
+          background: "#181818",
+          marginBottom: 20,
+        }}
+      >
+        <div style={{ fontWeight: 700, marginBottom: 10 }}>Käyttöpaikka</div>
+
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {Object.entries(usagePlaces).map(([key, value]) => {
+            const selected = selectedPlaces.includes(key);
+
+            return (
+              <label
+                key={key}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "7px 10px",
+                  borderRadius: 999,
+                  border: selected ? "1px solid #93c5fd" : "1px solid #444",
+                  background: selected ? "#1f2937" : "#111",
+                  cursor: "pointer",
+                  userSelect: "none",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={selected}
+                  onChange={() => togglePlace(key)}
+                />
+
+                <span
+                  style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: "50%",
+                    background: getUsagePlaceColor(key),
+                    display: "inline-block",
+                    flexShrink: 0,
+                  }}
+                />
+
+                <span>{value.label}</span>
+              </label>
+            );
+          })}
+        </div>
+
+        {selectedPlaces.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setSelectedPlaces([])}
+            style={{ marginTop: 12 }}
+          >
+            Tyhjennä käyttöpaikkasuodatin
+          </button>
+        )}
+      </section>
 
       {filteredEvents.length === 0 && <p>Ei osumia</p>}
 
@@ -119,6 +200,28 @@ export default function EventsPage() {
 
               <p style={{ margin: "4px 0" }}>
                 <b>Tyyppi:</b> {getEventTypeLabel(e.maintenance_type)}
+              </p>
+
+              <p style={{ margin: "4px 0" }}>
+                <b>Käyttöpaikka:</b>{" "}
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: "50%",
+                      background: getUsagePlaceColor(e.usage_place),
+                      display: "inline-block",
+                    }}
+                  />
+                  {getUsagePlaceLabel(e.usage_place)}
+                </span>
               </p>
 
               <p style={{ margin: "4px 0" }}>
@@ -152,12 +255,12 @@ export default function EventsPage() {
                 </p>
 
                 <p
-  style={{
-    fontStyle: "italic",
-    color: "#374151",
-    marginTop: 4,
-  }}
->
+                  style={{
+                    fontStyle: "italic",
+                    color: "#374151",
+                    marginTop: 4,
+                  }}
+                >
                   {e.reminder_text || "-"}
                 </p>
               </div>
