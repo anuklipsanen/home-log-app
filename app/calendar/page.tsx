@@ -190,8 +190,8 @@ export default function CalendarPage() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(7, 1fr)",
-              gap: 8,
+              gridTemplateColumns: "repeat(7, 100px)",
+              gap: 6,
               fontWeight: "bold",
             }}
           >
@@ -203,7 +203,7 @@ export default function CalendarPage() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(7, 1fr)",
+              gridTemplateColumns: "repeat(7, 100px)",
               gap: 8,
               marginTop: 8,
             }}
@@ -215,7 +215,7 @@ export default function CalendarPage() {
                 <div
                   key={index}
                   style={{
-                    minHeight: 80,
+                    minHeight: 120,
                     borderRadius: 8,
                     padding: 8,
                     background: day
@@ -263,6 +263,10 @@ export default function CalendarPage() {
                               color: "#111",
                               fontSize: 13,
                               cursor: "pointer",
+                              whiteSpace: "normal",
+                              overflowWrap: "anywhere",
+                              wordBreak: "break-word",
+                              lineHeight: 1.25,
                               ...getEntryStyle(kind, event.maintenance_type),
                             }}
                           >
