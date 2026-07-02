@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { typeLabels } from "@/lib/typeLabels";
+import { eventTypes, getEventTypeLabel } from "@/lib/typeLabels";
 
 type Event = {
   id: string;
@@ -99,26 +99,20 @@ export default function CalendarPage() {
   }
 
   function getEntryStyle(kind: "event" | "reminder", maintenanceType?: string | null) {
-    if (kind === "reminder") {
-      return {
-        background: "#fff7ed",
-        border: "1px solid #fed7aa",
-      };
-    }
-
-    switch (maintenanceType) {
-      case "huolto":
-        return { background: "#eef2ff", border: "1px solid #c7d2fe" };
-      case "tarkastus":
-        return { background: "#ecfdf5", border: "1px solid #bbf7d0" };
-      case "korjaus":
-        return { background: "#f5f3ff", border: "1px solid #ddd6fe" };
-      case "asennus":
-        return { background: "#ecfeff", border: "1px solid #a5f3fc" };
-      default:
-        return { background: "#f8fafc", border: "1px solid #e2e8f0" };
-    }
+  if (kind === "reminder") {
+    return {
+      background: "#fff7ed",
+      border: "1px solid #fed7aa",
+    };
   }
+
+  return {
+    background:
+  eventTypes[maintenanceType as keyof typeof eventTypes]?.color ??
+  eventTypes.muu.color,
+    border: "1px solid #ddd",
+  };
+}
 
   function getEntryText(entry: CalendarEntry) {
     const { event, kind } = entry;
@@ -269,9 +263,7 @@ export default function CalendarPage() {
                           >
                             <strong>
                               {kind === "reminder" ? "🔔 Muistutus: " : ""}
-                              {typeLabels[event.maintenance_type || ""] ||
-                                event.maintenance_type ||
-                                "Tapahtuma"}
+                              {getEventTypeLabel(event.maintenance_type)}
                             </strong>
                             <br />
                             {getEntryText({ event, kind })}
@@ -333,9 +325,7 @@ export default function CalendarPage() {
 
             <p>
               <strong>Tyyppi:</strong>{" "}
-              {typeLabels[selectedEntry.event.maintenance_type || ""] ||
-                selectedEntry.event.maintenance_type ||
-                "Ei tyyppiä"}
+              {getEventTypeLabel(selectedEntry.event.maintenance_type)}
             </p>
 
             <p>

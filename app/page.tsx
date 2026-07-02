@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { typeLabels } from "@/lib/typeLabels";
+import { getEventTypeLabel } from "@/lib/typeLabels";
 
 type Event = {
   id: string;
@@ -51,12 +51,8 @@ export default function HomePage() {
   }
 
   function eventType(event: Event) {
-    return (
-      typeLabels[event.maintenance_type || ""] ||
-      event.maintenance_type ||
-      "Tapahtuma"
-    );
-  }
+  return getEventTypeLabel(event.maintenance_type);
+}
 
   const today = new Date();
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useParams, useRouter } from "next/navigation";
-import { typeLabels } from "@/lib/typeLabels";
+import { eventTypes, getEventTypeLabel } from "@/lib/typeLabels";
 
 export default function EventDetail() {
   const params = useParams();
@@ -219,14 +219,14 @@ export default function EventDetail() {
             onChange={(e) => update("maintenance_type", e.target.value)}
             style={inputStyle}
           >
-            {Object.entries(typeLabels).map(([key, label]) => (
-              <option key={key} value={key}>
-                {label}
-              </option>
-            ))}
+            {Object.entries(eventTypes).map(([key, value]) => (
+  <option key={key} value={key}>
+    {value.label}
+  </option>
+))}
           </select>
         ) : (
-          typeLabels[eventData.maintenance_type] || "📄 Muu"
+          getEventTypeLabel(eventData.maintenance_type)
         )}
       </p>
 

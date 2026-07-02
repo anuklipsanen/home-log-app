@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { typeLabels } from "@/lib/typeLabels";
+import { eventTypes } from "@/lib/typeLabels";
 
 export default function UploadPage() {
   const [aiData, setAiData] = useState<any>(null);
@@ -315,11 +315,11 @@ export default function UploadPage() {
                   style={inputStyle}
                 >
                   <option value="">Valitse</option>
-                  {Object.entries(typeLabels).map(([key, label]) => (
-                    <option key={key} value={key}>
-                      {label}
-                    </option>
-                  ))}
+                  {Object.entries(eventTypes).map(([key, value]) => (
+  <option key={key} value={key}>
+    {value.label}
+  </option>
+))}
                 </select>
               </div>
 
