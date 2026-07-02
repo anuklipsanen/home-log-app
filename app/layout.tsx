@@ -25,21 +25,19 @@ export default function RootLayout({
           }}
         >
           <header
-    style={{
-      display: "flex",
-      alignItems: "center",
-      gap: 14,
-      padding: "14px 24px",
-      borderBottom: "1px solid #444",
-      background: "#111",
-      position: "sticky",
-      top: 0,
-      left: 0,
-      zIndex: 1000,
-      width: "100%",
-      minWidth: "max-content",
-    }}
-  >
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            padding: "14px 24px",
+            borderBottom: "1px solid #444",
+            background: "#111",
+            position: "sticky",
+            top: 0,
+            zIndex: 1000,
+            overflowX: "auto",
+          }}
+        >
             <Link href="/" style={navLinkStyle}>
               🏠 Koti
             </Link>

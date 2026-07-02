@@ -138,7 +138,12 @@ export default function CalendarPage() {
   }
 
   return (
-    <main style={{ padding: 24 }}>
+    <main
+  style={{
+    minWidth: 1100,
+    background: "#0f0f0f",
+  }}
+>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <h1>📅 Kalenteri</h1>
         <Link href="/events/new">➕ Lisää tapahtuma</Link>
