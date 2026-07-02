@@ -11,6 +11,7 @@ export default function EventsPage() {
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
   const router = useRouter();
+  const [usagePlace, setUsagePlace] = useState("muu");
 
   useEffect(() => {
     fetchData();
