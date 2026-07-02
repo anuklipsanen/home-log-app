@@ -397,24 +397,25 @@ export default function UploadPage() {
 
             {editMode && (
               <div
-                style={{
-                  display: "flex",
-                  gap: 8,
-                  flexWrap: "wrap",
-                  marginBottom: 16,
-                }}
-              >
-                {[1, 3, 6, 12].map((months) => (
-                  <button
-                    key={months}
-                    type="button"
-                    onClick={() => addMonthsToEventDate(months)}
-                    style={buttonStyle}
-                  >
-                    {months === 12 ? "1 v välein" : `${months} kk välein`}
-                  </button>
-                ))}
-              </div>
+  style={{
+    display: "flex",
+    gap: 10,
+    flexWrap: "wrap",
+    marginBottom: 16,
+  }}
+>
+  {[1, 2, 3, 6, 12, 24].map((months) => (
+    <button
+      key={months}
+      type="button"
+      onClick={() => addMonthsToEventDate(months)}
+    >
+      {months < 12
+        ? `${months} kk välein`
+        : `${months / 12} v välein`}
+    </button>
+  ))}
+</div>
             )}
 
             <div style={formGridStyle}>
