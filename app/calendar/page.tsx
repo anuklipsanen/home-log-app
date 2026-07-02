@@ -165,7 +165,7 @@ export default function CalendarPage() {
 
         <h2
           style={{
-            minWidth: 180,
+            minWidth: 115,
             textAlign: "center",
             textTransform: "capitalize",
           }}
