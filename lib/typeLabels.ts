@@ -1,4 +1,19 @@
 export const eventTypes = {
+  auton_katsastus: {
+  label: "🚗 Auton katsastus",
+  color: "#e0f2fe",
+},
+
+auton_maaraaikaishuolto: {
+  label: "🔧 Auton määräaikaishuolto",
+  color: "#dbeafe",
+},
+
+auton_renkaat: {
+  label: "🛞 Auton renkaat",
+  color: "#e5e7eb",
+},
+  
   nuohous: {
     label: "🔥 Nuohous",
     color: "#ffe5d0",
