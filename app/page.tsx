@@ -3,10 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import {
-  getEventTypeLabel,
-  getEventTypeColor,
-} from "@/lib/typeLabels";
+import { getEventTypeLabel, getEventTypeColor } from "@/lib/typeLabels";
 
 type Event = {
   id: string;
@@ -79,38 +76,36 @@ export default function HomePage() {
   }
 
   function costsByType(start: string, end: string) {
-  const totals: Record<string, number> = {};
+    const totals: Record<string, number> = {};
 
-  events.forEach((event) => {
-    // Lasketaan vain varsinaiset tapahtumat, ei muistutuksia
-    if (!event.event_date) return;
+    events.forEach((event) => {
+      if (!event.event_date) return;
+      if (event.event_date < start || event.event_date > end) return;
 
-    if (event.event_date < start || event.event_date > end) return;
+      const amount = parseAmount(event.total_amount);
+      if (amount <= 0) return;
 
-    const amount = parseAmount(event.total_amount);
+      const type = event.maintenance_type || "muu";
+      totals[type] = (totals[type] || 0) + amount;
+    });
 
-    // Ohitetaan tyhjät ja nollakustannukset
-    if (amount <= 0) return;
-
-    const type = event.maintenance_type || "muu";
-
-    totals[type] = (totals[type] || 0) + amount;
-  });
-
-  return Object.entries(totals)
-    .map(([type, total]) => ({
-      type,
-      label: getEventTypeLabel(type),
-      total,
-    }))
-    .sort((a, b) => b.total - a.total);
-}
+    return Object.entries(totals)
+      .map(([type, total]) => ({
+        type,
+        label: getEventTypeLabel(type),
+        total,
+      }))
+      .sort((a, b) => b.total - a.total);
+  }
 
   function eventType(event: Event) {
     return getEventTypeLabel(event.maintenance_type);
   }
 
   const today = new Date();
+
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
 
   const weekAgo = new Date(today);
   weekAgo.setDate(today.getDate() - 7);
@@ -126,6 +121,7 @@ export default function HomePage() {
 
   const weekAgoString = toDateString(weekAgo);
   const todayString = toDateString(today);
+  const tomorrowString = toDateString(tomorrow);
   const threeWeeksAheadString = toDateString(threeWeeksAhead);
   const yearAgoString = toDateString(yearAgo);
   const yearAheadString = toDateString(yearAhead);
@@ -148,7 +144,7 @@ export default function HomePage() {
   );
 
   const pastCosts = costsByType(yearAgoString, todayString);
-  const futureCosts = costsByType(todayString, yearAheadString);
+  const futureCosts = costsByType(tomorrowString, yearAheadString);
 
   return (
     <main>
