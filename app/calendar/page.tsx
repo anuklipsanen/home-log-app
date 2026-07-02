@@ -165,7 +165,7 @@ export default function CalendarPage() {
 
         <h2
           style={{
-            minWidth: 90,
+            minWidth: 185,
             textAlign: "center",
             textTransform: "capitalize",
           }}
@@ -215,7 +215,7 @@ export default function CalendarPage() {
                 <div
                   key={index}
                   style={{
-                    minHeight: 120,
+                    minHeight: 80,
                     borderRadius: 8,
                     padding: 8,
                     background: day
