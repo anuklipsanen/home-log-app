@@ -81,6 +81,10 @@ export const eventTypesByUsagePlace: Record<string, string[]> = {
     "kiinteistovero",
     "tienhoitomaksu",
   ],
+
+  metsa: [
+  "metsanhoito",
+],
 };
 
 export function getEventTypeOptionsForUsagePlace(usagePlace?: string | null) {
