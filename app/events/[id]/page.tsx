@@ -373,7 +373,21 @@ export default function EventDetail() {
           }}
         />
       ) : (
-        <pre>{eventData.additional_notes}</pre>
+        <div
+  style={{
+    whiteSpace: "pre-wrap",
+    overflowWrap: "anywhere",
+    wordBreak: "break-word",
+    lineHeight: 1.6,
+    background: "#1f1f1f",
+    border: "1px solid #444",
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 8,
+  }}
+>
+  {eventData.additional_notes}
+</div>
       )}
     </div>
   );
