@@ -7,28 +7,54 @@ export const eventTypes = {
 
   auton_maaraaikaishuolto: {
     label: "🔧 Auton määräaikaishuolto",
-    color: "#dbeafe",
+    color: "#bfdbfe",
   },
 
   auton_renkaat: {
     label: "🛞 Auton renkaat",
-    color: "#e5e7eb",
+    color: "#d1d5db",
   },
 
-  // 🏠 Talotekniikka ja huollot
+  auton_muu: {
+    label: "🚗 Auto muu",
+    color: "#c7d2fe",
+  },
+
+  // 🚤 Vene
+  veneen_kevatkunnostus: {
+    label: "🛥️ Veneen kevätkunnostus",
+    color: "#ccfbf1",
+  },
+
+  veneen_syyshuolto: {
+    label: "🍂 Veneen syyshuolto / talvisäilytys",
+    color: "#fde68a",
+  },
+
+  veneen_moottorihuolto: {
+    label: "⚙️ Veneen moottorihuolto",
+    color: "#bfdbfe",
+  },
+
+  veneen_pohjahuolto: {
+    label: "🧽 Veneen pohjan pesu / antifoulaus",
+    color: "#a7f3d0",
+  },
+
+  veneen_akku: {
+    label: "🔋 Veneen akun huolto",
+    color: "#ddd6fe",
+  },
+
+  veneen_muu: {
+    label: "⛵ Vene muu",
+    color: "#c7d2fe",
+  },
+
+  // 🔥 Lämmitys
   nuohous: {
     label: "🔥 Nuohous",
     color: "#ffe5d0",
-  },
-
-  suodatin: {
-    label: "🌬 Ilmanvaihdon suodattimen vaihto",
-    color: "#ecfeff",
-  },
-
-  ilp_suodatin: {
-    label: "❄️ ILP:n suodattimen puhdistus",
-    color: "#ecfeff",
   },
 
   ilmalämpöpumppu: {
@@ -36,33 +62,59 @@ export const eventTypes = {
     color: "#dbeafe",
   },
 
+  ilp_suodatin: {
+    label: "❄️ ILP:n suodattimen puhdistus",
+    color: "#cffafe",
+  },
+
+  suodatin: {
+    label: "🌬 Ilmanvaihdon suodattimen vaihto",
+    color: "#ecfeff",
+  },
+
   maalämpö: {
     label: "🌡 Maalämpö",
     color: "#fde68a",
   },
 
-  sauna: {
-    label: "🧖 Sauna",
-    color: "#fed7aa",
+  // 🚨 Turvallisuus
+  palovaroitin_patteri: {
+    label: "🔋 Palovaroittimen pariston vaihto",
+    color: "#fde047",
+  },
+
+  palovaroitin_vaihto: {
+    label: "🚨 Palovaroittimen vaihto",
+    color: "#f87171",
+  },
+
+  sammutin_tarkastus: {
+    label: "🧯 Sammuttimen tarkastus",
+    color: "#fb7185",
+  },
+
+  lukot: {
+    label: "🔐 Lukkojen huolto",
+    color: "#c4b5fd",
   },
 
   // 💧 Vesi ja viemäri
-  likakaivo: {
-    label: "💧 Likakaivo / harmaavesi",
-    color: "#dbeafe",
-  },
-
   vesi: {
     label: "🚿 Vesityö",
-    color: "#dbeafe",
+    color: "#bfdbfe",
   },
 
   juomavesi: {
     label: "🚰 Kaivo / käyttövesi",
-    color: "#bfdbfe",
+    color: "#93c5fd",
   },
 
-  // ⚡ Sähkö
+  likakaivo: {
+    label: "💧 Likakaivo / harmaavesi",
+    color: "#bae6fd",
+  },
+
+  // ⚡ Energia
   sähkö: {
     label: "⚡ Sähkötyö",
     color: "#fef3c7",
@@ -70,12 +122,12 @@ export const eventTypes = {
 
   sahkomaksu: {
     label: "💡 Sähköenergia",
-    color: "#fef3c7",
+    color: "#fde68a",
   },
 
   sahkonsiirto: {
     label: "⚡ Sähkönsiirtomaksu",
-    color: "#fde68a",
+    color: "#fcd34d",
   },
 
   // 🌿 Piha ja ulkoalueet
@@ -91,7 +143,22 @@ export const eventTypes = {
 
   laituri: {
     label: "🛶 Laituri",
-    color: "#dbeafe",
+    color: "#7dd3fc",
+  },
+
+  sadevesikourut: {
+    label: "🪜 Sadevesikourujen puhdistus",
+    color: "#86efac",
+  },
+
+  vesikatto: {
+    label: "🏠 Vesikaton tarkastus",
+    color: "#fecaca",
+  },
+
+  ikkunat: {
+    label: "🪟 Ikkunoiden pesu",
+    color: "#bae6fd",
   },
 
   tienhoitomaksu: {
@@ -101,19 +168,24 @@ export const eventTypes = {
 
   // ♻️ Jätehuolto
   jatehuolto: {
-    label: "🗑 Sekajäteastian tyhjennys",
+    label: "🗑️ Sekajäteastian tyhjennys",
     color: "#e5e7eb",
   },
 
   biojatehuolto: {
     label: "🌱 Biojäteastian tyhjennys",
-    color: "#dcfce7",
+    color: "#bbf7d0",
   },
 
-  // 🧱 Rakennus ja kiinteistö
+  // 🏗️ Rakennus
   rakennus: {
     label: "🧱 Rakennustyö",
     color: "#e7e5e4",
+  },
+
+  sauna: {
+    label: "🧖 Sauna",
+    color: "#fed7aa",
   },
 
   kiinteistovero: {
@@ -121,6 +193,7 @@ export const eventTypes = {
     color: "#fee2e2",
   },
 
+  // 📄 Muut
   muu: {
     label: "📄 Muu",
     color: "#f3f4f6",

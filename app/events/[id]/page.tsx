@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { eventTypes, getEventTypeLabel } from "@/lib/typeLabels";
 import { reminderPresets } from "@/lib/reminderPresets";
 import { usagePlaces, getUsagePlaceLabel } from "@/lib/usagePlaces";
+import { getEventTypeOptionsForUsagePlace } from "@/lib/eventTypeGroups";
 
 export default function EventDetail() {
   const params = useParams();
@@ -240,7 +241,7 @@ export default function EventDetail() {
             onChange={(e) => update("maintenance_type", e.target.value)}
             style={inputStyle}
           >
-            {Object.entries(eventTypes).map(([key, value]) => (
+           {getEventTypeOptionsForUsagePlace(eventData.usage_place).map(([key, value]) => (
   <option key={key} value={key}>
     {value.label}
   </option>

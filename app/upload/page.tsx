@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { eventTypes } from "@/lib/typeLabels";
 import { reminderPresets } from "@/lib/reminderPresets";
 import { usagePlaces } from "@/lib/usagePlaces";
+import { getEventTypeOptionsForUsagePlace } from "@/lib/eventTypeGroups";
 
 export default function UploadPage() {
   const [aiData, setAiData] = useState<any>(null);
@@ -337,10 +338,11 @@ export default function UploadPage() {
                   style={inputStyle}
                 >
                   <option value="">Valitse</option>
-                  {Object.entries(eventTypes).map(([key, value]) => (
-  <option key={key} value={key}>
-    {value.label}
-  </option>
+                  {getEventTypeOptionsForUsagePlace(aiData.usage_place).map(
+  ([key, value]) => (
+    <option key={key} value={key}>
+      {value.label}
+    </option>
 ))}
                 </select>
               </div>
