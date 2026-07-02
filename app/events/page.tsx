@@ -150,8 +150,14 @@ export default function EventsPage() {
                   {e.reminder_date ? formatDate(e.reminder_date) : "-"}
                 </p>
 
-                <p style={{ margin: "6px 0" }}>
-                  <b>Teksti:</b> {e.reminder_text || "-"}
+                <p
+  style={{
+    fontStyle: "italic",
+    color: "#d1d5db",
+    marginTop: 4,
+  }}
+>
+                  {e.reminder_text || "-"}
                 </p>
               </div>
             )}
