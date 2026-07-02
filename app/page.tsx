@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { getEventTypeLabel } from "@/lib/typeLabels";
+import {
+  getEventTypeLabel,
+  getEventTypeColor,
+} from "@/lib/typeLabels";
 
 type Event = {
   id: string;
@@ -76,28 +79,32 @@ export default function HomePage() {
   }
 
   function costsByType(start: string, end: string) {
-    const totals: Record<string, number> = {};
+  const totals: Record<string, number> = {};
 
-    events.forEach((event) => {
-      if (!event.event_date) return;
-      if (event.event_date < start || event.event_date > end) return;
+  events.forEach((event) => {
+    // Lasketaan vain varsinaiset tapahtumat, ei muistutuksia
+    if (!event.event_date) return;
 
-      const type = event.maintenance_type || "muu";
-      const amount = parseAmount(event.total_amount);
+    if (event.event_date < start || event.event_date > end) return;
 
-      if (!amount) return;
+    const amount = parseAmount(event.total_amount);
 
-      totals[type] = (totals[type] || 0) + amount;
-    });
+    // Ohitetaan tyhjät ja nollakustannukset
+    if (amount <= 0) return;
 
-    return Object.entries(totals)
-      .map(([type, total]) => ({
-        type,
-        label: getEventTypeLabel(type),
-        total,
-      }))
-      .sort((a, b) => b.total - a.total);
-  }
+    const type = event.maintenance_type || "muu";
+
+    totals[type] = (totals[type] || 0) + amount;
+  });
+
+  return Object.entries(totals)
+    .map(([type, total]) => ({
+      type,
+      label: getEventTypeLabel(type),
+      total,
+    }))
+    .sort((a, b) => b.total - a.total);
+}
 
   function eventType(event: Event) {
     return getEventTypeLabel(event.maintenance_type);
@@ -272,7 +279,8 @@ function CostBars({ items }: { items: CostItem[] }) {
                   width,
                   height: "100%",
                   borderRadius: 999,
-                  background: "#3b82f6",
+                  background: getEventTypeColor(item.type),
+                  border: "1px solid rgba(255,255,255,0.15)",
                 }}
               />
             </div>
