@@ -370,7 +370,6 @@ export default function EventDetail() {
           style={{
             ...inputStyle,
             width: "100%",
-            minHeight: 120,
           }}
         />
       ) : (

@@ -324,7 +324,7 @@ export default function NewEventPage() {
             <textarea
               value={form.notes_short}
               onChange={(e) => update("notes_short", e.target.value)}
-              style={{ ...inputStyle, minHeight: 90 }}
+              style={{ ...inputStyle}}
             />
           </div>
 
@@ -333,7 +333,7 @@ export default function NewEventPage() {
             <textarea
               value={form.additional_notes}
               onChange={(e) => update("additional_notes", e.target.value)}
-              style={{ ...inputStyle, minHeight: 120 }}
+              style={{ ...inputStyle}}
             />
           </div>
         </div>
