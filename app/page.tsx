@@ -145,6 +145,11 @@ export default function HomePage() {
 
   const pastCosts = costsByType(yearAgoString, todayString);
   const futureCosts = costsByType(tomorrowString, yearAheadString);
+  const sharedCostMax = Math.max(
+  ...pastCosts.map((item) => item.total),
+  ...futureCosts.map((item) => item.total),
+  0
+);
 
   return (
     <main>
