@@ -63,7 +63,6 @@ export default function HomePage() {
     });
   }
 
-
   function costsByType(start: string, end: string) {
     const totals: Record<string, number> = {};
 
@@ -134,11 +133,12 @@ export default function HomePage() {
 
   const pastCosts = costsByType(yearAgoString, todayString);
   const futureCosts = costsByType(tomorrowString, yearAheadString);
+
   const sharedCostMax = Math.max(
-  ...pastCosts.map((item) => item.total),
-  ...futureCosts.map((item) => item.total),
-  0
-);
+    ...pastCosts.map((item) => item.total),
+    ...futureCosts.map((item) => item.total),
+    0
+  );
 
   return (
     <main>
@@ -173,57 +173,69 @@ export default function HomePage() {
       <section style={summaryStyle}>
         <h2>Rahankäyttö luokittain</h2>
 
-        <h3>Viimeiset 12 kuukautta</h3>
-        <CostBars items={pastCosts} max={sharedCostMax} />
+        <div style={summaryBlockStyle}>
+          <h3 style={summaryHeadingStyle}>Viimeiset 12 kuukautta</h3>
+          <CostBars items={pastCosts} max={sharedCostMax} />
+        </div>
 
-        <h3>Seuraavat 12 kuukautta</h3>
-        <CostBars items={futureCosts} max={sharedCostMax} />
+        <div style={summaryBlockStyle}>
+          <h3 style={summaryHeadingStyle}>Seuraavat 12 kuukautta</h3>
+          <CostBars items={futureCosts} max={sharedCostMax} />
+        </div>
       </section>
 
       <section style={summaryStyle}>
         <h2>Yhteenveto</h2>
 
-        <h3>Viimeisen 7 päivän tapahtumat</h3>
-        {recentEvents.length === 0 ? (
-          <p>Ei tapahtumia viimeisen viikon ajalta.</p>
-        ) : (
-          recentEvents.map((event) => (
-            <p key={`recent-${event.id}`}>
-              📌 <b>{formatDate(event.event_date)}</b> –{" "}
-              <b>{eventType(event)}</b> –{" "}
-              {event.description || event.company || "Ei kuvausta"}
+        <div style={summaryBlockStyle}>
+          <h3 style={summaryHeadingStyle}>Viimeisen 7 päivän tapahtumat</h3>
+
+          {recentEvents.length === 0 ? (
+            <p>Ei tapahtumia viimeisen viikon ajalta.</p>
+          ) : (
+            recentEvents.map((event) => (
+              <p key={`recent-${event.id}`}>
+                📌 <b>{formatDate(event.event_date)}</b> –{" "}
+                <b>{eventType(event)}</b> –{" "}
+                {event.description || event.company || "Ei kuvausta"}
+              </p>
+            ))
+          )}
+        </div>
+
+        <div style={summaryBlockStyle}>
+          <h3 style={summaryHeadingStyle}>Tulevat 3 viikkoa</h3>
+
+          {upcomingItems.length === 0 ? (
+            <p>
+              Ei tulevia tapahtumia tai muistutuksia seuraavan 3 viikon aikana.
             </p>
-          ))
-        )}
+          ) : (
+            upcomingItems.map((event) => (
+              <div key={`upcoming-${event.id}`} style={{ marginBottom: 8 }}>
+                {event.event_date &&
+                  event.event_date > todayString &&
+                  event.event_date <= threeWeeksAheadString && (
+                    <p>
+                      📌 <b>{formatDate(event.event_date)}</b> –{" "}
+                      <b>{eventType(event)}</b> –{" "}
+                      {event.description || event.company || "Ei kuvausta"}
+                    </p>
+                  )}
 
-        <h3>Tulevat 3 viikkoa</h3>
-        {upcomingItems.length === 0 ? (
-          <p>Ei tulevia tapahtumia tai muistutuksia seuraavan 3 viikon aikana.</p>
-        ) : (
-          upcomingItems.map((event) => (
-            <div key={`upcoming-${event.id}`} style={{ marginBottom: 8 }}>
-              {event.event_date &&
-                event.event_date > todayString &&
-                event.event_date <= threeWeeksAheadString && (
-                  <p>
-                    📌 <b>{formatDate(event.event_date)}</b> –{" "}
-                    <b>{eventType(event)}</b> –{" "}
-                    {event.description || event.company || "Ei kuvausta"}
-                  </p>
-                )}
-
-              {event.reminder_date &&
-                event.reminder_date >= todayString &&
-                event.reminder_date <= threeWeeksAheadString && (
-                  <p>
-                    🔔 <b>{formatDate(event.reminder_date)}</b> –{" "}
-                    <b>{eventType(event)}</b> –{" "}
-                    {event.reminder_text || event.description || "Muistutus"}
-                  </p>
-                )}
-            </div>
-          ))
-        )}
+                {event.reminder_date &&
+                  event.reminder_date >= todayString &&
+                  event.reminder_date <= threeWeeksAheadString && (
+                    <p>
+                      🔔 <b>{formatDate(event.reminder_date)}</b> –{" "}
+                      <b>{eventType(event)}</b> –{" "}
+                      {event.reminder_text || event.description || "Muistutus"}
+                    </p>
+                  )}
+              </div>
+            ))
+          )}
+        </div>
       </section>
     </main>
   );
@@ -301,4 +313,18 @@ const summaryStyle = {
   borderRadius: 14,
   background: "#181818",
   marginBottom: 24,
+};
+
+const summaryBlockStyle = {
+  marginTop: 18,
+  padding: 16,
+  borderRadius: 12,
+  background: "#111827",
+  border: "1px solid #374151",
+};
+
+const summaryHeadingStyle = {
+  margin: "0 0 12px",
+  fontSize: 20,
+  color: "#ffffff",
 };
