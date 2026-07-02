@@ -16,15 +16,7 @@ export default function RootLayout({
   return (
     <html lang="fi">
       <body style={{ margin: 0, background: "#0f0f0f", color: "#f5f5f5" }}>
-        <div
-          style={{
-            width: "max-content",
-            minWidth: "100%",
-            minHeight: "100vh",
-            background: "#0f0f0f",
-          }}
-        >
-          <header
+        <header
           style={{
             display: "flex",
             alignItems: "center",
@@ -38,31 +30,23 @@ export default function RootLayout({
             overflowX: "auto",
           }}
         >
-            <Link href="/" style={navLinkStyle}>
-              🏠 Koti
-            </Link>
-            <Link href="/events/new" style={navLinkStyle}>
-              ➕ Lisää tapahtuma
-            </Link>
-            <Link href="/upload" style={navLinkStyle}>
-              📤 Upload
-            </Link>
-            <Link href="/events" style={navLinkStyle}>
-              📋 Tapahtumat
-            </Link>
-            <Link href="/calendar" style={navLinkStyle}>
-              📅 Kalenteri
-            </Link>
-          </header>
+          <Link href="/" style={navLinkStyle}>🏠 Koti</Link>
+          <Link href="/events/new" style={navLinkStyle}>➕ Lisää tapahtuma</Link>
+          <Link href="/upload" style={navLinkStyle}>📤 Upload</Link>
+          <Link href="/events" style={navLinkStyle}>📋 Tapahtumat</Link>
+          <Link href="/calendar" style={navLinkStyle}>📅 Kalenteri</Link>
+        </header>
 
-          <main
-            style={{
-              padding: 24,
-            }}
-          >
-            {children}
-          </main>
-        </div>
+        <main
+          style={{
+            padding: 24,
+            width: "100%",
+            maxWidth: 1200,
+            margin: "0 auto",
+          }}
+        >
+          {children}
+        </main>
       </body>
     </html>
   );

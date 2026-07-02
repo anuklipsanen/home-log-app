@@ -148,3 +148,25 @@ input[type="radio"] {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
+
+@media (max-width: 600px) {
+  body {
+    font-size: 15px;
+  }
+
+  main {
+    padding: 14px !important;
+  }
+
+  .home-grid {
+    gap: 12px;
+  }
+
+  .home-grid h2 {
+    font-size: 16px;
+  }
+
+  .home-grid p {
+    font-size: 14px;
+  }
+}
