@@ -153,7 +153,7 @@ export default function EventsPage() {
                 <p
   style={{
     fontStyle: "italic",
-    color: "#d1d5db",
+    color: "#374151",
     marginTop: 4,
   }}
 >

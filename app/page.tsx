@@ -51,8 +51,8 @@ export default function HomePage() {
   }
 
   function eventType(event: Event) {
-  return getEventTypeLabel(event.maintenance_type);
-}
+    return getEventTypeLabel(event.maintenance_type);
+  }
 
   const today = new Date();
 
@@ -91,14 +91,7 @@ export default function HomePage() {
         Kodin huoltojen, dokumenttien ja muistutusten hallinta yhdessä paikassa.
       </p>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-          gap: 16,
-          marginBottom: 32,
-        }}
-      >
+      <div className="home-grid">
         <Link href="/events/new" style={cardStyle}>
           <h2>➕ Lisää tapahtuma</h2>
           <p>Luo uusi tapahtuma käsin ilman tiedoston lataamista.</p>

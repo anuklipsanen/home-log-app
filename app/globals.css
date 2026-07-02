@@ -133,3 +133,18 @@ input[type="radio"] {
   box-shadow: none;
   accent-color: #3b82f6;
 }
+
+/* Etusivun korttiruudukko */
+
+.home-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 32px;
+}
+
+@media (min-width: 900px) {
+  .home-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
