@@ -252,35 +252,46 @@ function CostBars({
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {items.map((item) => {
         const width =
           max > 0 ? `${Math.max((item.total / max) * 100, 4)}%` : "0%";
 
         return (
           <div key={item.type}>
-            {/* nykyinen sisältö */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 12,
+                marginBottom: 4,
+              }}
+            >
+              <span>{item.label}</span>
+              <strong>{item.total.toFixed(2)} €</strong>
+            </div>
+
+            <div
+              style={{
+                height: 12,
+                borderRadius: 999,
+                background: "#2a2a2a",
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  width,
+                  height: "100%",
+                  borderRadius: 999,
+                  background: getEventTypeColor(item.type),
+                  border: "1px solid rgba(255,255,255,0.15)",
+                }}
+              />
+            </div>
           </div>
         );
       })}
     </div>
   );
 }
-
-const cardStyle = {
-  display: "block",
-  padding: 24,
-  border: "1px solid #333",
-  borderRadius: 14,
-  textDecoration: "none",
-  color: "inherit",
-  background: "#181818",
-};
-
-const summaryStyle = {
-  padding: 24,
-  border: "1px solid #333",
-  borderRadius: 14,
-  background: "#181818",
-  marginBottom: 24,
-};
