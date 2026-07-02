@@ -35,6 +35,7 @@ export default function RootLayout({
           <Link href="/upload" style={navLinkStyle}>📤 Upload</Link>
           <Link href="/events" style={navLinkStyle}>📋 Tapahtumat</Link>
           <Link href="/calendar" style={navLinkStyle}>📅 Kalenteri</Link>
+          <Link href="/reports" style={navLinkStyle}>📊 Raportit</Link>
           
         </header>
 
