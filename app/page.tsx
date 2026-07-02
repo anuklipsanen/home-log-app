@@ -5,6 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { getEventTypeLabel, getEventTypeColor } from "@/lib/typeLabels";
 import { parseAmount, formatEuro } from "@/lib/costUtils";
+import { usagePlaces } from "@/lib/usagePlaces";
 
 type Event = {
   id: string;
@@ -15,6 +16,7 @@ type Event = {
   company?: string | null;
   maintenance_type?: string | null;
   total_amount?: string | number | null;
+  usage_place?: string | null;
 };
 
 type CostItem = {
@@ -25,13 +27,14 @@ type CostItem = {
 
 export default function HomePage() {
   const [events, setEvents] = useState<Event[]>([]);
+  const [selectedPlaces, setSelectedPlaces] = useState<string[]>([]);
 
   useEffect(() => {
     async function fetchEvents() {
       const { data, error } = await supabase
         .from("events")
         .select(
-          "id, description, event_date, reminder_date, reminder_text, company, maintenance_type, total_amount"
+          "id, description, event_date, reminder_date, reminder_text, company, maintenance_type, total_amount, usage_place"
         )
         .order("event_date", { ascending: false });
 
@@ -45,6 +48,14 @@ export default function HomePage() {
 
     fetchEvents();
   }, []);
+
+  function togglePlace(place: string) {
+    setSelectedPlaces((prev) =>
+      prev.includes(place)
+        ? prev.filter((p) => p !== place)
+        : [...prev, place]
+    );
+  }
 
   function toDateString(date: Date) {
     const y = date.getFullYear();
@@ -63,10 +74,14 @@ export default function HomePage() {
     });
   }
 
-  function costsByType(start: string, end: string) {
+  function eventType(event: Event) {
+    return getEventTypeLabel(event.maintenance_type);
+  }
+
+  function costsByType(sourceEvents: Event[], start: string, end: string) {
     const totals: Record<string, number> = {};
 
-    events.forEach((event) => {
+    sourceEvents.forEach((event) => {
       if (!event.event_date) return;
       if (event.event_date < start || event.event_date > end) return;
 
@@ -86,9 +101,12 @@ export default function HomePage() {
       .sort((a, b) => b.total - a.total);
   }
 
-  function eventType(event: Event) {
-    return getEventTypeLabel(event.maintenance_type);
-  }
+  const visibleEvents =
+    selectedPlaces.length === 0
+      ? events
+      : events.filter((event) =>
+          selectedPlaces.includes(event.usage_place || "muu")
+        );
 
   const today = new Date();
 
@@ -114,14 +132,14 @@ export default function HomePage() {
   const yearAgoString = toDateString(yearAgo);
   const yearAheadString = toDateString(yearAhead);
 
-  const recentEvents = events.filter(
+  const recentEvents = visibleEvents.filter(
     (event) =>
       event.event_date &&
       event.event_date >= weekAgoString &&
       event.event_date <= todayString
   );
 
-  const upcomingItems = events.filter(
+  const upcomingItems = visibleEvents.filter(
     (event) =>
       (event.event_date &&
         event.event_date > todayString &&
@@ -131,8 +149,12 @@ export default function HomePage() {
         event.reminder_date <= threeWeeksAheadString)
   );
 
-  const pastCosts = costsByType(yearAgoString, todayString);
-  const futureCosts = costsByType(tomorrowString, yearAheadString);
+  const pastCosts = costsByType(visibleEvents, yearAgoString, todayString);
+  const futureCosts = costsByType(
+    visibleEvents,
+    tomorrowString,
+    yearAheadString
+  );
 
   const sharedCostMax = Math.max(
     ...pastCosts.map((item) => item.total),
@@ -169,6 +191,51 @@ export default function HomePage() {
           <p>Näe tapahtumat ja muistutukset kalenterinäkymässä.</p>
         </Link>
       </div>
+
+      <section style={summaryStyle}>
+        <h2>Käyttöpaikat</h2>
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+          <button
+            type="button"
+            onClick={() => setSelectedPlaces([])}
+            style={{
+              padding: "8px 14px",
+              borderRadius: 999,
+              cursor: "pointer",
+              border: "1px solid #555",
+              background: selectedPlaces.length === 0 ? "#2563eb" : "#111",
+              color: "#fff",
+              fontWeight: 700,
+            }}
+          >
+            Kaikki
+          </button>
+
+          {Object.entries(usagePlaces).map(([key, value]) => {
+            const selected = selectedPlaces.includes(key);
+
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => togglePlace(key)}
+                style={{
+                  padding: "8px 14px",
+                  borderRadius: 999,
+                  cursor: "pointer",
+                  border: `2px solid ${value.color}`,
+                  background: selected ? value.color : "transparent",
+                  color: selected ? "#111" : "#fff",
+                  fontWeight: 600,
+                }}
+              >
+                {value.label}
+              </button>
+            );
+          })}
+        </div>
+      </section>
 
       <section style={summaryStyle}>
         <h2>Rahankäyttö luokittain</h2>
@@ -241,13 +308,7 @@ export default function HomePage() {
   );
 }
 
-function CostBars({
-  items,
-  max,
-}: {
-  items: CostItem[];
-  max: number;
-}) {
+function CostBars({ items, max }: { items: CostItem[]; max: number }) {
   if (items.length === 0) {
     return <p>Ei kustannustietoja.</p>;
   }
