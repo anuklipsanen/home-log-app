@@ -10,6 +10,7 @@ import {
   getUsagePlaceColor,
 } from "@/lib/usagePlaces";
 import { useRouter } from "next/navigation";
+import { getEventTypeOptionsForUsagePlace } from "@/lib/eventTypeGroups";
 
 export default function EventsPage() {
   const [events, setEvents] = useState<any[]>([]);
@@ -102,10 +103,10 @@ export default function EventsPage() {
             <option value="all">Kaikki tyypit</option>
 
             {Object.entries(eventTypes).map(([key, value]) => (
-              <option key={key} value={key}>
-                {value.label}
-              </option>
-            ))}
+  <option key={key} value={key}>
+    {value.label}
+  </option>
+))}
           </select>
         </div>
       </div>

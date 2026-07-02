@@ -24,6 +24,11 @@ export const usagePlaces = {
     color: "#4dabf7",
   },
 
+  metsa: {
+  label: "🌲 Metsä",
+  color: "#166534",
+},
+
   muu: {
     label: "📍 Muu",
     color: "#adb5bd",

@@ -193,6 +193,13 @@ export const eventTypes = {
     color: "#fee2e2",
   },
 
+  // 🌲 Metsä
+
+metsanhoito: {
+  label: "🌲 Metsänhoito",
+  color: "#4ade80",
+},
+
   // 📄 Muut
   muu: {
     label: "📄 Muu",
