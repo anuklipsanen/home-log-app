@@ -295,3 +295,21 @@ function CostBars({
     </div>
   );
 }
+
+const cardStyle = {
+  display: "block",
+  padding: 24,
+  border: "1px solid #333",
+  borderRadius: 14,
+  textDecoration: "none",
+  color: "inherit",
+  background: "#181818",
+};
+
+const summaryStyle = {
+  padding: 24,
+  border: "1px solid #333",
+  borderRadius: 14,
+  background: "#181818",
+  marginBottom: 24,
+};
