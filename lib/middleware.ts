@@ -50,12 +50,6 @@ export async function middleware(req: NextRequest) {
 // 👇 TÄRKEÄ: mihin middleware vaikuttaa
 export const config = {
   matcher: [
-    /*
-      Suojaa kaikki paitsi:
-      - _next (Next.js assets)
-      - favicon
-      - public tiedostot
-    */
-    "/((?!_next|favicon.ico|.*\\..*).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)",
   ],
 };
