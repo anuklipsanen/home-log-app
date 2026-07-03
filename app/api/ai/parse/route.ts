@@ -185,15 +185,16 @@ Use maintenance_type = "laajakaistaliittymä" when the document is about
 - Telia
 - Elisa
 - DNA
+- Moi Mobiili
 - separate different numbers and usagetypes eg. phone, mobile, internet, data, etc. if present in the document.
 
 Electricity invoices:
-- Use maintenance_type = "sähköenergia" when the document is about
+- Use maintenance_type = "sahkomaksu" when the document is about
 - electricity
 - sähkö
 - sähkölasku
 - collect data about electricity usage, consumption, and costs etc.marginals and spot prices, if present in the document.
-- Use maintenance_type = "sähkönsiirto" when the document is about
+- Use maintenance_type = "sahkonsiirto" when the document is about
 - sähkönsiirto
 - sähkönsiirtomaksu
 
@@ -298,6 +299,67 @@ function removeStructuredFactsFromHighlights(parsed: any) {
     parsed = extractMissingInvoiceFields(parsed, cleanText);
 parsed = removeStructuredFactsFromHighlights(parsed);
 
+const textLower = cleanText.toLowerCase();
+
+const validMaintenanceTypes = new Set([
+  "nuohous",
+  "likakaivo",
+  "jatehuolto",
+  "biojatehuolto",
+  "suodatin",
+  "ilp_suodatin",
+  "ilmalämpöpumppu",
+  "sähkö",
+  "sahkomaksu",
+  "sahkonsiirto",
+  "laajakaistaliittymä",
+  "suoratoistopalvelut",
+  "vesi",
+  "juomavesi",
+  "maalämpö",
+  "rakennus",
+  "remontointi",
+  "muu",
+]);
+
+// Pakotetaan tunnetut laskutyypit ennen yleisempää fallbackia
+if (
+  textLower.includes("laajakaista") ||
+  textLower.includes("internet") ||
+  textLower.includes("valokuitu") ||
+  textLower.includes("5g") ||
+  textLower.includes("4g") ||
+  textLower.includes("mobiililaajakaista") ||
+  textLower.includes("puhelinliittymä") ||
+  textLower.includes("telia") ||
+  textLower.includes("elisa") ||
+  textLower.includes("dna") ||
+  textLower.includes("moi") ||
+  textLower.includes("mobiili") ||
+  textLower.includes("netti")
+) {
+  parsed.maintenance_type = "laajakaistaliittymä";
+} else if (
+  textLower.includes("sähkönsiirto") ||
+  textLower.includes("sähkönsiirtomaksu")
+) {
+  parsed.maintenance_type = "sahkonsiirto";
+} else if (
+  textLower.includes("sähkölasku") ||
+  textLower.includes("sähköenergia") ||
+  textLower.includes("pörssisähkö") ||
+  textLower.includes("spot") ||
+  textLower.includes("kwh") ||
+  textLower.includes("kulutus")
+) {
+  parsed.maintenance_type = "sahkomaksu";
+}
+
+// Jos AI palautti tuntemattoman arvon, pakotetaan fallbackiin
+if (!validMaintenanceTypes.has(parsed.maintenance_type)) {
+  parsed.maintenance_type = "";
+}
+
     // ✅ kotitalousvähennys
     if (parsed.work_amount && !parsed.is_household_deduction) {
       parsed.is_household_deduction = true;
@@ -341,8 +403,12 @@ if (!parsed.maintenance_type || parsed.maintenance_type === "muu") {
     }
   } else if (textLower.includes("ilmalämpöpumppu")) {
     parsed.maintenance_type = "ilmalämpöpumppu";
-  } else if (textLower.includes("sähkö")) {
-    parsed.maintenance_type = "sähköenergia";
+  } else if (
+  textLower.includes("sähkötyö") ||
+  textLower.includes("sähköasennus") ||
+  textLower.includes("sähköurakointi")
+) {
+  parsed.maintenance_type = "sähkö";
   } else if (textLower.includes("vesi")) {
     parsed.maintenance_type = "vesi";
   } else if (textLower.includes("maalämpö")) {
