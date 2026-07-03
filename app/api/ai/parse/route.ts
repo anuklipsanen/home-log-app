@@ -171,7 +171,11 @@ Examples:
 Example:
 "Emma takkaleivinuuni muurattuna" → description
 
-Internet / phone invoices:
+Internet / phone invoices: If the supplier is Moi Mobiili Oy, Telia, Elisa or DNA, classify as:
+maintenance_type = "laajakaistaliittymä"
+
+If the invoice contains Kotinetti, 4G, 5G, simmi, liittymä or puhelin, classify as:
+maintenance_type = "laajakaistaliittymä"
 
 Use maintenance_type = "laajakaistaliittymä" when the document is about
 
@@ -300,6 +304,69 @@ function removeStructuredFactsFromHighlights(parsed: any) {
 parsed = removeStructuredFactsFromHighlights(parsed);
 
 const textLower = cleanText.toLowerCase();
+
+function forceKnownMaintenanceType(parsed: any) {
+  if (
+    textLower.includes("netflix") ||
+    textLower.includes("disney+") ||
+    textLower.includes("disney plus") ||
+    textLower.includes("hbo") ||
+    textLower.includes("viaplay") ||
+    textLower.includes("prime video") ||
+    textLower.includes("apple tv") ||
+    textLower.includes("youtube premium") ||
+    textLower.includes("spotify")
+  ) {
+    parsed.maintenance_type = "suoratoistopalvelut";
+    return parsed;
+  }
+
+  if (
+    textLower.includes("moi mobiili") ||
+    textLower.includes("kotinetti") ||
+    textLower.includes("liittymä") ||
+    textLower.includes("simmi") ||
+    textLower.includes("puhelin") ||
+    textLower.includes("mobiili") ||
+    textLower.includes("laajakaista") ||
+    textLower.includes("internet") ||
+    textLower.includes("netti") ||
+    textLower.includes("valokuitu") ||
+    textLower.includes("4g") ||
+    textLower.includes("5g") ||
+    textLower.includes("telia") ||
+    textLower.includes("elisa") ||
+    textLower.includes("dna") ||
+    textLower.includes("moi")
+  ) {
+    parsed.maintenance_type = "laajakaistaliittymä";
+    return parsed;
+  }
+
+  if (
+    textLower.includes("sähkönsiirto") ||
+    textLower.includes("sähkönsiirtomaksu")
+  ) {
+    parsed.maintenance_type = "sahkonsiirto";
+    return parsed;
+  }
+
+  if (
+    textLower.includes("sähkölasku") ||
+    textLower.includes("sähköenergia") ||
+    textLower.includes("pörssisähkö") ||
+    textLower.includes("spot") ||
+    textLower.includes("kwh") ||
+    textLower.includes("kulutus")
+  ) {
+    parsed.maintenance_type = "sahkomaksu";
+    return parsed;
+  }
+
+  return parsed;
+}
+
+parsed = forceKnownMaintenanceType(parsed);
 
 const validMaintenanceTypes = new Set([
   "nuohous",
@@ -434,23 +501,7 @@ if (!parsed.maintenance_type || parsed.maintenance_type === "muu") {
   textLower.includes("spotify")
 ) {
   parsed.maintenance_type = "suoratoistopalvelut";
-   } else if (
-  textLower.includes("laajakaista") ||
-  textLower.includes("internet") ||
-  textLower.includes("valokuitu") ||
-  textLower.includes("5g") ||
-  textLower.includes("4g") ||
-  textLower.includes("mobiililaajakaista") ||
-  textLower.includes("puhelinliittymä") ||
-  textLower.includes("telia") ||
-  textLower.includes("elisa") ||
-  textLower.includes("dna") ||
-  textLower.includes("moi") ||
-  textLower.includes("mobiili") ||
-  textLower.includes("netti")
-) {
-  parsed.maintenance_type = "laajakaistaliittymä";
-}
+   } 
   } else {
     parsed.maintenance_type = "muu";
   } 
