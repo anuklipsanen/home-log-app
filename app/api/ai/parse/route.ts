@@ -95,6 +95,17 @@ Return ONLY valid JSON.
 5. total_amount = Maksettava yhteensä
 6. vat = Alv yhteensä
 
+- IMPORTANT:
+  Do NOT put invoice fields into highlights if they belong to structured fields.
+
+  If text contains:
+  - "Eräpäivä 16.07.2026" → due_date = "2026-07-16"
+  - "Laskunumero 7263112343" → invoice_number = "7263112343"
+  - "Laskun loppusumma yhteensä 28,20 EUR" → total_amount = "28.20"
+  - "Alv yhteensä 5,23" → vat = "5.23"
+
+  These values must be placed in their own JSON fields first.
+
 - These MUST be extracted even if the document is messy
 - These are higher priority than highlights
 
@@ -170,6 +181,82 @@ Example:
 
     const content = response.choices[0].message.content || "{}";
 
+    function toIsoDate(value: string) {
+  const match = value.match(/(\d{1,2})[./](\d{1,2})[./](\d{2,4})/);
+  if (!match) return "";
+
+  const day = match[1].padStart(2, "0");
+  const month = match[2].padStart(2, "0");
+  const year = match[3].length === 2 ? `20${match[3]}` : match[3];
+
+  return `${year}-${month}-${day}`;
+}
+
+function normalizeAmount(value: string) {
+  return value.replace(/\s/g, "").replace(",", ".");
+}
+
+function extractMissingInvoiceFields(parsed: any, sourceText: string) {
+  const text = sourceText.replace(/\s+/g, " ");
+
+  if (!parsed.due_date) {
+    const match = text.match(/eräpäivä\s*:?\s*(\d{1,2}[./]\d{1,2}[./]\d{2,4})/i);
+    if (match) parsed.due_date = toIsoDate(match[1]);
+  }
+
+  if (!parsed.date) {
+    const match = text.match(
+      /(laskun\s+päivä|päivämäärä|laskupäivä)\s*:?\s*(\d{1,2}[./]\d{1,2}[./]\d{2,4})/i
+    );
+    if (match) parsed.date = toIsoDate(match[2]);
+  }
+
+  if (!parsed.invoice_number) {
+    const match = text.match(/laskunumero\s*:?\s*([A-ZÅÄÖ0-9-]+)/i);
+    if (match) parsed.invoice_number = match[1];
+  }
+
+  if (!parsed.total_amount) {
+    const match = text.match(
+      /(loppusumma|maksettava\s+yhteensä|yhteensä|summa)\s*:?\s*(\d[\d\s]*[,.]\d{2})\s*(eur|€)?/i
+    );
+    if (match) parsed.total_amount = normalizeAmount(match[2]);
+  }
+
+  if (!parsed.vat) {
+    const match = text.match(
+      /(alv|arvonlisävero)\s*(yhteensä)?\s*:?\s*(\d[\d\s]*[,.]\d{2})/i
+    );
+    if (match) parsed.vat = normalizeAmount(match[3]);
+  }
+
+  return parsed;
+}
+
+function removeStructuredFactsFromHighlights(parsed: any) {
+  if (!Array.isArray(parsed.highlights)) parsed.highlights = [];
+
+  parsed.highlights = parsed.highlights.filter((item: string) => {
+    const text = String(item).toLowerCase();
+
+    if (parsed.due_date && text.includes("eräpäivä")) return false;
+    if (parsed.date && (text.includes("päivämäärä") || text.includes("laskun päivä"))) return false;
+    if (parsed.invoice_number && text.includes("laskunumero")) return false;
+    if (
+      parsed.total_amount &&
+      (text.includes("loppusumma") ||
+        text.includes("maksettava") ||
+        text.includes("yhteensä"))
+    ) {
+      return false;
+    }
+
+    return true;
+  });
+
+  return parsed;
+}
+
     let parsed;
     try {
       parsed = JSON.parse(content);
@@ -179,6 +266,8 @@ Example:
 
     // ✅ fixes
     if (!parsed.highlights) parsed.highlights = [];
+    parsed = extractMissingInvoiceFields(parsed, cleanText);
+parsed = removeStructuredFactsFromHighlights(parsed);
 
     // ✅ kotitalousvähennys
     if (parsed.work_amount && !parsed.is_household_deduction) {
