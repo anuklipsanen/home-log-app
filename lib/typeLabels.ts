@@ -132,12 +132,17 @@ export const eventTypes = {
     color: "#fef3c7",
   },
 
-  // ⚡ Matkapuhelin ja internet
+  // ⚡ Matkapuhelin ja internet, suoratoisto
   
   laajakaistaliittymä: {
     label: "🌐 Puhelin ja laajakaistaliittymä",
     color: "#c7d2fe",
   },
+
+  suoratoistopalvelut: {
+  label: "📺 Suoratoistopalvelut",
+  color: "#f9a8d4",
+},
 
   // 🌿 Piha ja ulkoalueet
   piha: {
