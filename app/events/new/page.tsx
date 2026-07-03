@@ -97,6 +97,15 @@ export default function NewEventPage() {
     update("reminder_date", `${y}-${m}-${d}`);
   }
 
+  function copyInvoiceDateToEventDate() {
+  if (!form.date) {
+    alert("Laskun päivää ei ole asetettu.");
+    return;
+  }
+
+  update("event_date", form.date);
+}
+
   async function handleSave() {
     const { error } = await supabase.from("events").insert([
       {
@@ -166,14 +175,34 @@ export default function NewEventPage() {
           </div>
 
           <div style={fieldStyle}>
-            <label>Tapahtumapäivä</label>
-            <input
-              type="date"
-              value={form.event_date}
-              onChange={(e) => update("event_date", e.target.value)}
-              style={inputStyle}
-            />
-          </div>
+  <label>Tapahtumapäivä</label>
+
+  <div
+    style={{
+      display: "flex",
+      gap: 8,
+      alignItems: "center",
+    }}
+  >
+    <input
+      type="date"
+      value={form.event_date}
+      onChange={(e) => update("event_date", e.target.value)}
+      style={{
+        ...inputStyle,
+        flex: 1,
+      }}
+    />
+
+    <button
+      type="button"
+      onClick={copyInvoiceDateToEventDate}
+      title="Kopioi laskun päivä"
+    >
+      📄→📅
+    </button>
+  </div>
+</div>
 
           <div style={fieldStyle}>
             <label>Huollon tyyppi</label>

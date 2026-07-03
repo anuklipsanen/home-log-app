@@ -378,7 +378,10 @@ if (!parsed.maintenance_type || parsed.maintenance_type === "muu") {
   textLower.includes("puhelinliittymä") ||
   textLower.includes("telia") ||
   textLower.includes("elisa") ||
-  textLower.includes("dna")
+  textLower.includes("dna") ||
+  textLower.includes("moi") ||
+  textLower.includes("mobiili") ||
+  textLower.includes("netti")
 ) {
   parsed.maintenance_type = "laajakaistaliittymä";
 }
