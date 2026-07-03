@@ -75,6 +75,15 @@ export default function EventDetail() {
     }));
   }
 
+  function copyInvoiceDateToEventDate() {
+  if (!eventData.date) {
+    alert("Laskun päivää ei ole asetettu.");
+    return;
+  }
+
+  update("event_date", eventData.date);
+}
+
   function addMonthsToEventDate(months: number) {
     if (!eventData?.event_date && !eventData?.date) {
       alert("Lisää ensin tapahtumapäivä.");
@@ -254,16 +263,32 @@ export default function EventDetail() {
 
       <p>
         <b>Tapahtumapäivä:</b>{" "}
-        {editMode ? (
-          <input
-            type="date"
-            value={eventData.event_date || ""}
-            onChange={(e) => update("event_date", e.target.value)}
-            style={inputStyle}
-          />
-        ) : (
-          eventData.event_date || "-"
-        )}
+        <div
+  style={{
+    display: "flex",
+    gap: 8,
+    alignItems: "center",
+  }}
+>
+  <input
+    type="date"
+    value={eventData.event_date || ""}
+    onChange={(e) => update("event_date", e.target.value)}
+    style={{
+      ...inputStyle,
+      flex: 1,
+    }}
+  />
+
+  <button
+    type="button"
+    onClick={copyInvoiceDateToEventDate}
+    disabled={!eventData.date}
+    title="Kopioi laskun päivä tapahtumapäiväksi"
+  >
+    📄→📅
+  </button>
+</div>
       </p>
 
       <h3>🔔 Muistutus</h3>

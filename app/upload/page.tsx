@@ -73,6 +73,7 @@ export default function UploadPage() {
       return;
     }
 
+
     const baseDate = new Date(aiData.event_date || aiData.date);
     baseDate.setMonth(baseDate.getMonth() + months);
 
@@ -82,6 +83,15 @@ export default function UploadPage() {
 
     updateField("reminder_date", `${y}-${m}-${d}`);
   }
+
+function copyInvoiceDateToEventDate() {
+  if (!aiData?.date) {
+    alert("Laskun päivää ei ole asetettu.");
+    return;
+  }
+
+  updateField("event_date", aiData.date);
+}
 
   async function handleUpload(e: any) {
     const file = e.target.files[0];
@@ -317,15 +327,36 @@ export default function UploadPage() {
               </div>
 
               <div style={fieldStyle}>
-                <label>Tapahtumapäivä</label>
-                <input
-                  type="date"
-                  value={aiData.event_date || ""}
-                  onChange={(e) => updateField("event_date", e.target.value)}
-                  disabled={!editMode}
-                  style={inputStyle}
-                />
-              </div>
+  <label>Tapahtumapäivä</label>
+
+  <div
+    style={{
+      display: "flex",
+      gap: 8,
+      alignItems: "center",
+    }}
+  >
+    <input
+      type="date"
+      value={aiData.event_date || ""}
+      onChange={(e) => updateField("event_date", e.target.value)}
+      disabled={!editMode}
+      style={{
+        ...inputStyle,
+        flex: 1,
+      }}
+    />
+
+    <button
+      type="button"
+      onClick={copyInvoiceDateToEventDate}
+      disabled={!editMode || !aiData?.date}
+      title="Kopioi laskun päivä tapahtumapäiväksi"
+    >
+      📄→📅
+    </button>
+  </div>
+</div>
 
               <div style={fieldStyle}>
                 <label>Huollon tyyppi</label>
