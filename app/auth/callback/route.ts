@@ -10,25 +10,23 @@ export async function GET(request: Request) {
   if (code) {
     const supabase = await createSupabaseServerClient();
 
-    // 🔑 luodaan session
     const {
-      data: { user },
+      data: { session, user },
       error,
     } = await supabase.auth.exchangeCodeForSession(code);
 
-    if (error || !user) {
+    if (error || !session) {
       return NextResponse.redirect(new URL("/login", url.origin));
     }
 
-    // 🔒 tarkista onko sallittu käyttäjä
+    // 🔒 allowed_users check
     const { data: allowedUser } = await supabase
       .from("allowed_users")
       .select("email")
-      .eq("email", user.email)
+      .eq("email", user?.email)
       .single();
 
     if (!allowedUser) {
-      // ❌ ei oikeuksia → logout
       await supabase.auth.signOut();
 
       return NextResponse.redirect(
