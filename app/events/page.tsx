@@ -10,7 +10,6 @@ import {
   getUsagePlaceColor,
 } from "@/lib/usagePlaces";
 import { useRouter } from "next/navigation";
-import { getEventTypeOptionsForUsagePlace } from "@/lib/eventTypeGroups";
 
 export default function EventsPage() {
   const [events, setEvents] = useState<any[]>([]);
@@ -18,6 +17,7 @@ export default function EventsPage() {
   const [search, setSearch] = useState("");
   const [selectedPlaces, setSelectedPlaces] = useState<string[]>([]);
   const router = useRouter();
+  const [showFuture, setShowFuture] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -27,7 +27,7 @@ export default function EventsPage() {
     const { data, error } = await supabase
       .from("events")
       .select("*")
-      .order("created_at", { ascending: false });
+      .order("event_date", { ascending: false });
 
     if (error) {
       console.error("Fetch error:", error);
@@ -55,23 +55,39 @@ export default function EventsPage() {
     );
   }
 
-  const filteredEvents = events.filter((e) => {
-    const matchesFilter = filter === "all" || e.maintenance_type === filter;
-    const searchLower = search.toLowerCase();
+  const todayString = new Date().toISOString().split("T")[0];
 
-    const matchesSearch =
-      !search ||
-      e.description?.toLowerCase().includes(searchLower) ||
-      e.company?.toLowerCase().includes(searchLower) ||
-      e.notes_short?.toLowerCase().includes(searchLower) ||
-      e.reminder_text?.toLowerCase().includes(searchLower);
+const filteredEvents = events.filter((e) => {
+  const matchesFilter =
+    filter === "all" || e.maintenance_type === filter;
 
-    const matchesPlace =
-      selectedPlaces.length === 0 ||
-      selectedPlaces.includes(e.usage_place || "muu");
+  const searchLower = search.toLowerCase();
 
-    return matchesFilter && matchesSearch && matchesPlace;
-  });
+  const matchesSearch =
+    !search ||
+    e.description?.toLowerCase().includes(searchLower) ||
+    e.company?.toLowerCase().includes(searchLower) ||
+    e.notes_short?.toLowerCase().includes(searchLower) ||
+    e.reminder_text?.toLowerCase().includes(searchLower);
+
+  const matchesPlace =
+  selectedPlaces.length === 0 ||
+  selectedPlaces.includes(e.usage_place || "muu");
+
+  // UUSI
+  const isFutureEvent =
+    e.event_date && e.event_date > todayString;
+
+  const matchesFuture =
+    showFuture || !isFutureEvent;
+
+  return (
+    matchesFilter &&
+    matchesSearch &&
+    matchesPlace &&
+    matchesFuture
+  );
+});
 
   return (
     <main style={{ padding: 20 }}>
@@ -100,14 +116,31 @@ export default function EventsPage() {
           />
 
           <select value={filter} onChange={(e) => setFilter(e.target.value)}>
-            <option value="all">Kaikki tyypit</option>
+  <option value="all">Kaikki tyypit</option>
 
-            {Object.entries(eventTypes).map(([key, value]) => (
-  <option key={key} value={key}>
-    {value.label}
-  </option>
-))}
-          </select>
+  {Object.entries(eventTypes).map(([key, value]) => (
+    <option key={key} value={key}>
+      {value.label}
+    </option>
+  ))}
+</select>
+
+<label
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+  }}
+>
+  <input
+    type="checkbox"
+    checked={showFuture}
+    onChange={(e) => setShowFuture(e.target.checked)}
+  />
+  Näytä tulevat tapahtumat
+</label>
         </div>
       </div>
 
