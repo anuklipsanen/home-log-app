@@ -178,6 +178,12 @@ export const eventTypes = {
   },
 
   // 🏗️ Rakennus
+  
+  remontointi: {
+  label: "🛠️ Remontointi",
+  color: "#ddd6fe",
+},
+  
   rakennus: {
     label: "🧱 Rakennustyö",
     color: "#e7e5e4",
@@ -192,6 +198,27 @@ export const eventTypes = {
     label: "🏠 Kiinteistövero",
     color: "#fee2e2",
   },
+
+  // 🐾 Lemmikit
+lemmikki_terveys: {
+  label: "💉 Lemmikit / terveys",
+  color: "#fecdd3",
+},
+
+lemmikki_nayttely: {
+  label: "🏆 Lemmikit / näyttely",
+  color: "#f9a8d4",
+},
+
+lemmikki_kayttokoe: {
+  label: "🎯 Lemmikit / käyttökoe",
+  color: "#c4b5fd",
+},
+
+lemmikki_muu: {
+  label: "🐾 Lemmikit muu",
+  color: "#e9d5ff",
+},
 
   // 🌲 Metsä
 

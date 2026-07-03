@@ -48,6 +48,7 @@ export const eventTypesByUsagePlace: Record<string, string[]> = {
     "ikkunat",
     "jatehuolto",
     "biojatehuolto",
+    "remontointi",
     "rakennus",
     "kiinteistovero",
     "tienhoitomaksu",
@@ -77,10 +78,18 @@ export const eventTypesByUsagePlace: Record<string, string[]> = {
     "ikkunat",
     "jatehuolto",
     "biojatehuolto",
+    "remontointi",
     "rakennus",
     "kiinteistovero",
     "tienhoitomaksu",
   ],
+
+  lemmikit: [
+  "lemmikki_terveys",
+  "lemmikki_nayttely",
+  "lemmikki_kayttokoe",
+  "lemmikki_muu",
+],
 
   metsa: [
   "metsanhoito",
