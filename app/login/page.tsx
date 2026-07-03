@@ -1,10 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.get("error") === "not_allowed") {
+      setError("Sinulla ei ole käyttöoikeutta tähän sovellukseen.");
+    }
+  }, []);
 
   async function signInWithGoogle() {
     setLoading(true);
@@ -22,7 +31,7 @@ export default function LoginPage() {
 
     if (error) {
       console.error(error);
-      alert("Kirjautuminen epäonnistui");
+      setError("Kirjautuminen epäonnistui");
       setLoading(false);
     }
   }
@@ -53,6 +62,21 @@ export default function LoginPage() {
           Kirjaudu Google-tilillä käyttääksesi Kotiapplikaatiota.
         </p>
 
+        {error && (
+          <div
+            style={{
+              background: "#7f1d1d",
+              color: "#fecaca",
+              padding: 10,
+              borderRadius: 8,
+              marginBottom: 16,
+              fontSize: 14,
+            }}
+          >
+            {error}
+          </div>
+        )}
+
         <button
           type="button"
           onClick={signInWithGoogle}
@@ -63,9 +87,13 @@ export default function LoginPage() {
             borderRadius: 10,
             fontWeight: 700,
             fontSize: 16,
+            cursor: "pointer",
+            opacity: loading ? 0.7 : 1,
           }}
         >
-          {loading ? "Avataan Google-kirjautumista..." : "Kirjaudu Googlella"}
+          {loading
+            ? "Avataan Google-kirjautumista..."
+            : "Kirjaudu Googlella"}
         </button>
       </section>
     </main>
