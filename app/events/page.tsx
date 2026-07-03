@@ -211,19 +211,26 @@ const filteredEvents = events.filter((e) => {
       {filteredEvents.length === 0 && <p>Ei osumia</p>}
 
       {filteredEvents.map((e) => {
-        const baseDate = e.event_date || e.date || "";
+  const baseDate = e.event_date || e.date || "";
+  const isFutureEvent = e.event_date && e.event_date > todayString;
 
-        return (
-          <div
-            key={e.id}
-            style={{
-              border: "1px solid #444",
-              padding: 14,
-              marginBottom: 12,
-              borderRadius: 8,
-              background: "#111",
-            }}
-          >
+  return (
+    <div
+      key={e.id}
+      style={{
+        border: isFutureEvent ? "1px solid #3b82f6" : "1px solid #444",
+        padding: 14,
+        marginBottom: 12,
+        borderRadius: 8,
+        background: isFutureEvent ? "#172033" : "#111",
+      }}
+    >
+
+      {isFutureEvent && (
+  <p style={{ margin: "4px 0", color: "#93c5fd", fontWeight: 700 }}>
+    Tuleva tapahtuma
+  </p>
+)}
             <Link
               href={`/events/${e.id}`}
               style={{ color: "inherit", textDecoration: "none" }}
