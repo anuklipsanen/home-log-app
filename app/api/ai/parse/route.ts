@@ -138,9 +138,8 @@ Examples:
 - likakaivo
 - suodatin
 - ilmalämpöpumppu
-- sähkölasku
-- sähkönsiirtomaksu
-- puhelinlasku
+- sahkomaksu
+- sahkonsiirtomaksu
 - laajakaistaliittymä
 - vesi
 - muu
@@ -381,6 +380,11 @@ const validMaintenanceTypes = new Set([
   "sahkonsiirto",
   "laajakaistaliittymä",
   "suoratoistopalvelut",
+  "suoratoistopalvelut",
+"lemmikki_terveys",
+"lemmikki_nayttely",
+"lemmikki_kayttokoe",
+"lemmikki_muu",
   "vesi",
   "juomavesi",
   "maalämpö",
@@ -389,38 +393,6 @@ const validMaintenanceTypes = new Set([
   "muu",
 ]);
 
-// Pakotetaan tunnetut laskutyypit ennen yleisempää fallbackia
-if (
-  textLower.includes("laajakaista") ||
-  textLower.includes("internet") ||
-  textLower.includes("valokuitu") ||
-  textLower.includes("5g") ||
-  textLower.includes("4g") ||
-  textLower.includes("mobiililaajakaista") ||
-  textLower.includes("puhelinliittymä") ||
-  textLower.includes("telia") ||
-  textLower.includes("elisa") ||
-  textLower.includes("dna") ||
-  textLower.includes("moi") ||
-  textLower.includes("mobiili") ||
-  textLower.includes("netti")
-) {
-  parsed.maintenance_type = "laajakaistaliittymä";
-} else if (
-  textLower.includes("sähkönsiirto") ||
-  textLower.includes("sähkönsiirtomaksu")
-) {
-  parsed.maintenance_type = "sahkonsiirto";
-} else if (
-  textLower.includes("sähkölasku") ||
-  textLower.includes("sähköenergia") ||
-  textLower.includes("pörssisähkö") ||
-  textLower.includes("spot") ||
-  textLower.includes("kwh") ||
-  textLower.includes("kulutus")
-) {
-  parsed.maintenance_type = "sahkomaksu";
-}
 
 // Jos AI palautti tuntemattoman arvon, pakotetaan fallbackiin
 if (!validMaintenanceTypes.has(parsed.maintenance_type)) {
@@ -487,7 +459,7 @@ if (!parsed.maintenance_type || parsed.maintenance_type === "muu") {
     textLower.includes("työ")
   ) {
     parsed.maintenance_type = "rakennus";
-   } else if (
+   } } else if (
   textLower.includes("netflix") ||
   textLower.includes("disney+") ||
   textLower.includes("disney plus") ||
@@ -501,10 +473,9 @@ if (!parsed.maintenance_type || parsed.maintenance_type === "muu") {
   textLower.includes("spotify")
 ) {
   parsed.maintenance_type = "suoratoistopalvelut";
-   } 
-  } else {
-    parsed.maintenance_type = "muu";
-  } 
+} else {
+  parsed.maintenance_type = "muu";
+} 
 
 
     // ✅ poistetaan duplikaatit
