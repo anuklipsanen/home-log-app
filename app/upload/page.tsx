@@ -384,14 +384,28 @@ export default function UploadPage() {
                 <div key={key} style={fieldStyle}>
                   <label>{label}</label>
                   <input
-                    type={
-                      key === "date" || key === "due_date" ? "date" : "text"
-                    }
-                    value={aiData[key] || ""}
-                    onChange={(e) => updateField(key, e.target.value)}
-                    disabled={!editMode}
-                    style={inputStyle}
-                  />
+  type={
+    key === "date" || key === "due_date"
+      ? "date"
+      : key === "total_amount" || key === "vat" || key === "work_amount"
+      ? "number"
+      : "text"
+  }
+  step={
+    key === "total_amount" || key === "vat" || key === "work_amount"
+      ? "0.01"
+      : undefined
+  }
+  min={
+    key === "total_amount" || key === "vat" || key === "work_amount"
+      ? "0"
+      : undefined
+  }
+  value={aiData[key] || ""}
+  onChange={(e) => updateField(key, e.target.value)}
+  disabled={!editMode}
+  style={inputStyle}
+/>
                 </div>
               ))}
 

@@ -329,32 +329,30 @@ export default function EventDetail() {
   ["total_amount", "Summa"],
   ["vat", "ALV"],
   ["work_amount", "Työn osuus"],
-].map(([key, label]) => (
-  <p key={key}>
-    <b>{label}:</b>{" "}
+].map(([key, label]) => {
+  const isDateField = key === "date" || key === "due_date";
+  const isMoneyField =
+    key === "total_amount" || key === "vat" || key === "work_amount";
 
-    {editMode ? (
-      key === "date" || key === "due_date" ? (
+  return (
+    <p key={key}>
+      <b>{label}:</b>{" "}
+
+      {editMode ? (
         <input
-          type="date"
+          type={isDateField ? "date" : isMoneyField ? "number" : "text"}
+          step={isMoneyField ? "0.01" : undefined}
+          min={isMoneyField ? "0" : undefined}
           value={eventData[key] || ""}
           onChange={(e) => update(key as string, e.target.value)}
           style={inputStyle}
         />
       ) : (
-        <input
-          value={eventData[key] || ""}
-          onChange={(e) => update(key as string, e.target.value)}
-          style={inputStyle}
-        />
-      )
-    ) : (
-      `${eventData[key] || "-"}${
-        key.includes("amount") || key === "vat" ? " €" : ""
-      }`
-    )}
-  </p>
-))}
+        `${eventData[key] || "-"}${isMoneyField && eventData[key] ? " €" : ""}`
+      )}
+    </p>
+  );
+})}
 
       <p>
         <b>Kotitalousvähennys:</b>{" "}

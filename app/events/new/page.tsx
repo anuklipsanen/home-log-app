@@ -247,10 +247,13 @@ export default function NewEventPage() {
           <div style={fieldStyle}>
             <label>Summa (€)</label>
             <input
-              value={form.total_amount}
-              onChange={(e) => update("total_amount", e.target.value)}
-              style={inputStyle}
-            />
+  type="number"
+  step="0.01"
+  min="0"
+  value={form.total_amount}
+  onChange={(e) => update("total_amount", e.target.value)}
+  style={inputStyle}
+/>
           </div>
 
           <div style={fieldStyle}>
