@@ -3,7 +3,11 @@ import type { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 export async function middleware(req: NextRequest) {
-  const res = NextResponse.next();
+  let response = NextResponse.next({
+    request: {
+      headers: req.headers,
+    },
+  });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,12 +17,17 @@ export async function middleware(req: NextRequest) {
         get(name: string) {
           return req.cookies.get(name)?.value;
         },
-        set() {},
-        remove() {},
+        set(name: string, value: string, options: any) {
+          response.cookies.set(name, value, options);
+        },
+        remove(name: string, options: any) {
+          response.cookies.set(name, "", options);
+        },
       },
     }
   );
 
+  // 🔥 TÄRKEÄ: tämä päivittää session cookiet oikein
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -31,20 +40,22 @@ export async function middleware(req: NextRequest) {
     req.nextUrl.pathname.startsWith(route)
   );
 
+  // 🔒 Ei kirjautunut → login
   if (!isLoggedIn && !isPublic) {
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("next", req.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
   }
 
+  // 🔁 Kirjautunut → pois loginista
   if (isLoggedIn && req.nextUrl.pathname === "/login") {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
-  return res;
+  return response;
 }
 
-// 🔥 TÄMÄ PUUTTUI SINULTA
+// 🔥 TÄRKEÄ: älä koske _next assetteihin
 export const config = {
   matcher: [
     "/((?!_next/static|_next/image|_next/webpack-hmr|favicon.ico|.*\\..*).*)",
