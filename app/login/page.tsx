@@ -1,97 +1,73 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 
-const BUCKET_NAME = "attachments"; // vaihda tähän oma bucketin nimi
+export default function LoginPage() {
+  const [loading, setLoading] = useState(false);
 
-export default function AuthTestPage() {
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [files, setFiles] = useState<any[]>([]);
-  const [message, setMessage] = useState("Tarkistetaan kirjautumista...");
+  async function signInWithGoogle() {
+    setLoading(true);
 
-  useEffect(() => {
-    async function load() {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const user = sessionData.session?.user;
-
-      if (!user) {
-        setMessage("Et ole kirjautunut.");
-        return;
-      }
-
-      setUserEmail(user.email || null);
-      setMessage("Kirjautunut.");
-
-      const { data, error } = await supabase.storage
-        .from(BUCKET_NAME)
-        .list("", {
-          limit: 100,
-          sortBy: { column: "created_at", order: "desc" },
-        });
-
-      if (error) {
-        console.error(error);
-        setMessage(`Kirjautunut, mutta tiedostojen haku epäonnistui: ${error.message}`);
-        return;
-      }
-
-      setFiles(data || []);
-    }
-
-    load();
-  }, []);
-
-  async function login() {
     const origin = window.location.origin;
+    const next =
+      new URLSearchParams(window.location.search).get("next") || "/";
 
-    await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${origin}/auth-test`,
+        redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}`,
       },
     });
-  }
 
-  async function logout() {
-    await supabase.auth.signOut();
-    window.location.reload();
+    if (error) {
+      console.error(error);
+      alert("Kirjautuminen epäonnistui");
+      setLoading(false);
+    }
   }
 
   return (
-    <main style={{ padding: 24 }}>
-      <h1>🔐 Auth-testi</h1>
+    <main
+      style={{
+        minHeight: "70vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 24,
+      }}
+    >
+      <section
+        style={{
+          width: "100%",
+          maxWidth: 420,
+          padding: 28,
+          border: "1px solid #333",
+          borderRadius: 16,
+          background: "#181818",
+        }}
+      >
+        <h1>🔐 Kirjaudu sisään</h1>
 
-      <p>{message}</p>
+        <p style={{ color: "#d1d5db", marginBottom: 24 }}>
+          Kirjaudu Google-tilillä käyttääksesi Kotiapplikaatiota.
+        </p>
 
-      {userEmail ? (
-        <>
-          <p>
-            Kirjautunut käyttäjä: <b>{userEmail}</b>
-          </p>
-
-          <button onClick={logout}>Kirjaudu ulos</button>
-
-          <h2 style={{ marginTop: 24 }}>Supabase Storage -tiedostot</h2>
-
-          {files.length === 0 ? (
-            <p>Ei tiedostoja tai bucket on tyhjä.</p>
-          ) : (
-            <ul>
-              {files.map((file) => (
-                <li key={file.name}>
-                  {file.name}{" "}
-                  {file.metadata?.size
-                    ? `(${Math.round(file.metadata.size / 1024)} kt)`
-                    : ""}
-                </li>
-              ))}
-            </ul>
-          )}
-        </>
-      ) : (
-        <button onClick={login}>Kirjaudu Googlella</button>
-      )}
+        <button
+          type="button"
+          onClick={signInWithGoogle}
+          disabled={loading}
+          style={{
+            width: "100%",
+            padding: "12px 16px",
+            borderRadius: 10,
+            fontWeight: 700,
+            fontSize: 16,
+          }}
+        >
+          {loading ? "Avataan Google-kirjautumista..." : "Kirjaudu Googlella"}
+        </button>
+      </section>
     </main>
   );
 }
