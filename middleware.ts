@@ -1,42 +1,45 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 
-const publicRoutes = ["/login", "/auth/callback"];
+export async function middleware(req: NextRequest) {
+  const res = NextResponse.next();
 
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return req.cookies.get(name)?.value;
+        },
+        set() {},
+        remove() {},
+      },
+    }
+  );
 
-  const isPublicRoute =
-    publicRoutes.some(
-      (route) => pathname === route || pathname.startsWith(`${route}/`)
-    ) ||
-    pathname.startsWith("/api/auth");
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (isPublicRoute) {
-    return NextResponse.next();
-  }
+  const isLoggedIn = !!user;
 
-  const hasSupabaseSession = request.cookies
-    .getAll()
-    .some(
-      (cookie) =>
-        cookie.name.startsWith("sb-") &&
-        cookie.name.includes("auth-token")
-    );
+  const publicRoutes = ["/login", "/auth/callback"];
 
-  if (!hasSupabaseSession) {
-    const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/login";
-    loginUrl.searchParams.set("next", pathname);
+  const isPublic = publicRoutes.some((route) =>
+    req.nextUrl.pathname.startsWith(route)
+  );
 
+  if (!isLoggedIn && !isPublic) {
+    const loginUrl = new URL("/login", req.url);
+    loginUrl.searchParams.set("next", req.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  return NextResponse.next();
-}
+  if (isLoggedIn && req.nextUrl.pathname === "/login") {
+    return NextResponse.redirect(new URL("/", req.url));
+  }
 
-export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml).*)",
-  ],
-};
+  return res;
+}
