@@ -43,3 +43,10 @@ export async function middleware(req: NextRequest) {
 
   return res;
 }
+
+// 🔥 TÄMÄ PUUTTUI SINULTA
+export const config = {
+  matcher: [
+    "/((?!_next/static|_next/image|_next/webpack-hmr|favicon.ico|.*\\..*).*)",
+  ],
+};
