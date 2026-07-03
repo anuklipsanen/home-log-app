@@ -1,37 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-
-    if (params.get("error") === "not_allowed") {
-      setError("Sinulla ei ole käyttöoikeutta tähän sovellukseen.");
-    }
-  }, []);
 
   async function signInWithGoogle() {
     setLoading(true);
 
-    const origin = window.location.origin;
-    const next =
-      new URLSearchParams(window.location.search).get("next") || "/";
-
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}`,
+        redirectTo: window.location.origin, // 🔥 EI callback routea
       },
     });
 
     if (error) {
       console.error(error);
-      setError("Kirjautuminen epäonnistui");
+      alert("Kirjautuminen epäonnistui");
       setLoading(false);
     }
   }
@@ -58,27 +45,7 @@ export default function LoginPage() {
       >
         <h1>🔐 Kirjaudu sisään</h1>
 
-        <p style={{ color: "#d1d5db", marginBottom: 24 }}>
-          Kirjaudu Google-tilillä käyttääksesi Kotiapplikaatiota.
-        </p>
-
-        {error && (
-          <div
-            style={{
-              background: "#7f1d1d",
-              color: "#fecaca",
-              padding: 10,
-              borderRadius: 8,
-              marginBottom: 16,
-              fontSize: 14,
-            }}
-          >
-            {error}
-          </div>
-        )}
-
         <button
-          type="button"
           onClick={signInWithGoogle}
           disabled={loading}
           style={{
@@ -87,13 +54,9 @@ export default function LoginPage() {
             borderRadius: 10,
             fontWeight: 700,
             fontSize: 16,
-            cursor: "pointer",
-            opacity: loading ? 0.7 : 1,
           }}
         >
-          {loading
-            ? "Avataan Google-kirjautumista..."
-            : "Kirjaudu Googlella"}
+          {loading ? "Avataan..." : "Kirjaudu Googlella"}
         </button>
       </section>
     </main>
