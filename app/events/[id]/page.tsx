@@ -389,6 +389,36 @@ export default function EventDetail() {
         </div>
       ))}
 
+<h3>📝 Yhteenveto</h3>
+
+{editMode ? (
+  <textarea
+    value={eventData.notes_short || ""}
+    onChange={(e) => update("notes_short", e.target.value)}
+    style={{
+      ...inputStyle,
+      width: "100%",
+      minHeight: 100,
+    }}
+  />
+) : (
+  <div
+    style={{
+      whiteSpace: "pre-wrap",
+      overflowWrap: "anywhere",
+      wordBreak: "break-word",
+      lineHeight: 1.6,
+      background: "#1f1f1f",
+      border: "1px solid #444",
+      borderRadius: 8,
+      padding: 12,
+      marginTop: 8,
+    }}
+  >
+    {eventData.notes_short || "-"}
+  </div>
+)}
+
       <h3>📄 Lisätiedot</h3>
       {editMode ? (
         <textarea
