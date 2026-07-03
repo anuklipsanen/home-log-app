@@ -138,7 +138,10 @@ Examples:
 - likakaivo
 - suodatin
 - ilmalämpöpumppu
-- sähkö
+- sähkölasku
+- sähkönsiirtomaksu
+- puhelinlasku
+- laajakaistaliittymä
 - vesi
 - muu
 
@@ -167,6 +170,32 @@ Examples:
 
 Example:
 "Emma takkaleivinuuni muurattuna" → description
+
+Internet / phone invoices:
+
+Use maintenance_type = "laajakaistaliittymä" when the document is about
+
+- internet
+- laajakaista
+- mobiililaajakaista
+- puhelinliittymä
+- 4G
+- 5G
+- valokuitu
+- Telia
+- Elisa
+- DNA
+- separate different numbers and usagetypes eg. phone, mobile, internet, data, etc. if present in the document.
+
+Electricity invoices:
+- Use maintenance_type = "sähköenergia" when the document is about
+- electricity
+- sähkö
+- sähkölasku
+- collect data about electricity usage, consumption, and costs etc.marginals and spot prices, if present in the document.
+- Use maintenance_type = "sähkönsiirto" when the document is about
+- sähkönsiirto
+- sähkönsiirtomaksu
 
 
 `
@@ -313,7 +342,7 @@ if (!parsed.maintenance_type || parsed.maintenance_type === "muu") {
   } else if (textLower.includes("ilmalämpöpumppu")) {
     parsed.maintenance_type = "ilmalämpöpumppu";
   } else if (textLower.includes("sähkö")) {
-    parsed.maintenance_type = "sähkö";
+    parsed.maintenance_type = "sähköenergia";
   } else if (textLower.includes("vesi")) {
     parsed.maintenance_type = "vesi";
   } else if (textLower.includes("maalämpö")) {
@@ -325,10 +354,24 @@ if (!parsed.maintenance_type || parsed.maintenance_type === "muu") {
     textLower.includes("työ")
   ) {
     parsed.maintenance_type = "rakennus";
+   } else if (
+  textLower.includes("laajakaista") ||
+  textLower.includes("internet") ||
+  textLower.includes("valokuitu") ||
+  textLower.includes("5g") ||
+  textLower.includes("4g") ||
+  textLower.includes("mobiililaajakaista") ||
+  textLower.includes("puhelinliittymä") ||
+  textLower.includes("telia") ||
+  textLower.includes("elisa") ||
+  textLower.includes("dna")
+) {
+  parsed.maintenance_type = "laajakaistaliittymä";
+}
   } else {
     parsed.maintenance_type = "muu";
-  }
-}
+  } 
+
 
     // ✅ poistetaan duplikaatit
     parsed.highlights = [...new Set(parsed.highlights)];

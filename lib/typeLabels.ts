@@ -115,10 +115,7 @@ export const eventTypes = {
   },
 
   // ⚡ Energia
-  sähkö: {
-    label: "⚡ Sähkötyö",
-    color: "#fef3c7",
-  },
+
 
   sahkomaksu: {
     label: "💡 Sähköenergia",
@@ -128,6 +125,18 @@ export const eventTypes = {
   sahkonsiirto: {
     label: "⚡ Sähkönsiirtomaksu",
     color: "#fcd34d",
+  },
+
+    sähkö: {
+    label: "⚡ Sähkötyö",
+    color: "#fef3c7",
+  },
+
+  // ⚡ Matkapuhelin ja internet
+  
+  laajakaistaliittymä: {
+    label: "🌐 Puhelin ja laajakaistaliittymä",
+    color: "#c7d2fe",
   },
 
   // 🌿 Piha ja ulkoalueet
@@ -173,7 +182,7 @@ export const eventTypes = {
   },
 
   biojatehuolto: {
-    label: "🌱 Biojäteastian tyhjennys",
+    label: "🌱 Biojäteastia",
     color: "#bbf7d0",
   },
 
