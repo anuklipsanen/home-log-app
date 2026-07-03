@@ -259,6 +259,9 @@ export default function NewEventPage() {
           <div style={fieldStyle}>
             <label>ALV (€)</label>
             <input
+              type="number"
+              step="0.01"
+              min="0"
               value={form.vat}
               onChange={(e) => update("vat", e.target.value)}
               style={inputStyle}
@@ -268,6 +271,9 @@ export default function NewEventPage() {
           <div style={fieldStyle}>
             <label>Työn osuus (€)</label>
             <input
+              type="number"
+              step="0.01"
+              min="0"
               value={form.work_amount}
               onChange={(e) => update("work_amount", e.target.value)}
               style={inputStyle}
