@@ -355,6 +355,20 @@ if (!parsed.maintenance_type || parsed.maintenance_type === "muu") {
   ) {
     parsed.maintenance_type = "rakennus";
    } else if (
+  textLower.includes("netflix") ||
+  textLower.includes("disney+") ||
+  textLower.includes("disney plus") ||
+  textLower.includes("max") ||
+  textLower.includes("hbo") ||
+  textLower.includes("viaplay") ||
+  textLower.includes("amazon prime") ||
+  textLower.includes("prime video") ||
+  textLower.includes("apple tv") ||
+  textLower.includes("youtube premium") ||
+  textLower.includes("spotify")
+) {
+  parsed.maintenance_type = "suoratoistopalvelut";
+   } else if (
   textLower.includes("laajakaista") ||
   textLower.includes("internet") ||
   textLower.includes("valokuitu") ||
