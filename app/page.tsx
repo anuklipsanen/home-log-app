@@ -28,6 +28,7 @@ type CostItem = {
 export default function HomePage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedPlaces, setSelectedPlaces] = useState<string[]>([]);
+  const [openCostType, setOpenCostType] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchEvents() {
@@ -242,12 +243,28 @@ export default function HomePage() {
 
         <div style={summaryBlockStyle}>
           <h3 style={summaryHeadingStyle}>Viimeiset 12 kuukautta</h3>
-          <CostBars items={pastCosts} max={sharedCostMax} />
+          <CostBars
+  items={pastCosts}
+  max={sharedCostMax}
+  events={visibleEvents}
+  start={yearAgoString}
+  end={todayString}
+  openCostType={openCostType}
+  setOpenCostType={setOpenCostType}
+/>
         </div>
 
         <div style={summaryBlockStyle}>
           <h3 style={summaryHeadingStyle}>Seuraavat 12 kuukautta</h3>
-          <CostBars items={futureCosts} max={sharedCostMax} />
+          <CostBars
+  items={futureCosts}
+  max={sharedCostMax}
+  events={visibleEvents}
+  start={tomorrowString}
+  end={yearAheadString}
+  openCostType={openCostType}
+  setOpenCostType={setOpenCostType}
+/>
         </div>
       </section>
 
@@ -308,7 +325,23 @@ export default function HomePage() {
   );
 }
 
-function CostBars({ items, max }: { items: CostItem[]; max: number }) {
+function CostBars({
+  items,
+  max,
+  events,
+  start,
+  end,
+  openCostType,
+  setOpenCostType,
+}: {
+  items: CostItem[];
+  max: number;
+  events: Event[];
+  start: string;
+  end: string;
+  openCostType: string | null;
+  setOpenCostType: (type: string | null) => void;
+}) {
   if (items.length === 0) {
     return <p>Ei kustannustietoja.</p>;
   }
@@ -319,17 +352,56 @@ function CostBars({ items, max }: { items: CostItem[]; max: number }) {
         const width =
           max > 0 ? `${Math.max((item.total / max) * 100, 4)}%` : "0%";
 
+        const typeEvents = events
+          .filter(
+            (event) =>
+              event.maintenance_type === item.type &&
+              event.event_date &&
+              event.event_date >= start &&
+              event.event_date <= end &&
+              parseAmount(event.total_amount) > 0
+          )
+          .sort((a, b) =>
+            String(b.event_date).localeCompare(String(a.event_date))
+          );
+
+        const isOpen = openCostType === item.type;
+
         return (
           <div key={item.type}>
             <div
+              onClick={() => setOpenCostType(isOpen ? null : item.type)}
               style={{
                 display: "flex",
                 justifyContent: "space-between",
                 gap: 12,
                 marginBottom: 4,
+                padding: "4px 0",
+                borderRadius: 6,
+                cursor: "pointer",
+                userSelect: "none",
               }}
             >
-              <span>{item.label}</span>
+              <span
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontWeight: 600,
+                }}
+              >
+                <span
+                  style={{
+                    display: "inline-block",
+                    width: 16,
+                  }}
+                >
+                  {isOpen ? "▼" : "▶"}
+                </span>
+
+                {item.label}
+              </span>
+
               <strong>{formatEuro(item.total)}</strong>
             </div>
 
@@ -351,6 +423,63 @@ function CostBars({ items, max }: { items: CostItem[]; max: number }) {
                 }}
               />
             </div>
+
+            {isOpen && (
+              <div
+                style={{
+                  marginTop: 10,
+                  marginBottom: 14,
+                  marginLeft: 22,
+                  padding: 12,
+                  borderRadius: 10,
+                  background: "#0b1220",
+                  border: "1px solid #263248",
+                }}
+              >
+                {typeEvents.map((event) => (
+                  <Link
+                    key={event.id}
+                    href={`/events/${event.id}`}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: 12,
+                      padding: "8px 0",
+                      borderBottom: "1px solid #1e293b",
+                      color: "inherit",
+                      textDecoration: "none",
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontWeight: 600 }}>
+                        {event.event_date
+  ? new Date(event.event_date).toLocaleDateString("fi-FI", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    })
+  : "-"}
+                      </div>
+
+                      <div
+                        style={{
+                          color: "#cbd5e1",
+                          fontSize: 14,
+                          marginTop: 2,
+                        }}
+                      >
+                        {event.description || event.company || "Ei kuvausta"}
+                      </div>
+                    </div>
+
+                    <strong>
+                      {formatEuro(parseAmount(event.total_amount))}
+                    </strong>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         );
       })}
