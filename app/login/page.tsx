@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
-const BUCKET_NAME = "files"; // vaihda tähän oma bucketin nimi
+const BUCKET_NAME = "attachments"; // vaihda tähän oma bucketin nimi
 
 export default function AuthTestPage() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
