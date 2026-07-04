@@ -165,12 +165,14 @@ export default function HomePage() {
   );
 
   return (
-    <main>
-      <h1>🏠 Kotiapplikaatio</h1>
+    <main style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+      <h1 style={{ marginBottom: 6 }}>
+  🏠 Kotiapplikaatio
+</h1>
 
-      <p style={{ marginBottom: 24 }}>
-        Kodin huoltojen, dokumenttien ja muistutusten hallinta yhdessä paikassa.
-      </p>
+<p style={{ color: "#9ca3af", marginBottom: 24 }}>
+  Huollot, kustannukset ja muistutukset yhdessä näkymässä
+</p>
 
       <div className="home-grid">
         <Link href="/events/new" style={cardStyle}>
@@ -195,7 +197,7 @@ export default function HomePage() {
       </div>
 
       <section style={summaryStyle}>
-        <h2>Käyttöpaikat</h2>
+        <h2 style={sectionTitle}>📍 Käyttöpaikat</h2>
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
           <button
@@ -240,10 +242,10 @@ export default function HomePage() {
       </section>
 
       <section style={summaryStyle}>
-        <h2>Rahankäyttö luokittain</h2>
+        <h2 style={sectionTitle}>💰 Rahankäyttö</h2>
 
         <div style={summaryBlockStyle}>
-          <h3 style={summaryHeadingStyle}>Viimeiset 12 kuukautta</h3>
+          <h3 style={{...summaryHeadingStyle, opacity: 0.9}}>Viimeiset 12 kuukautta</h3>
           <CostBars
   items={pastCosts}
   max={sharedCostMax}
@@ -256,7 +258,7 @@ export default function HomePage() {
         </div>
 
         <div style={summaryBlockStyle}>
-          <h3 style={summaryHeadingStyle}>Seuraavat 12 kuukautta</h3>
+          <h3 style={{ ...summaryHeadingStyle, opacity: 0.9 }}>Seuraavat 12 kuukautta</h3>
           <CostBars
   items={futureCosts}
   max={sharedCostMax}
@@ -270,10 +272,10 @@ export default function HomePage() {
       </section>
 
       <section style={summaryStyle}>
-        <h2>Yhteenveto</h2>
+        <h2 style={sectionTitle}>📊 Yhteenveto</h2>
 
         <div style={summaryBlockStyle}>
-          <h3 style={summaryHeadingStyle}>Viimeisen 7 päivän tapahtumat</h3>
+          <h3 style={{ ...summaryHeadingStyle, opacity: 0.9 }}>Viimeisen 7 päivän tapahtumat</h3>
 
           {recentEvents.length === 0 ? (
             <p>Ei tapahtumia viimeisen viikon ajalta.</p>
@@ -305,7 +307,7 @@ export default function HomePage() {
         </div>
 
         <div style={summaryBlockStyle}>
-          <h3 style={summaryHeadingStyle}>Tulevat 3 viikkoa</h3>
+          <h3 style={{ ...summaryHeadingStyle, opacity: 0.9 }}>Tulevat 3 viikkoa</h3>
 
           {upcomingItems.length === 0 ? (
             <p>
@@ -534,4 +536,10 @@ const summaryHeadingStyle = {
   margin: "0 0 12px",
   fontSize: 20,
   color: "#ffffff",
+};
+
+const sectionTitle: React.CSSProperties = {
+  marginBottom: 12,
+  fontSize: 22,
+  fontWeight: 700,
 };
