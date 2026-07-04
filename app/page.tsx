@@ -281,7 +281,13 @@ export default function HomePage() {
             <p>Ei tapahtumia viimeisen viikon ajalta.</p>
           ) : (
             recentEvents.map((event) => (
-  <Card key={`recent-${event.id}`}>
+
+  <Link
+    key={`recent-${event.id}`}
+    href={`/events/${event.id}`}
+    style={{ textDecoration: "none", color: "inherit" }}
+  >
+    <Card>
     <div style={{ display: "flex", justifyContent: "space-between" }}>
       <div>
         <div style={{ fontWeight: 600 }}>
@@ -297,11 +303,14 @@ export default function HomePage() {
         </div>
       </div>
 
-      <strong>
-        {formatEuro(parseAmount(event.total_amount))}
-      </strong>
+      {parseAmount(event.total_amount) > 0 && (
+  <strong>
+    {formatEuro(parseAmount(event.total_amount))}
+  </strong>
+)}
     </div>
   </Card>
+  </Link>
 ))
           )}
         </div>
@@ -315,7 +324,16 @@ export default function HomePage() {
             </p>
           ) : (
             upcomingItems.map((event) => (
-              <div key={`upcoming-${event.id}`} style={{ marginBottom: 8 }}>
+              <Link
+  key={`upcoming-${event.id}`}
+  href={`/events/${event.id}`}
+  style={{
+    display: "block",
+    marginBottom: 8,
+    textDecoration: "none",
+    color: "inherit",
+  }}
+>
                 {event.event_date &&
                   event.event_date > todayString &&
                   event.event_date <= threeWeeksAheadString && (
@@ -335,7 +353,7 @@ export default function HomePage() {
                       {event.reminder_text || event.description || "Muistutus"}
                     </p>
                   )}
-              </div>
+              </Link>
             ))
           )}
         </div>
@@ -492,9 +510,11 @@ function CostBars({
                       </div>
                     </div>
 
-                    <strong>
-                      {formatEuro(parseAmount(event.total_amount))}
-                    </strong>
+                    {parseAmount(event.total_amount) > 0 && (
+  <strong>
+    {formatEuro(parseAmount(event.total_amount))}
+  </strong>
+)}
                   </Link>
                 ))}
               </div>
