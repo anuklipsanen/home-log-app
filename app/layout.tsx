@@ -1,5 +1,6 @@
 import "./globals.css";
 import Link from "next/link";
+import AuthGuard from "@/components/AuthGuard";
 
 const navLinkStyle = {
   color: "#ffffff",
@@ -36,17 +37,18 @@ export default function RootLayout({
           <Link href="/events" style={navLinkStyle}>📋 Tapahtumat</Link>
           <Link href="/calendar" style={navLinkStyle}>📅 Kalenteri</Link>
           <Link href="/reports" style={navLinkStyle}>📊 Raportit</Link>
-          
         </header>
 
-        <main
-          style={{
-            padding: 24,
-            width: "100%",
-          }}
-        >
-          {children}
-        </main>
+        <AuthGuard>
+          <main
+            style={{
+              padding: 24,
+              width: "100%",
+            }}
+          >
+            {children}
+          </main>
+        </AuthGuard>
       </body>
     </html>
   );
