@@ -16,6 +16,20 @@ export default function EventDetail() {
   const [eventData, setEventData] = useState<any>(null);
   const [editMode, setEditMode] = useState(false);
 
+  // 🔥 FIX STORAGE PATH BUGI
+const getFileUrl = (path: string) => {
+  if (!path) return "";
+
+  // poistaa väärän "attachments/" alun jos löytyy
+  const cleanPath = path.replace(/^attachments\//, "");
+
+  const { data } = supabase.storage
+    .from("attachments")
+    .getPublicUrl(cleanPath);
+
+  return data.publicUrl;
+};
+
   const inputStyle = {
     background: "#f3f4f6",
     color: "#111",
@@ -158,21 +172,27 @@ export default function EventDetail() {
   }
 
   async function handleDelete() {
-    if (!confirm("Haluatko varmasti poistaa tapahtuman?")) return;
+  if (!confirm("Haluatko varmasti poistaa tapahtuman?")) return;
 
-    if (eventData?.file_url) {
-      const path = eventData.file_url.split(
-        "/storage/v1/object/public/attachments/"
-      )[1];
+  if (eventData?.file_url) {
+    let cleanPath = eventData.file_url;
 
-      if (path) {
-        await supabase.storage.from("attachments").remove([path]);
-      }
+    // jos full URL → pilko oikein
+    if (cleanPath.startsWith("http")) {
+      cleanPath = cleanPath.split("/attachments/")[1];
     }
 
-    await supabase.from("events").delete().eq("id", id);
-    router.push("/events");
+    // poista mahdollinen attachments/ alku
+    cleanPath = cleanPath.replace(/^attachments\//, "");
+
+    await supabase.storage
+      .from("attachments")
+      .remove([cleanPath]);
   }
+
+  await supabase.from("events").delete().eq("id", id);
+  router.push("/events");
+}
 
   if (!eventData) return <p>Ladataan...</p>;
 
@@ -219,10 +239,10 @@ export default function EventDetail() {
       </p>
 
       {eventData.file_url && (
-        <a href={eventData.file_url} target="_blank">
-          📄 Avaa tiedosto
-        </a>
-      )}
+  <a href={getFileUrl(eventData.file_url)} target="_blank">
+    📄 Avaa tiedosto
+  </a>
+)}
 <p>
   <b>Käyttöpaikka</b>
   <br /> 

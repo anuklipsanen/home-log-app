@@ -187,7 +187,7 @@ export const eventTypes = {
   },
 
   biojatehuolto: {
-    label: "🌱 Biojäteastia",
+    label: "🌱 Biojäte",
     color: "#bbf7d0",
   },
 
