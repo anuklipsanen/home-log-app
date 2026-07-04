@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { getEventTypeLabel, getEventTypeColor } from "@/lib/typeLabels";
+import { getEventTypeLabel } from "@/lib/typeLabels";
 import { parseAmount, formatEuro } from "@/lib/costUtils";
-import { usagePlaces } from "@/lib/usagePlaces";
 import Card from "@/components/Card";
 
 type Event = {
@@ -17,19 +16,10 @@ type Event = {
   company?: string | null;
   maintenance_type?: string | null;
   total_amount?: string | number | null;
-  usage_place?: string | null;
-};
-
-type CostItem = {
-  type: string;
-  label: string;
-  total: number;
 };
 
 export default function HomePage() {
   const [events, setEvents] = useState<Event[]>([]);
-  const [selectedPlaces, setSelectedPlaces] = useState<string[]>([]);
-  const [openCostType, setOpenCostType] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchEvents() {
@@ -49,14 +39,6 @@ export default function HomePage() {
     fetchEvents();
   }, []);
 
-  function togglePlace(place: string) {
-    setSelectedPlaces((prev) =>
-      prev.includes(place)
-        ? prev.filter((p) => p !== place)
-        : [...prev, place]
-    );
-  }
-
   function formatDate(date?: string | null) {
     if (!date) return "-";
     return new Date(date).toLocaleDateString("fi-FI");
@@ -66,25 +48,57 @@ export default function HomePage() {
     return getEventTypeLabel(event.maintenance_type);
   }
 
+  // 📅 AIKARAJAT
   const today = new Date();
-  const todayString = today.toISOString().slice(0, 10);
+  const todayStr = today.toISOString().slice(0, 10);
+
+  const weekAgo = new Date();
+  weekAgo.setDate(today.getDate() - 7);
+  const weekAgoStr = weekAgo.toISOString().slice(0, 10);
 
   const threeWeeksAhead = new Date();
   threeWeeksAhead.setDate(today.getDate() + 21);
-  const threeWeeksAheadString = threeWeeksAhead.toISOString().slice(0, 10);
+  const threeWeeksAheadStr = threeWeeksAhead.toISOString().slice(0, 10);
 
-  const recentEvents = events.slice(0, 5);
+  // 📌 VIIMEISET 7 VRK
+  const recentEvents = events.filter(
+    (e) =>
+      e.event_date &&
+      e.event_date >= weekAgoStr &&
+      e.event_date <= todayStr
+  );
 
+  // 🔮 TULEVAT 3 VK (tapahtumat + muistutukset)
   const upcomingItems = events.filter(
     (e) =>
-      (e.event_date && e.event_date > todayString) ||
-      (e.reminder_date && e.reminder_date >= todayString)
+      (e.event_date &&
+        e.event_date > todayStr &&
+        e.event_date <= threeWeeksAheadStr) ||
+      (e.reminder_date &&
+        e.reminder_date >= todayStr &&
+        e.reminder_date <= threeWeeksAheadStr)
+  );
+
+  // 💰 YHTEENVETO
+  const totalRecent = recentEvents.reduce(
+    (sum, e) => sum + parseAmount(e.total_amount),
+    0
+  );
+
+  const totalUpcoming = upcomingItems.reduce(
+    (sum, e) => sum + parseAmount(e.total_amount),
+    0
   );
 
   return (
     <main>
       <h1>🏠 Kotiapplikaatio</h1>
 
+      <p style={{ color: "#9ca3af", marginBottom: 24 }}>
+        Kodin huoltojen, muistutusten ja kustannusten hallinta.
+      </p>
+
+      {/* 🔗 PIKATOIMINNOT */}
       <div className="home-grid">
         <Card>
           <Link href="/events/new" style={linkStyle}>
@@ -111,44 +125,79 @@ export default function HomePage() {
         </Card>
       </div>
 
-      <section style={summaryStyle}>
-        <h2>Viimeisimmät tapahtumat</h2>
+      {/* 📊 YHTEENVETO */}
+      <section style={sectionStyle}>
+        <h2>Yhteenveto</h2>
 
-        {recentEvents.map((event) => (
-          <Card key={event.id}>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <div>
-                <b>{formatDate(event.event_date)}</b>
-                <div>{event.description}</div>
-                <div style={{ color: "#aaa" }}>{eventType(event)}</div>
-              </div>
-
-              <strong>
-                {formatEuro(parseAmount(event.total_amount))}
-              </strong>
-            </div>
+        <div style={summaryRow}>
+          <Card>
+            <h3>Viimeiset 7 vrk</h3>
+            <p>{formatEuro(totalRecent)}</p>
           </Card>
-        ))}
+
+          <Card>
+            <h3>Tulevat 3 vk</h3>
+            <p>{formatEuro(totalUpcoming)}</p>
+          </Card>
+        </div>
       </section>
 
-      <section style={summaryStyle}>
-        <h2>Tulevat tapahtumat</h2>
+      {/* 📌 VIIMEISET */}
+      <section style={sectionStyle}>
+        <h2>Viimeisen 7 päivän tapahtumat</h2>
+
+        {recentEvents.length === 0 ? (
+          <p>Ei tapahtumia.</p>
+        ) : (
+          recentEvents.map((event) => (
+            <Card key={event.id}>
+              <div style={rowStyle}>
+                <div>
+                  <b>{formatDate(event.event_date)}</b>
+                  <div>{event.description || "Ei kuvausta"}</div>
+                  <div style={metaStyle}>{eventType(event)}</div>
+                </div>
+
+                <strong>
+                  {formatEuro(parseAmount(event.total_amount))}
+                </strong>
+              </div>
+            </Card>
+          ))
+        )}
+      </section>
+
+      {/* 🔮 TULEVAT */}
+      <section style={sectionStyle}>
+        <h2>Tulevat 3 viikkoa</h2>
 
         {upcomingItems.length === 0 ? (
-          <p>Ei tulevia tapahtumia</p>
+          <p>Ei tulevia tapahtumia.</p>
         ) : (
           upcomingItems.map((event) => (
             <Card key={event.id}>
-              <div>
-                {event.event_date && (
-                  <div>📌 {formatDate(event.event_date)}</div>
-                )}
+              <div style={rowStyle}>
+                <div>
+                  {event.event_date && (
+                    <div>📌 {formatDate(event.event_date)}</div>
+                  )}
 
-                {event.reminder_date && (
-                  <div>🔔 {formatDate(event.reminder_date)}</div>
-                )}
+                  {event.reminder_date && (
+                    <div>🔔 {formatDate(event.reminder_date)}</div>
+                  )}
 
-                <div>{event.description}</div>
+                  <div>
+                    {event.description ||
+                      event.reminder_text ||
+                      "Ei kuvausta"}
+                  </div>
+
+                  <div style={metaStyle}>{eventType(event)}</div>
+                </div>
+
+                <strong>
+                  {formatEuro(parseAmount(event.total_amount))}
+                </strong>
               </div>
             </Card>
           ))
@@ -165,39 +214,22 @@ const linkStyle: React.CSSProperties = {
   color: "inherit",
 };
 
-const summaryStyle: React.CSSProperties = {
-  padding: 24,
-  border: "1px solid #333",
-  borderRadius: 14,
-  background: "#181818",
-  marginBottom: 24,
+const sectionStyle: React.CSSProperties = {
+  marginBottom: 32,
 };
 
-/* ================== COSTBARS ================== */
+const summaryRow: React.CSSProperties = {
+  display: "flex",
+  gap: 16,
+  flexWrap: "wrap",
+};
 
-function CostBars({
-  items,
-  max,
-}: {
-  items: CostItem[];
-  max: number;
-}) {
-  if (items.length === 0) return <p>Ei dataa</p>;
+const rowStyle: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+};
 
-  return (
-    <div>
-      {items.map((item) => (
-        <div key={item.type}>
-          <div>{item.label}</div>
-          <div
-            style={{
-              width: `${(item.total / max) * 100}%`,
-              height: 10,
-              background: getEventTypeColor(item.type),
-            }}
-          />
-        </div>
-      ))}
-    </div>
-  );
-}
+const metaStyle: React.CSSProperties = {
+  fontSize: 13,
+  color: "#9ca3af",
+};
