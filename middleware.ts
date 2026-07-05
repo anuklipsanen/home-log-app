@@ -27,17 +27,31 @@ export async function middleware(req: NextRequest) {
     }
   );
 
-  // 🔐 hae käyttäjä
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isLoggedIn = !!user;
+  const publicRoutes = ["/login", "/auth/callback"];
 
-  // 🔥 tarkista allowed_users taulusta
+  const isPublic = publicRoutes.some((route) =>
+    req.nextUrl.pathname.startsWith(route)
+  );
+
+  // 🔥 1. Salli aina public routes
+  if (isPublic) {
+    return response;
+  }
+
+  // 🔥 2. TÄRKEIN FIX:
+  // Salli request läpi jos user ei vielä ole valmis (callback jälkeen)
+  if (!user) {
+    return response;
+  }
+
+  // 🔥 3. allowed_users check vasta kun user olemassa
   let isAllowed = false;
 
-  if (user?.email) {
+  if (user.email) {
     const { data } = await supabase
       .from("allowed_users")
       .select("email")
@@ -47,28 +61,15 @@ export async function middleware(req: NextRequest) {
     isAllowed = !!data;
   }
 
-  const publicRoutes = ["/login", "/auth/callback"];
-
-  const isPublic = publicRoutes.some((route) =>
-    req.nextUrl.pathname.startsWith(route)
-  );
-
-  // ❌ ei kirjautunut → login
-  if (!isLoggedIn && !isPublic) {
-    const loginUrl = new URL("/login", req.url);
-    loginUrl.searchParams.set("next", req.nextUrl.pathname);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  // ❌ kirjautunut mutta EI sallittu → takaisin login
-  if (isLoggedIn && !isAllowed) {
+  // ❌ ei sallittu käyttäjä
+  if (!isAllowed) {
     return NextResponse.redirect(
       new URL("/login?error=not-allowed", req.url)
     );
   }
 
-  // 🔁 kirjautunut → pois loginista
-  if (isLoggedIn && req.nextUrl.pathname === "/login") {
+  // 🔁 jos kirjautunut ja menee login-sivulle → ohjaa pois
+  if (req.nextUrl.pathname === "/login") {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
