@@ -6,7 +6,7 @@ export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
 
-  const cookieStore = await cookies();
+  const cookieStore = await cookies(); // 🔥 FIX
 
   const response = NextResponse.redirect(
     new URL("/", request.url)
@@ -21,10 +21,18 @@ export async function GET(request: Request) {
           return cookieStore.get(name)?.value;
         },
         set(name: string, value: string, options: any) {
-          response.cookies.set(name, value, options);
+          response.cookies.set({
+            name,
+            value,
+            ...options,
+          });
         },
         remove(name: string, options: any) {
-          response.cookies.set(name, "", options);
+          response.cookies.set({
+            name,
+            value: "",
+            ...options,
+          });
         },
       },
     }
