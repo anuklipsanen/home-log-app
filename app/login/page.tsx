@@ -1,10 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // 🔥 tarkistetaan URL parametrit
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const err = params.get("error");
+
+    if (err === "not-allowed") {
+      setError("Sinulla ei ole käyttöoikeutta tähän sovellukseen.");
+    }
+  }, []);
 
   async function signInWithGoogle() {
     setLoading(true);
@@ -12,7 +23,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: window.location.origin, // 🔥 EI callback routea
+        redirectTo: window.location.origin,
       },
     });
 
@@ -44,6 +55,17 @@ export default function LoginPage() {
         }}
       >
         <h1>🔐 Kirjaudu sisään</h1>
+
+        {/* 🔥 virheilmoitus */}
+        {error && (
+          <p style={{ color: "#f87171", marginBottom: 16 }}>
+            {error}
+          </p>
+        )}
+
+        <p style={{ color: "#d1d5db", marginBottom: 24 }}>
+          Kirjaudu Google-tilillä käyttääksesi sovellusta.
+        </p>
 
         <button
           onClick={signInWithGoogle}

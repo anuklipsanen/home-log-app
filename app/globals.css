@@ -29,6 +29,12 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /* 🔥 estää sivuttaisscrollin */
+}
+
 /* Varmistaa, että tausta jatkuu myös leveissä näkymissä */
 body::before {
   content: "";
