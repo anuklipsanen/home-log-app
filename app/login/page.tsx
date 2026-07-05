@@ -1,62 +1,88 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+"use client";
 
-export async function GET(request: Request) {
-  const requestUrl = new URL(request.url);
-  const code = requestUrl.searchParams.get("code");
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
-  const cookieStore = await cookies();
+export default function LoginPage() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  let response = NextResponse.redirect(
-    new URL("/", request.url)
-  );
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const err = params.get("error");
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-        set(name: string, value: string, options: any) {
-          response.cookies.set({
-            name,
-            value,
-            path: "/",
-            sameSite: "lax",
-            secure: true,
-            ...options,
-          });
-        },
-        remove(name: string, options: any) {
-          response.cookies.set({
-            name,
-            value: "",
-            path: "/",
-            sameSite: "lax",
-            secure: true,
-            ...options,
-          });
-        },
-      },
+    if (err === "not-allowed") {
+      setError("Sinulla ei ole käyttöoikeutta tähän sovellukseen.");
     }
-  );
 
-  if (code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (err === "session") {
+      setError("Kirjautuminen epäonnistui. Yritä uudelleen.");
+    }
+  }, []);
 
-    console.log("SESSION ERROR:", error);
+  async function signInWithGoogle() {
+    setLoading(true);
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
 
     if (error) {
-      return NextResponse.redirect(
-        new URL("/login?error=session", request.url)
-      );
+      console.error(error);
+      alert("Kirjautuminen epäonnistui");
+      setLoading(false);
     }
   }
 
-  response.headers.set("Cache-Control", "no-store");
+  return (
+    <main
+      style={{
+        minHeight: "70vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 24,
+      }}
+    >
+      <section
+        style={{
+          width: "100%",
+          maxWidth: 420,
+          padding: 28,
+          border: "1px solid #333",
+          borderRadius: 16,
+          background: "#181818",
+        }}
+      >
+        <h1>🔐 Kirjaudu sisään</h1>
 
-  return response;
+        {error && (
+          <p style={{ color: "#f87171", marginBottom: 16 }}>
+            {error}
+          </p>
+        )}
+
+        <p style={{ color: "#d1d5db", marginBottom: 24 }}>
+          Kirjaudu Google-tilillä käyttääksesi sovellusta.
+        </p>
+
+        <button
+          onClick={signInWithGoogle}
+          disabled={loading}
+          style={{
+            width: "100%",
+            padding: "12px 16px",
+            borderRadius: 10,
+            fontWeight: 700,
+            fontSize: 16,
+          }}
+        >
+          {loading ? "Avataan..." : "Kirjaudu Googlella"}
+        </button>
+      </section>
+    </main>
+  );
 }
