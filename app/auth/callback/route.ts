@@ -1,48 +1,26 @@
-import { createServerClient } from "@supabase/ssr";
-import { NextResponse } from "next/server";
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
 
-  const cookieStore = await cookies(); // 🔥 FIX
-
-  const response = NextResponse.redirect(
-    new URL("/", request.url)
-  );
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-        set(name: string, value: string, options: any) {
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-          });
-        },
-        remove(name: string, options: any) {
-          response.cookies.set({
-            name,
-            value: "",
-            ...options,
-          });
-        },
-      },
-    }
-  );
+  const supabase = createRouteHandlerClient({ cookies });
 
   if (code) {
-    await supabase.auth.exchangeCodeForSession(code);
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (error) {
+      console.error(error);
+      return NextResponse.redirect(
+        new URL("/login?error=session", request.url)
+      );
+    }
   }
 
-  return response;
-}
+  const res = NextResponse.redirect(new URL("/", request.url));
+  res.headers.set("Cache-Control", "no-store");
 
-console.log("🔥 CALLBACK HIT");
+  return res;
+}
