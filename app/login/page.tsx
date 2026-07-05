@@ -36,25 +36,24 @@ export default function LoginPage() {
 
   // 🔥 signin (resetoi bugitilan)
   async function signInWithGoogle() {
-    setLoading(true);
-    setError(null);
+  setLoading(true);
+  setError(null);
 
-    // 🔥 tärkeä: resetoi mahdollinen rikkinäinen sessio
-    await supabase.auth.signOut();
+  await supabase.auth.signOut(); // reset
 
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: window.location.origin, // 🔥 EI CALLBACKIA
+    },
+  });
 
-    if (error) {
-      console.error(error);
-      setError("Kirjautuminen epäonnistui");
-      setLoading(false);
-    }
+  if (error) {
+    console.error(error);
+    setError("Kirjautuminen epäonnistui");
+    setLoading(false);
   }
+}
 
   return (
     <main
