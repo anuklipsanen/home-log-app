@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
+  // 🔥 tarkista URL virheet + session
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const err = params.get("error");
@@ -18,10 +21,26 @@ export default function LoginPage() {
     if (err === "session") {
       setError("Kirjautuminen epäonnistui. Yritä uudelleen.");
     }
-  }, []);
 
+    // 🔥 jos session on olemassa → pois loginista
+    async function checkSession() {
+      const { data } = await supabase.auth.getSession();
+
+      if (data.session) {
+        router.replace("/"); // 🔥 tärkeä: replace, ei push
+      }
+    }
+
+    checkSession();
+  }, [router]);
+
+  // 🔥 signin (resetoi bugitilan)
   async function signInWithGoogle() {
     setLoading(true);
+    setError(null);
+
+    // 🔥 tärkeä: resetoi mahdollinen rikkinäinen sessio
+    await supabase.auth.signOut();
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -32,7 +51,7 @@ export default function LoginPage() {
 
     if (error) {
       console.error(error);
-      alert("Kirjautuminen epäonnistui");
+      setError("Kirjautuminen epäonnistui");
       setLoading(false);
     }
   }
@@ -78,6 +97,8 @@ export default function LoginPage() {
             borderRadius: 10,
             fontWeight: 700,
             fontSize: 16,
+            cursor: "pointer",
+            opacity: loading ? 0.6 : 1,
           }}
         >
           {loading ? "Avataan..." : "Kirjaudu Googlella"}
