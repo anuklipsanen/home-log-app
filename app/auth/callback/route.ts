@@ -44,3 +44,5 @@ export async function GET(request: Request) {
 
   return response;
 }
+
+console.log("🔥 CALLBACK HIT");
