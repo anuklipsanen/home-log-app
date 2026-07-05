@@ -1,6 +1,7 @@
 import "./globals.css";
 import Link from "next/link";
 import AuthGuard from "@/components/AuthGuard";
+import LogoutButton from "@/components/LogoutButton";
 
 const navLinkStyle = {
   color: "#d1d5db",
@@ -49,7 +50,9 @@ export default function RootLayout({
           <Link href="/events" style={navLinkStyle}>📋 Tapahtumat</Link>
           <Link href="/calendar" style={navLinkStyle}>📅 Kalenteri</Link>
           <Link href="/reports" style={navLinkStyle}>📊 Raportit</Link>
-        </header>
+          {/* 🔥 tämä oikeaan reunaan */}
+  <LogoutButton />
+</header>
 
         {/* 🔐 AUTH */}
         <AuthGuard>
