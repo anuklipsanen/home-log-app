@@ -1,53 +1,85 @@
-import { createServerClient } from "@supabase/ssr";
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import "./globals.css";
+import Link from "next/link";
+import AuthGuard from "@/components/AuthGuard";
+import LogoutButton from "@/components/LogoutButton";
 
-export async function GET(request: Request) {
-  const requestUrl = new URL(request.url);
-  const code = requestUrl.searchParams.get("code");
+const navLinkStyle = {
+  color: "#d1d5db",
+  textDecoration: "none",
+  fontWeight: 600,
+  whiteSpace: "nowrap" as const,
+  padding: "6px 10px",
+  borderRadius: 8,
+};
 
-  const cookieStore = await cookies();
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="fi">
+      <body
+        style={{
+          margin: 0,
+          background: "#0f0f0f",
+          color: "#f5f5f5",
+        }}
+      >
+        {/* 🔝 HEADER */}
+        <header
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            padding: "12px 16px",
+            borderBottom: "1px solid #2a2a2a",
+            background: "#111",
+            position: "sticky",
+            top: 0,
+            zIndex: 1000,
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-        set(name: string, value: string, options: any) {
-          cookieStore.set({
-            name,
-            value,
-            path: "/",
-            ...options,
-          });
-        },
-        remove(name: string, options: any) {
-          cookieStore.set({
-            name,
-            value: "",
-            path: "/",
-            ...options,
-          });
-        },
-      },
-    }
+            // 🔥 mobiili fix
+            overflowX: "auto",
+            whiteSpace: "nowrap",
+          }}
+        >
+          <Link href="/" style={navLinkStyle}>🏠 Koti</Link>
+          <Link href="/events/new" style={navLinkStyle}>➕ Lisää</Link>
+          <Link href="/upload" style={navLinkStyle}>📤 Upload</Link>
+          <Link href="/events" style={navLinkStyle}>📋 Tapahtumat</Link>
+          <Link href="/calendar" style={navLinkStyle}>📅 Kalenteri</Link>
+          <Link href="/reports" style={navLinkStyle}>📊 Raportit</Link>
+          {/* 🔥 tämä oikeaan reunaan */}
+  <LogoutButton />
+</header>
+
+        {/* 🔐 AUTH */}
+        <AuthGuard>
+          <main
+            style={{
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+
+              // 🔥 mobiili spacing
+              padding: "16px 12px",
+            }}
+          >
+            <div
+              style={{
+                width: "100%",
+                maxWidth: 900, // 🔥 estää liiallisen leveyden desktopissa
+
+                // 🔥 tärkeä: ei liian keskitetty fiilis
+                margin: "0 auto",
+              }}
+            >
+              {children}
+            </div>
+          </main>
+        </AuthGuard>
+      </body>
+    </html>
   );
-
-  if (code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-
-    console.log("SESSION ERROR:", error);
-
-    if (error) {
-      return NextResponse.redirect(
-        new URL("/login?error=session", request.url)
-      );
-    }
-  }
-
-  // 🔥 EI käytetä samaa responsea
-  return NextResponse.redirect(new URL("/", request.url));
 }
