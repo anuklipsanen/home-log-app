@@ -3,8 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { getSportType } from "@/lib/sportTypes";
 import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 export default function SportsDashboard() {
+  const searchParams = useSearchParams();
+const selectedId = searchParams.get("id");
+const [selectedActivity, setSelectedActivity] = useState<any>(null);
   const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [openMonth, setOpenMonth] = useState<string | null>(null);
@@ -13,6 +17,16 @@ export default function SportsDashboard() {
   useEffect(() => {
     fetchActivities();
   }, []);
+
+  useEffect(() => {
+  if (!selectedId || activities.length === 0) return;
+
+  const found = activities.find((a) => a.id === selectedId);
+
+  if (found) {
+    setSelectedActivity(found);
+  }
+}, [selectedId, activities]);
 
   async function fetchActivities() {
     const res = await fetch("/api/sports/list", {
@@ -73,6 +87,30 @@ export default function SportsDashboard() {
         map[key].onski_time += time;
       }
     });
+
+    {selectedActivity && (
+  <div className="border p-4 rounded bg-blue-950/40 mb-4">
+    <div className="text-sm text-gray-400">
+      {formatDate(selectedActivity.start_time)}
+    </div>
+
+    <div className="font-bold text-lg">
+      {selectedActivity.title}
+    </div>
+
+    <div className="mt-2">
+      {(selectedActivity.distance_meters / 1000).toFixed(1)} km ·{" "}
+      {formatDuration(selectedActivity.duration_seconds)} ·{" "}
+      {selectedActivity.calories} kcal
+    </div>
+
+    {selectedActivity.notes && (
+      <div className="mt-2 text-sm">
+        {selectedActivity.notes}
+      </div>
+    )}
+  </div>
+)}
 
     return Object.entries(map)
       .sort(([a], [b]) => b.localeCompare(a))
