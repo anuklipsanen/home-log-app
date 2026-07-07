@@ -15,6 +15,8 @@ export async function GET() {
   distance_meters,
   calories,
   avg_heart_rate,
+  activity_type,
+  activity_sub_type,
   member_id
 `)
     .order("start_time", { ascending: false })
