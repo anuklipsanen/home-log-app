@@ -133,26 +133,8 @@ export default function SportsDashboard() {
             {expandedMonth === key && (
               <div className="space-y-2 mt-3">
                 {list.map((a) => (
-                  <div key={a.id} className="border p-3 rounded bg-gray-900">
-                    <div className="text-sm text-gray-400">
-                      {formatDate(a.start_time)}
-                    </div>
-
-                    <div className="font-semibold">
-                      {a.title}
-                    </div>
-
-                    <div>
-                      {(a.distance_meters / 1000).toFixed(1)} km ·{" "}
-                      {formatDuration(a.duration_seconds)} ·{" "}
-                      {a.calories} kcal
-                    </div>
-
-                    {a.notes && (
-                      <div className="text-sm">{a.notes}</div>
-                    )}
-                  </div>
-                ))}
+  <ActivityCard key={a.id} activity={a} />
+))}
               </div>
             )}
           </div>
@@ -175,6 +157,106 @@ function formatType(t?: string) {
     default:
       return t;
   }
+}
+
+function ActivityCard({ activity }: { activity: any }) {
+  const [editing, setEditing] = useState(false);
+  const [title, setTitle] = useState(activity.title);
+  const [notes, setNotes] = useState(activity.notes || "");
+  const [saving, setSaving] = useState(false);
+
+  async function save() {
+    setSaving(true);
+
+    const res = await fetch("/api/sports/update", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: activity.id,
+        title,
+        notes,
+      }),
+    });
+
+    const data = await res.json();
+
+    setSaving(false);
+
+    if (!data.success) {
+      alert(data.error);
+      return;
+    }
+
+    setEditing(false);
+  }
+
+  return (
+    <div className="border p-3 rounded bg-gray-900 space-y-2">
+      <div className="text-sm text-gray-400">
+        {formatDate(activity.start_time)}
+      </div>
+
+      {/* ✏️ TITLE */}
+      {editing ? (
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="border p-1 w-full rounded"
+        />
+      ) : (
+        <div className="font-semibold">{activity.title}</div>
+      )}
+
+      {/* 📊 DATA */}
+      <div>
+        {(activity.distance_meters / 1000).toFixed(1)} km ·{" "}
+        {formatDuration(activity.duration_seconds)} ·{" "}
+        {activity.calories} kcal
+      </div>
+
+      {/* 📝 NOTES */}
+      {editing ? (
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          className="border p-1 w-full rounded"
+        />
+      ) : (
+        activity.notes && <div className="text-sm">{activity.notes}</div>
+      )}
+
+      {/* 🔘 ACTIONS */}
+      <div className="flex gap-2">
+        {!editing ? (
+          <button
+            onClick={() => setEditing(true)}
+            className="text-sm text-blue-400"
+          >
+            Muokkaa
+          </button>
+        ) : (
+          <>
+            <button
+              onClick={save}
+              disabled={saving}
+              className="text-sm text-green-400"
+            >
+              {saving ? "Tallennetaan..." : "Tallenna"}
+            </button>
+
+            <button
+              onClick={() => setEditing(false)}
+              className="text-sm text-gray-400"
+            >
+              Peruuta
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
 }
 
 function formatMonth(key: string) {
