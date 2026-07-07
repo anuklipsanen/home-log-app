@@ -28,7 +28,6 @@ export default function SportsImportPage() {
 
       if (!data.success) continue;
 
-      // 🔍 duplikaattitarkistus
       const checkRes = await fetch("/api/sports/check", {
         method: "POST",
         headers: {
@@ -79,9 +78,49 @@ export default function SportsImportPage() {
       return;
     }
 
-    alert("Tallennettu ✅");
-
     setActivities((prev) => prev.filter((x) => x.id !== a.id));
+  }
+
+  async function saveAll() {
+    if (!memberId) {
+      alert("Valitse henkilö");
+      return;
+    }
+
+    const toSave = activities.filter((a) => !a.exists);
+
+    if (toSave.length === 0) {
+      alert("Ei uusia suorituksia");
+      return;
+    }
+
+    setLoading(true);
+
+    for (const a of toSave) {
+      const res = await fetch("/api/sports/import", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          memberId,
+          title: a.title,
+          notes: a.notes,
+          parsed: a.parsed,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        console.log("Virhe:", data.error);
+      }
+    }
+
+    alert(`Tallennettu ${toSave.length} suoritusta ✅`);
+
+    setActivities([]);
+    setLoading(false);
   }
 
   return (
@@ -111,6 +150,16 @@ export default function SportsImportPage() {
       />
 
       {loading && <div className="text-gray-400">Ladataan...</div>}
+
+      {/* 🔥 BULK SAVE */}
+      {activities.length > 0 && (
+        <button
+          onClick={saveAll}
+          className="bg-green-700 text-white px-4 py-2 rounded"
+        >
+          Tallenna kaikki ({activities.filter(a => !a.exists).length})
+        </button>
+      )}
 
       {/* 🔥 PREVIEW */}
       {activities.map((a) => (
@@ -148,6 +197,7 @@ export default function SportsImportPage() {
             </div>
           )}
 
+          {/* ✏️ otsikko */}
           <input
             value={a.title}
             onChange={(e) =>
@@ -160,6 +210,7 @@ export default function SportsImportPage() {
             className="border p-2 w-full rounded"
           />
 
+          {/* 📝 notes */}
           <textarea
             value={a.notes}
             onChange={(e) =>
@@ -173,15 +224,28 @@ export default function SportsImportPage() {
             placeholder="Lisätiedot..."
           />
 
-          <button
-            onClick={() => saveActivity(a)}
-            disabled={a.exists}
-            className={`px-3 py-1 rounded text-white ${
-              a.exists ? "bg-gray-500 cursor-not-allowed" : "bg-green-600"
-            }`}
-          >
-            {a.exists ? "Jo tuotu" : "Tallenna"}
-          </button>
+          {/* 🔥 NAPIT */}
+          <div className="flex gap-2">
+            {!a.exists && (
+              <button
+                onClick={() => saveActivity(a)}
+                className="bg-green-600 text-white px-3 py-1 rounded"
+              >
+                Tallenna
+              </button>
+            )}
+
+            <button
+              onClick={() =>
+                setActivities((prev) =>
+                  prev.filter((x) => x.id !== a.id)
+                )
+              }
+              className="bg-gray-600 text-white px-3 py-1 rounded"
+            >
+              Hylkää
+            </button>
+          </div>
         </div>
       ))}
     </main>
@@ -192,21 +256,15 @@ export default function SportsImportPage() {
 
 function formatDuration(seconds?: number) {
   if (!seconds) return "";
-
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
   const s = Math.floor(seconds % 60);
-
-  return [h, m, s]
-    .map((v) => String(v).padStart(2, "0"))
-    .join(":");
+  return [h, m, s].map(v => String(v).padStart(2, "0")).join(":");
 }
 
 function formatDate(dateString?: string) {
   if (!dateString) return "";
-
   const d = new Date(dateString);
-
   return d.toLocaleString("fi-FI", {
     day: "2-digit",
     month: "2-digit",
