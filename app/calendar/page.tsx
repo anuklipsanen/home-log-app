@@ -23,9 +23,11 @@ type Event = {
   usage_place?: string | null;
 
   // 🔥 LISÄÄ NÄMÄ
+  start_time?: string | null;
   source_type?: string | null;
   sport_activity_id?: string | null;
   title?: string | null;
+  
 };
 
 type CalendarEntry = {
@@ -38,6 +40,7 @@ export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEntry, setSelectedEntry] = useState<CalendarEntry | null>(null);
   const [selectedPlaces, setSelectedPlaces] = useState<string[]>([]);
+  const [showSports, setShowSports] = useState(true);
 
   useEffect(() => {
     fetchEvents();
@@ -100,7 +103,13 @@ export default function CalendarPage() {
     const dateString = toDateString(date);
 
     return events.flatMap((event) => {
-      if (
+      // 🔥 sport filter
+if (!showSports && event.source_type === "sport") {
+  return [];
+}
+
+// 🔥 käyttöpaikka filter
+if (
   selectedPlaces.length > 0 &&
   event.source_type !== "sport" &&
   !selectedPlaces.includes(event.usage_place || "muu")
@@ -110,9 +119,15 @@ export default function CalendarPage() {
 
       const entries: CalendarEntry[] = [];
 
-      if (event.event_date === dateString) {
-        entries.push({ event, kind: "event" });
-      }
+      const eventDate =
+  event.event_date ??
+  (event.start_time
+    ? event.start_time.slice(0, 10)
+    : null);
+
+if (eventDate === dateString) {
+  entries.push({ event, kind: "event" });
+}
 
       if (event.reminder_date === dateString) {
         entries.push({ event, kind: "reminder" });
@@ -134,11 +149,11 @@ export default function CalendarPage() {
 ) {
   // 🔥 SPORT
   if (sourceType === "sport") {
-    return {
-      background: "#ecfeff",
-      border: "1px solid #67e8f9",
-    };
-  }
+  return {
+    background: "#dcfce7",
+    border: "1px solid #22c55e",
+  };
+}
 
   if (kind === "reminder") {
     return {
@@ -248,7 +263,16 @@ export default function CalendarPage() {
         }}
       >
         <div style={{ fontWeight: 700, marginBottom: 10 }}>Käyttöpaikka</div>
-
+<div style={{ marginTop: 12 }}>
+  <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
+    <input
+      type="checkbox"
+      checked={showSports}
+      onChange={() => setShowSports(!showSports)}
+    />
+    🏃 Liikunta
+  </label>
+</div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {Object.entries(usagePlaces).map(([key, value]) => {
             const selected = selectedPlaces.includes(key);
