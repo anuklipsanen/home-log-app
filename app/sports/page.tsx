@@ -16,7 +16,10 @@ export default function SportsDashboard() {
   }, []);
 
   async function fetchActivities() {
-    const res = await fetch("/api/sports/list");
+    const res = await fetch("/api/sports/list", {
+      cache: "no-store",
+    });
+
     const data = await res.json();
 
     if (data.success) {
@@ -52,6 +55,8 @@ export default function SportsDashboard() {
     const map: Record<string, any[]> = {};
 
     filtered.forEach((a) => {
+      if (!a.start_time) return;
+
       const d = new Date(a.start_time);
       const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
 
@@ -65,8 +70,14 @@ export default function SportsDashboard() {
   /* ---------------- SUMMARY ---------------- */
 
   function getSummary(list: any[]) {
-    const totalKm = list.reduce((sum, a) => sum + (a.distance_meters || 0), 0) / 1000;
-    const totalKcal = list.reduce((sum, a) => sum + (a.calories || 0), 0);
+    const totalKm =
+      list.reduce((sum, a) => sum + (a.distance_meters || 0), 0) / 1000;
+
+    const totalKcal = list.reduce(
+      (sum, a) => sum + (a.calories || 0),
+      0
+    );
+
     return {
       km: totalKm.toFixed(1),
       kcal: totalKcal,
@@ -87,8 +98,12 @@ export default function SportsDashboard() {
           className="border p-2 rounded"
         >
           <option value="ALL">Kaikki</option>
-          <option value="f30cb5de-b062-41b9-8e95-270452f943d7">Anu</option>
-          <option value="aba7be53-d988-4d70-aa62-67a2148f640f">Onski</option>
+          <option value="f30cb5de-b062-41b9-8e95-270452f943d7">
+            Anu
+          </option>
+          <option value="aba7be53-d988-4d70-aa62-67a2148f640f">
+            Onski
+          </option>
         </select>
 
         <select
@@ -125,7 +140,8 @@ export default function SportsDashboard() {
               </div>
 
               <div className="text-sm text-gray-400">
-                {summary.count} suoritusta · {summary.km} km · {summary.kcal} kcal
+                {summary.count} suoritusta · {summary.km} km ·{" "}
+                {summary.kcal} kcal
               </div>
             </div>
 
@@ -133,8 +149,8 @@ export default function SportsDashboard() {
             {expandedMonth === key && (
               <div className="space-y-2 mt-3">
                 {list.map((a) => (
-  <ActivityCard key={a.id} activity={a} />
-))}
+                  <ActivityCard key={a.id} activity={a} />
+                ))}
               </div>
             )}
           </div>
@@ -144,24 +160,11 @@ export default function SportsDashboard() {
   );
 }
 
-/* ---------------- HELPERS ---------------- */
-
-function formatType(t?: string) {
-  switch (t) {
-    case "cycling":
-      return "Pyöräily";
-    case "running":
-      return "Juoksu";
-    case "walking":
-      return "Kävely";
-    default:
-      return t;
-  }
-}
+/* ---------------- CARD ---------------- */
 
 function ActivityCard({ activity }: { activity: any }) {
   const [editing, setEditing] = useState(false);
-  const [title, setTitle] = useState(activity.title);
+  const [title, setTitle] = useState(activity.title || "");
   const [notes, setNotes] = useState(activity.notes || "");
   const [saving, setSaving] = useState(false);
 
@@ -181,7 +184,6 @@ function ActivityCard({ activity }: { activity: any }) {
     });
 
     const data = await res.json();
-
     setSaving(false);
 
     if (!data.success) {
@@ -198,7 +200,7 @@ function ActivityCard({ activity }: { activity: any }) {
         {formatDate(activity.start_time)}
       </div>
 
-      {/* ✏️ TITLE */}
+      {/* TITLE */}
       {editing ? (
         <input
           value={title}
@@ -209,14 +211,16 @@ function ActivityCard({ activity }: { activity: any }) {
         <div className="font-semibold">{activity.title}</div>
       )}
 
-      {/* 📊 DATA */}
+      {/* DATA */}
       <div>
-        {(activity.distance_meters / 1000).toFixed(1)} km ·{" "}
-        {formatDuration(activity.duration_seconds)} ·{" "}
-        {activity.calories} kcal
+        {activity.distance_meters
+          ? `${(activity.distance_meters / 1000).toFixed(1)} km`
+          : ""}{" "}
+        · {formatDuration(activity.duration_seconds)} ·{" "}
+        {activity.calories ?? 0} kcal
       </div>
 
-      {/* 📝 NOTES */}
+      {/* NOTES */}
       {editing ? (
         <textarea
           value={notes}
@@ -227,7 +231,7 @@ function ActivityCard({ activity }: { activity: any }) {
         activity.notes && <div className="text-sm">{activity.notes}</div>
       )}
 
-      {/* 🔘 ACTIONS */}
+      {/* ACTIONS */}
       <div className="flex gap-2">
         {!editing ? (
           <button
@@ -259,9 +263,32 @@ function ActivityCard({ activity }: { activity: any }) {
   );
 }
 
+/* ---------------- HELPERS ---------------- */
+
+function formatType(t?: string) {
+  switch (t) {
+    case "cycling":
+      return "Pyöräily";
+    case "running":
+      return "Juoksu";
+    case "walking":
+      return "Kävely";
+    default:
+      return t || "Urheilu";
+  }
+}
+
 function formatMonth(key: string) {
   const [y, m] = key.split("-");
-  return `${m}.${y}`;
+
+  const date = new Date(Number(y), Number(m) - 1);
+
+  const str = date.toLocaleDateString("fi-FI", {
+    month: "long",
+    year: "numeric",
+  });
+
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 function formatDate(dateString?: string) {
@@ -269,21 +296,36 @@ function formatDate(dateString?: string) {
 
   const d = new Date(dateString);
 
-  if (isNaN(d.getTime())) return "";
+  const weekday = d.toLocaleDateString("fi-FI", {
+    weekday: "short",
+  });
 
-  return d.toLocaleString("fi-FI", {
+  const date = d.toLocaleDateString("fi-FI", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
+  });
+
+  const time = d.toLocaleTimeString("fi-FI", {
     hour: "2-digit",
     minute: "2-digit",
   });
+
+  return `${weekday} ${date} klo ${time}`;
 }
 
 function formatDuration(seconds?: number) {
   if (!seconds) return "";
+
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
   const s = Math.floor(seconds % 60);
-  return [h, m, s].map((v) => String(v).padStart(2, "0")).join(":");
+
+  if (h === 0) {
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  }
+
+  return [h, m, s]
+    .map((v) => String(v).padStart(2, "0"))
+    .join(":");
 }
