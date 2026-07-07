@@ -71,9 +71,6 @@ export async function POST(req: Request) {
         notes: notes || null,
         notes_imported: parsed.notesImported ?? null,
 
-        event_date: parsed.startTime.slice(0, 10),
-date: parsed.startTime.slice(0, 10),
-
         duration_seconds: Math.round(parsed.durationSeconds ?? 0),
 
         distance_meters: parsed.distanceMeters
