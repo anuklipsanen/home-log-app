@@ -3,12 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { eventTypes, getEventTypeLabel } from "@/lib/typeLabels";
-import {
-  usagePlaces,
-  getUsagePlaceLabel,
-  getUsagePlaceColor,
-} from "@/lib/usagePlaces";
+import { eventTypes } from "@/lib/typeLabels";
 
 type Event = {
   id: string;
@@ -20,7 +15,6 @@ type Event = {
   company?: string | null;
   usage_place?: string | null;
 
-  // 🔥 SPORT
   start_time?: string | null;
   source_type?: string | null;
   sport_activity_id?: string | null;
@@ -72,22 +66,24 @@ export default function CalendarPage() {
     );
   }
 
-  /* ---------------- FILTER + MATCH ---------------- */
+  /* ---------------- FILTER ---------------- */
 
   function entriesForDay(date: Date): CalendarEntry[] {
     const dateString = toDateString(date);
 
     return events.flatMap((event) => {
-      // 🔥 SPORT FILTER
-      if (event.source_type === "sport") {
-        if (!showSports) return [];
-      } else {
-        if (
-          selectedPlaces.length > 0 &&
-          !selectedPlaces.includes(event.usage_place || "muu")
-        ) {
-          return [];
-        }
+      // sport filter
+      if (event.source_type === "sport" && !showSports) {
+        return [];
+      }
+
+      // paikka filter
+      if (
+        event.source_type !== "sport" &&
+        selectedPlaces.length > 0 &&
+        !selectedPlaces.includes(event.usage_place || "muu")
+      ) {
+        return [];
       }
 
       const entries: CalendarEntry[] = [];
@@ -106,7 +102,7 @@ export default function CalendarPage() {
     });
   }
 
-  /* ---------------- CALENDAR GRID ---------------- */
+  /* ---------------- GRID ---------------- */
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -127,7 +123,7 @@ export default function CalendarPage() {
     return arr;
   }, [year, month]);
 
-  /* ---------------- UI HELPERS ---------------- */
+  /* ---------------- UI ---------------- */
 
   function getEntryStyle(entry: CalendarEntry) {
     const { event, kind } = entry;
@@ -171,7 +167,12 @@ export default function CalendarPage() {
   /* ---------------- RENDER ---------------- */
 
   return (
-    <main style={{ minWidth: 1100 }}>
+    <main
+  style={{
+    width: "100%",
+    maxWidth: "100%",
+  }}
+>
       <h1>📅 Kalenteri</h1>
 
       {/* FILTER */}
@@ -190,8 +191,9 @@ export default function CalendarPage() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(7, 140px)",
-          gap: 6,
+          gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+          gap: 8,
+          width: "100%",
         }}
       >
         {days.map((day, i) => {
@@ -203,27 +205,42 @@ export default function CalendarPage() {
                 <>
                   <strong>{day.getDate()}</strong>
 
-                  {entries.map((entry) => (
-                    <button
-                      key={entry.event.id + entry.kind}
-                      onClick={() => setSelectedEntry(entry)}
-                      style={{
-                        display: "block",
-                        width: "100%",
-                        marginTop: 6,
-                        padding: 6,
-                        borderRadius: 6,
-                        textAlign: "left",
-                        ...getEntryStyle(entry),
-                      }}
-                    >
-                      {entry.event.source_type === "sport" ? (
-                        <span>{getEntryText(entry)}</span>
-                      ) : (
-                        getEntryText(entry)
-                      )}
-                    </button>
-                  ))}
+                  {entries.map((entry) => {
+                    const isSport =
+                      entry.event.source_type === "sport";
+
+                    return (
+                      <button
+                        key={entry.event.id + entry.kind}
+                        onClick={() =>
+                          !isSport && setSelectedEntry(entry)
+                        }
+                        style={{
+                          display: "block",
+                          width: "100%",
+                          marginTop: 6,
+                          padding: 6,
+                          borderRadius: 6,
+                          textAlign: "left",
+                          ...getEntryStyle(entry),
+                        }}
+                      >
+                        {isSport ? (
+                          <Link
+                            href={`/sports?id=${entry.event.sport_activity_id}`}
+                            style={{
+                              textDecoration: "none",
+                              color: "inherit",
+                            }}
+                          >
+                            {getEntryText(entry)}
+                          </Link>
+                        ) : (
+                          getEntryText(entry)
+                        )}
+                      </button>
+                    );
+                  })}
                 </>
               )}
             </div>
@@ -231,39 +248,25 @@ export default function CalendarPage() {
         })}
       </div>
 
-      {/* DETAIL */}
+      {/* DETAIL (vain kotitapahtumille) */}
       {selectedEntry && (
         <div style={{ marginTop: 20 }}>
-          <button onClick={() => setSelectedEntry(null)}>Sulje</button>
+          <button onClick={() => setSelectedEntry(null)}>
+            Sulje
+          </button>
 
-          <h2>
-            {selectedEntry.event.source_type === "sport"
-              ? "🏃 Urheilusuoritus"
-              : "📌 Tapahtuma"}
-          </h2>
+          <h2>📌 Tapahtuma</h2>
 
           <p>
             <strong>Otsikko:</strong>{" "}
-            {selectedEntry.event.title || selectedEntry.event.description}
+            {selectedEntry.event.description ||
+              selectedEntry.event.company}
           </p>
 
           <p>
             <strong>Päivä:</strong>{" "}
             {getEventDate(selectedEntry.event)}
           </p>
-
-          {selectedEntry.event.source_type === "sport" && (
-  <Link
-    href={`/sports?id=${selectedEntry.event.sport_activity_id}`}
-    style={{
-      display: "inline-block",
-      marginTop: 10,
-      color: "#2563eb",
-    }}
-  >
-    Avaa muokkaukseen →
-  </Link>
-)}
         </div>
       )}
     </main>
