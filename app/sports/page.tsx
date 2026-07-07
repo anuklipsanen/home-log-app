@@ -132,7 +132,7 @@ export default function SportsDashboard() {
 
      <div className="mt-4">
   <h2 className="text-lg font-semibold mb-2">
-    Kuukausittainen liikunta (km)
+    Kuukausittainen liikunta
   </h2>
 
 <div className="grid grid-cols-2 gap-4 mt-4">

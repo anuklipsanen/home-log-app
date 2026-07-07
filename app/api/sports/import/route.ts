@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { normalizeSportType } from "@/lib/normalizeSportType";
 
 export async function POST(req: Request) {
   const supabase = await createSupabaseServerClient();
@@ -79,7 +80,7 @@ export async function POST(req: Request) {
       .insert({
         member_id: memberId,
 
-        activity_type: parsed.activityType,
+        activity_type: normalizeSportType(parsed.activityType),
         activity_sub_type: parsed.activitySubType,
 
         title: titleInput || parsed.title,
