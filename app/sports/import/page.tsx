@@ -47,9 +47,13 @@ export default function SportsImportPage() {
   {
     id: crypto.randomUUID(),
     parsed: data.parsed,
-    title: check.activity?.title || data.parsed.title,
-    notes: check.activity?.notes || "",
+
+    // 🔥 TÄRKEIN FIX
+    title: check.activity?.title ?? data.parsed.title,
+    notes: check.activity?.notes ?? "",
+
     exists: check.exists,
+    existingId: check.activity?.id ?? null,
   },
 ]);
     }
