@@ -40,6 +40,7 @@ export default function SportsDashboard() {
 
       if (!map[key]) {
         map[key] = {
+          key,
           month: formatMonth(key),
 
           anu_km: 0,
@@ -74,12 +75,8 @@ export default function SportsDashboard() {
       .sort(([a], [b]) => b.localeCompare(a))
       .map(([key, val]) => ({
         ...val,
-
         anu_km: Number(val.anu_km.toFixed(1)),
         onski_km: Number(val.onski_km.toFixed(1)),
-
-        anu_hours: Number((val.anu_time / 3600).toFixed(1)),
-        onski_hours: Number((val.onski_time / 3600).toFixed(1)),
       }));
   }, [activities]);
 
@@ -89,62 +86,105 @@ export default function SportsDashboard() {
     <main className="p-6 space-y-6 max-w-3xl">
       <h1 className="text-2xl font-bold">Urheiluyhteenveto</h1>
 
-      {/* 🔥 KM CHART */}
-      
-
-      {/* 🔥 TIME CHART */}
-      
-
-      {/* 🔥 SUMMARY */}
-      <div className="grid grid-cols-1 gap-4">
-        {chartData.map((m: any) => (
-          <div key={m.month} className="border p-3 rounded bg-gray-900">
-            <div className="font-semibold">{m.month}</div>
-
-            <div className="mt-2 text-sm">
-              <div>
-                <b>Anu:</b> {m.anu_km} km · {m.anu_kcal} kcal ·{" "}
-                {formatHours(m.anu_time)}
-              </div>
-
-              <div>
-                <b>Onski:</b> {m.onski_km} km · {m.onski_kcal} kcal ·{" "}
-                {formatHours(m.onski_time)}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* 🔥 LISTA */}
-      <div className="space-y-2">
-        {activities.map((a) => {
-          const sport = getSportType(a.activity_type);
+      {/* 🔥 KUUKAUSIKOHTAINEN YHTEENVETO */}
+      <div className="space-y-4">
+        {chartData.map((m: any) => {
+          const winner =
+            m.anu_km > m.onski_km
+              ? "Anu"
+              : m.onski_km > m.anu_km
+              ? "Onski"
+              : null;
 
           return (
-            <div key={a.id} className="border p-3 rounded bg-gray-900">
-              <div className="flex items-center gap-2">
-                <span style={{ color: sport.color }}>
-                  {sport.emoji}
-                </span>
-                <span className="text-sm text-gray-400">
-                  {sport.label}
-                </span>
+            <div
+              key={m.key}
+              className="border p-4 rounded bg-gray-900"
+            >
+              {/* 📅 kuukausi */}
+              <div className="font-semibold text-lg mb-2">
+                {m.month}
               </div>
 
-              <div className="text-sm text-gray-400">
-                {formatDate(a.start_time)}
+              {/* 🏆 voittaja */}
+              {winner && (
+                <div className="text-xs text-yellow-400 mb-3">
+                  🏆 {winner} johti tässä kuussa
+                </div>
+              )}
+
+              {/* 🔥 GRID */}
+              <div className="grid grid-cols-3 gap-2 text-sm mb-4">
+                <div></div>
+                <div className="font-semibold text-center">Anu</div>
+                <div className="font-semibold text-center">Onski</div>
+
+                <div className="text-gray-400">km</div>
+                <div className="text-center">{m.anu_km}</div>
+                <div className="text-center">{m.onski_km}</div>
+
+                <div className="text-gray-400">kcal</div>
+                <div className="text-center">{m.anu_kcal}</div>
+                <div className="text-center">{m.onski_kcal}</div>
+
+                <div className="text-gray-400">aika</div>
+                <div className="text-center">
+                  {formatHours(m.anu_time)}
+                </div>
+                <div className="text-center">
+                  {formatHours(m.onski_time)}
+                </div>
               </div>
 
-              <div className="font-semibold">{a.title}</div>
+              {/* 🔥 TAPAHTUMAT */}
+              <div className="space-y-2">
+                {activities
+                  .filter((a) => {
+                    const d = new Date(a.start_time);
+                    const key = `${d.getFullYear()}-${String(
+                      d.getMonth() + 1
+                    ).padStart(2, "0")}`;
 
-              <div>
-                {(a.distance_meters / 1000).toFixed(1)} km ·{" "}
-                {formatDuration(a.duration_seconds)} ·{" "}
-                {a.calories} kcal
+                    return key === m.key;
+                  })
+                  .map((a) => {
+                    const sport = getSportType(a.activity_type);
+
+                    return (
+                      <div
+                        key={a.id}
+                        className="border p-3 rounded bg-gray-800"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span style={{ color: sport.color }}>
+                            {sport.emoji}
+                          </span>
+                          <span className="text-sm text-gray-400">
+                            {sport.label}
+                          </span>
+                        </div>
+
+                        <div className="text-sm text-gray-400">
+                          {formatDate(a.start_time)}
+                        </div>
+
+                        <div className="font-semibold">
+                          {a.title}
+                        </div>
+
+                        <div>
+                          {(a.distance_meters / 1000).toFixed(1)} km ·{" "}
+                          {formatDuration(a.duration_seconds)} ·{" "}
+                          {a.calories} kcal
+                        </div>
+
+                        {a.notes && (
+                          <div className="text-sm">{a.notes}</div>
+                        )}
+                      </div>
+                    );
+                  })}
               </div>
-
-              {a.notes && <div className="text-sm">{a.notes}</div>}
             </div>
           );
         })}
@@ -207,7 +247,7 @@ function formatDuration(seconds?: number) {
 }
 
 function formatHours(seconds?: number) {
-  if (!seconds) return "";
+  if (!seconds) return "-";
 
   const h = Math.floor(seconds / 3600);
   const m = Math.round((seconds % 3600) / 60);
