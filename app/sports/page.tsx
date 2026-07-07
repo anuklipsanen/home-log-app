@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { getSportType } from "@/lib/sportTypes";
+import { getSportType, sportTypes } from "@/lib/sportTypes";
 import { useRouter } from "next/navigation";
 
 export default function SportsDashboard() {
