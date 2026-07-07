@@ -6,11 +6,13 @@ export async function POST(req: Request) {
   const supabase = await createSupabaseServerClient();
 
   try {
-    // 📦 1. FormData
+    // 📦 FormData
     const formData = await req.formData();
 
     const file = formData.get("file") as File | null;
     const memberId = formData.get("memberId") as string | null;
+    const titleInput = formData.get("title") as string | null;
+    const notesInput = formData.get("notes") as string | null;
 
     if (!file || !memberId) {
       return NextResponse.json(
@@ -19,23 +21,23 @@ export async function POST(req: Request) {
       );
     }
 
-    // 🔄 2. Muunna bufferiksi
+    // 🔄 buffer
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // 🧠 3. Parsitaan tiedosto
+    // 🧠 parse
     const parsed = await parseActivityFile({
       buffer,
       filename: file.name,
     });
 
-    // 👤 4. Hae jäsenen nimi
+    // 👤 hae jäsen
     const { data: member } = await supabase
       .from("household_members")
       .select("name")
       .eq("id", memberId)
       .single();
 
-    // 💾 5. Tallenna sport_activities
+    // 💾 tallenna activity
     const { data: activity, error: activityError } = await supabase
       .from("sport_activities")
       .insert({
@@ -44,10 +46,10 @@ export async function POST(req: Request) {
         activity_type: parsed.activityType,
         activity_sub_type: parsed.activitySubType,
 
-        title: parsed.title,
+        title: titleInput || parsed.title,
 
         notes_imported: parsed.notesImported ?? null,
-        notes: null,
+        notes: notesInput || null,
 
         start_time: parsed.startTime,
         end_time: parsed.endTime ?? null,
@@ -72,16 +74,15 @@ export async function POST(req: Request) {
       .single();
 
     if (activityError || !activity) {
-      console.error("ACTIVITY ERROR:", activityError);
       return NextResponse.json(
-        { error: activityError?.message ?? "Activity insert failed" },
+        { error: activityError?.message ?? "Insert failed" },
         { status: 500 }
       );
     }
 
-    // 🗓️ 6. Luo events-tapahtuma
-    const { error: eventError } = await supabase.from("events").insert({
-      title: `${member?.name ?? "Urheilu"} – Urheilusuoritus`,
+    // 🗓️ event
+    await supabase.from("events").insert({
+      title: `${member?.name ?? "Urheilu"} – ${titleInput || "Urheilusuoritus"}`,
 
       start_time: parsed.startTime,
       end_time: parsed.endTime ?? null,
@@ -106,27 +107,19 @@ export async function POST(req: Request) {
         .join(" · "),
     });
 
-    if (eventError) {
-      console.error("EVENT ERROR:", eventError);
-    }
-
-    // ✅ 7. Palauta onnistuminen
     return NextResponse.json({
       success: true,
       activity,
     });
 
   } catch (err: any) {
-    console.error("IMPORT ERROR:", err);
-
     return NextResponse.json(
-      { error: err.message ?? "Tuntematon virhe" },
+      { error: err.message ?? "Virhe" },
       { status: 500 }
     );
   }
 }
 
-// ⏱️ Ajan formatointi
 function formatDuration(seconds?: number) {
   if (!seconds) return "";
 
