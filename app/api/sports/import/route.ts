@@ -71,8 +71,8 @@ export async function POST(req: Request) {
         notes: notes || null,
         notes_imported: parsed.notesImported ?? null,
 
-        start_time: parsed.startTime,
-        end_time: parsed.endTime ?? null,
+        event_date: parsed.startTime.slice(0, 10),
+date: parsed.startTime.slice(0, 10),
 
         duration_seconds: Math.round(parsed.durationSeconds ?? 0),
 
@@ -117,18 +117,20 @@ export async function POST(req: Request) {
       .join(" · ");
 
     const { error: eventError } = await supabase.from("events").insert({
-      title: `${sport.emoji} ${title || sport.label}`,
+  title: `${sport.emoji} ${title || sport.label}`,
 
-      start_time: parsed.startTime,
-      end_time: parsed.endTime ?? null,
+  // 🔥 TÄMÄ ON KRIITTINEN
+  event_date: parsed.startTime.slice(0, 10),
+  date: parsed.startTime.slice(0, 10),
 
-      description,
+  description,
 
-      source_type: "sport",
-      sport_activity_id: activity.id,
+  source_type: "sport",
+  sport_activity_id: activity.id,
 
-      // 🔥 jos sinulla on color kenttä events-taulussa
-      color: sport.color ?? null,
+  // 🔥 ettei RLS tai NOT NULL kaada
+  usage_place: "muu",
+  maintenance_type: "muu",
     });
 
     if (eventError) {
