@@ -21,6 +21,11 @@ type Event = {
   maintenance_type?: string | null;
   company?: string | null;
   usage_place?: string | null;
+
+  // 🔥 LISÄÄ NÄMÄ
+  source_type?: string | null;
+  sport_activity_id?: string | null;
+  title?: string | null;
 };
 
 type CalendarEntry = {
@@ -96,11 +101,12 @@ export default function CalendarPage() {
 
     return events.flatMap((event) => {
       if (
-        selectedPlaces.length > 0 &&
-        !selectedPlaces.includes(event.usage_place || "muu")
-      ) {
-        return [];
-      }
+  selectedPlaces.length > 0 &&
+  event.source_type !== "sport" &&
+  !selectedPlaces.includes(event.usage_place || "muu")
+) {
+  return [];
+}
 
       const entries: CalendarEntry[] = [];
 
@@ -122,44 +128,73 @@ export default function CalendarPage() {
   }
 
   function getEntryStyle(
-    kind: "event" | "reminder",
-    maintenanceType?: string | null
-  ) {
-    if (kind === "reminder") {
-      return {
-        background: "#fff7ed",
-        border: "1px solid #fed7aa",
-      };
-    }
-
+  kind: "event" | "reminder",
+  maintenanceType?: string | null,
+  sourceType?: string | null
+) {
+  // 🔥 SPORT
+  if (sourceType === "sport") {
     return {
-      background:
-        eventTypes[maintenanceType as keyof typeof eventTypes]?.color ??
-        eventTypes.muu.color,
-      border: "1px solid #ddd",
+      background: "#ecfeff",
+      border: "1px solid #67e8f9",
     };
   }
 
-  function getEntryText(entry: CalendarEntry) {
-    const { event, kind } = entry;
-
-    if (kind === "reminder") {
-      return (
-        <>
-          <span>{event.reminder_text || "Ei muistutustekstiä"}</span>
-
-          {event.description && (
-            <>
-              <br />
-              <span style={{ opacity: 0.75 }}>{event.description}</span>
-            </>
-          )}
-        </>
-      );
-    }
-
-    return event.description || event.company || "Ei kuvausta";
+  if (kind === "reminder") {
+    return {
+      background: "#fff7ed",
+      border: "1px solid #fed7aa",
+    };
   }
+
+  return {
+    background:
+      eventTypes[maintenanceType as keyof typeof eventTypes]?.color ??
+      eventTypes.muu.color,
+    border: "1px solid #ddd",
+  };
+}
+
+  function getEntryText(entry: CalendarEntry) {
+  const { event, kind } = entry;
+
+  // 🔥 SPORT EVENT
+  if (event.source_type === "sport") {
+    return (
+      <>
+        <span>{event.title}</span>
+
+        {event.description && (
+          <>
+            <br />
+            <span style={{ opacity: 0.75 }}>
+              {event.description}
+            </span>
+          </>
+        )}
+      </>
+    );
+  }
+
+  if (kind === "reminder") {
+    return (
+      <>
+        <span>{event.reminder_text || "Ei muistutustekstiä"}</span>
+
+        {event.description && (
+          <>
+            <br />
+            <span style={{ opacity: 0.75 }}>
+              {event.description}
+            </span>
+          </>
+        )}
+      </>
+    );
+  }
+
+  return event.description || event.company || "Ei kuvausta";
+}
 
   return (
     <main
@@ -356,7 +391,11 @@ export default function CalendarPage() {
                               overflowWrap: "anywhere",
                               wordBreak: "break-word",
                               lineHeight: 1.25,
-                              ...getEntryStyle(kind, event.maintenance_type),
+                              ...getEntryStyle(
+  kind,
+  event.maintenance_type,
+  event.source_type
+),
                             }}
                           >
                             <strong>
@@ -416,10 +455,26 @@ export default function CalendarPage() {
             </button>
 
             <h2>
-              {selectedEntry.kind === "reminder"
-                ? "🔔 Muistutus"
-                : "📌 Tapahtuma"}
-            </h2>
+  {selectedEntry.kind === "reminder"
+    ? "🔔 Muistutus"
+    : selectedEntry.event.source_type === "sport"
+    ? "🏃 Urheilusuoritus"
+    : "📌 Tapahtuma"}
+</h2>
+
+{selectedEntry.event.source_type === "sport" && (
+  <>
+    <p>
+      <strong>Suoritus:</strong>{" "}
+      {selectedEntry.event.title}
+    </p>
+
+    <p>
+      <strong>Tiedot:</strong>{" "}
+      {selectedEntry.event.description}
+    </p>
+  </>
+)}
 
             <p>
               <strong>Tyyppi:</strong>{" "}
