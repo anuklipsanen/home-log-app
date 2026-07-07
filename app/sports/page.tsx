@@ -112,9 +112,19 @@ export default function SportsDashboard() {
       {/* DETAIL */}
       {selectedActivity && (
         <EditableActivity
-          activity={selectedActivity}
-          onClose={() => setSelectedActivity(null)}
-        />
+  activity={selectedActivity}
+  onUpdated={(updated) => {
+    setActivities((prev) =>
+      prev.map((a) => (a.id === updated.id ? updated : a))
+    );
+    setSelectedActivity(updated);
+  }}
+  onDeleted={(id) => {
+    setActivities((prev) => prev.filter((a) => a.id !== id));
+    setSelectedActivity(null);
+  }}
+  onClose={() => setSelectedActivity(null)}
+/>
       )}
 
       {chartData.map((m: any) => (
@@ -253,15 +263,210 @@ function SummaryTable({ title, anu, onski }: any) {
 
 /* ---------------- EDIT ---------------- */
 
-function EditableActivity({ activity, onClose }: any) {
+function EditableActivity({
+  activity,
+  onUpdated,
+  onDeleted,
+  onClose,
+}: {
+  activity: any;
+  onUpdated: (a: any) => void;
+  onDeleted: (id: string) => void;
+  onClose: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+
+  const [title, setTitle] = useState(activity.title);
+  const [notes, setNotes] = useState(activity.notes || "");
+  const [distance, setDistance] = useState(
+    activity.distance_meters || 0
+  );
+  const [duration, setDuration] = useState(
+    activity.duration_seconds || 0
+  );
+  const [calories, setCalories] = useState(
+    activity.calories || 0
+  );
+  const [type, setType] = useState(
+    activity.activity_type || "other"
+  );
+
+  useEffect(() => {
+    setTitle(activity.title);
+    setNotes(activity.notes || "");
+    setDistance(activity.distance_meters || 0);
+    setDuration(activity.duration_seconds || 0);
+    setCalories(activity.calories || 0);
+    setType(activity.activity_type || "other");
+  }, [activity]);
+
+  const sport = getSportType(type);
+
+  async function save() {
+    const res = await fetch("/api/sports/update", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: activity.id,
+        title,
+        notes,
+        distance_meters: distance,
+        duration_seconds: duration,
+        calories,
+        activity_type: type,
+      }),
+    });
+
+    const data = await res.json();
+    if (!data.success) return alert(data.error);
+
+    onUpdated({
+      ...activity,
+      title,
+      notes,
+      distance_meters: distance,
+      duration_seconds: duration,
+      calories,
+      activity_type: type,
+    });
+
+    setEditing(false);
+  }
+
+  async function remove() {
+    if (!confirm("Poistetaanko suoritus?")) return;
+
+    const res = await fetch("/api/sports/delete", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ id: activity.id }),
+    });
+
+    const data = await res.json();
+    if (!data.success) return alert(data.error);
+
+    onDeleted(activity.id);
+  }
+
   return (
-    <div className="border p-4 rounded bg-blue-950/40">
+    <div className="border p-4 rounded bg-blue-950/40 space-y-4">
       <div className="flex justify-between">
         <span className="text-blue-400">Valittu suoritus</span>
         <button onClick={onClose}>Sulje</button>
       </div>
 
-      <div className="mt-2">{activity.title}</div>
+      <div className="text-sm text-gray-400">
+        {formatDate(activity.start_time)}
+      </div>
+
+      {/* VIEW */}
+      {!editing && (
+        <>
+          <div className="flex gap-2">
+            <span style={{ color: sport.color }}>{sport.emoji}</span>
+            {sport.label}
+          </div>
+
+          <div className="font-bold text-lg">{activity.title}</div>
+
+          <div>
+            {(distance / 1000).toFixed(1)} km ·{" "}
+            {formatDuration(duration)} · {calories} kcal
+          </div>
+
+          {notes && <div>{notes}</div>}
+        </>
+      )}
+
+      {/* EDIT */}
+      {editing && (
+        <div className="space-y-3">
+          <select
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            className="border p-2 w-full rounded bg-gray-900"
+          >
+            {Object.entries(sportTypes).map(([key, val]: any) => (
+              <optgroup key={key} label={`${val.emoji} ${val.label}`}>
+                {!val.children && (
+                  <option value={key}>{val.label}</option>
+                )}
+                {val.children &&
+                  Object.entries(val.children).map(
+                    ([subKey, subLabel]: any) => (
+                      <option key={subKey} value={subKey}>
+                        {subLabel}
+                      </option>
+                    )
+                  )}
+              </optgroup>
+            ))}
+          </select>
+
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="border p-2 w-full rounded"
+            placeholder="Otsikko"
+          />
+
+          <input
+            type="number"
+            value={distance}
+            onChange={(e) => setDistance(Number(e.target.value))}
+            className="border p-2 w-full rounded"
+            placeholder="Metrit"
+          />
+
+          <input
+            type="number"
+            value={duration}
+            onChange={(e) => setDuration(Number(e.target.value))}
+            className="border p-2 w-full rounded"
+            placeholder="Sekunnit"
+          />
+
+          <input
+            type="number"
+            value={calories}
+            onChange={(e) => setCalories(Number(e.target.value))}
+            className="border p-2 w-full rounded"
+            placeholder="Kalorit"
+          />
+
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            className="border p-2 w-full rounded"
+          />
+        </div>
+      )}
+
+      <div className="flex gap-3">
+        {!editing ? (
+          <>
+            <button onClick={() => setEditing(true)}>
+              Muokkaa
+            </button>
+            <button onClick={remove} className="text-red-400">
+              Poista
+            </button>
+          </>
+        ) : (
+          <>
+            <button onClick={save} className="text-green-400">
+              Tallenna
+            </button>
+            <button onClick={() => setEditing(false)}>
+              Peruuta
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 }

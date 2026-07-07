@@ -67,6 +67,14 @@ export const sportTypes = {
     label: "Kuntosali",
     emoji: "🏋️",
     color: "#f97316",
+    children: {
+      gym_strength: "Voimaharjoittelu",
+      gym_cardio: "Kardiotreeni",
+      gym_crossfit: "Crossfit",
+      gym_yoga: "Jooga",
+      gym_pilates: "Pilates",
+      gym_stretching: "Venyttely",
+    },
   },
 
   ice_skating: {
