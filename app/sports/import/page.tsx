@@ -1,3 +1,5 @@
+"use client";
+
 export default function SportsImportPage() {
   return (
     <main className="p-6">
