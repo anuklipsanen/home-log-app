@@ -362,6 +362,79 @@ function EditableActivity({
         {formatDate(activity.start_time)}
       </div>
 
+      {/* 📅 AIKA */}
+<div className="text-sm text-gray-400">
+  {formatDate(activity.start_time)}
+</div>
+
+{/* 🔥 TÄHÄN KOHTAAN */}
+{editing && (
+  <div className="space-y-3">
+
+    <div>
+      <label className="text-sm text-gray-400">Laji</label>
+      <select
+        value={type}
+        onChange={(e) => setType(e.target.value)}
+        className="border p-2 w-full rounded bg-gray-900"
+      >
+        {Object.entries(sportTypes).map(([key, val]) => (
+          <option key={key} value={key}>
+            {val.emoji} {val.label}
+          </option>
+        ))}
+      </select>
+    </div>
+
+    <div>
+      <label className="text-sm text-gray-400">Matka (metriä)</label>
+      <input
+        type="number"
+        value={distance}
+        onChange={(e) => setDistance(Number(e.target.value))}
+        className="border p-2 w-full rounded"
+      />
+    </div>
+
+    <div>
+      <label className="text-sm text-gray-400">Kesto (sekuntia)</label>
+      <input
+        type="number"
+        value={duration}
+        onChange={(e) => setDuration(Number(e.target.value))}
+        className="border p-2 w-full rounded"
+      />
+    </div>
+
+    <div>
+      <label className="text-sm text-gray-400">Kalorit</label>
+      <input
+        type="number"
+        value={calories}
+        onChange={(e) => setCalories(Number(e.target.value))}
+        className="border p-2 w-full rounded"
+      />
+    </div>
+
+  </div>
+)}
+
+{/* 📝 TITLE */}
+{editing ? (
+  <div>
+    <label className="text-sm text-gray-400">Otsikko</label>
+    <input
+      value={title}
+      onChange={(e) => setTitle(e.target.value)}
+      className="border p-2 w-full rounded"
+    />
+  </div>
+) : (
+  <div className="font-bold text-lg">
+    {activity.title}
+  </div>
+)}
+
       {/* 🏷️ LAJI */}
       {editing ? (
         <>
