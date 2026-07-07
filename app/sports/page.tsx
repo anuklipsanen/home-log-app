@@ -388,30 +388,30 @@ function EditableActivity({
           <div>
             <label className="text-sm text-gray-400">Laji</label>
             <select
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              className="border p-2 w-full rounded bg-gray-900"
-            >
-              {Object.entries(sportTypes).map(([key, val]: any) => (
-                <optgroup
-                  key={key}
-                  label={`${val.emoji} ${val.label}`}
-                >
-                  {!val.children && (
-                    <option value={key}>{val.label}</option>
-                  )}
+  value={type}
+  onChange={(e) => setType(e.target.value)}
+  className="border p-2 w-full rounded bg-gray-900"
+>
+  {Object.entries(sportTypes).map(([key, val]: any) => (
+    <optgroup key={key} label={`${val.emoji} ${val.label}`}>
+      
+      {/* jos EI alatyyppiä */}
+      {!val.children && (
+        <option value={key}>{val.label}</option>
+      )}
 
-                  {val.children &&
-                    Object.entries(val.children).map(
-                      ([subKey, subLabel]: any) => (
-                        <option key={subKey} value={subKey}>
-                          {subLabel}
-                        </option>
-                      )
-                    )}
-                </optgroup>
-              ))}
-            </select>
+      {/* alatyyppi */}
+      {val.children &&
+        Object.entries(val.children).map(
+          ([subKey, subLabel]: any) => (
+            <option key={subKey} value={subKey}>
+              {subLabel}
+            </option>
+          )
+        )}
+    </optgroup>
+  ))}
+</select>
           </div>
 
           {/* MATKA */}
