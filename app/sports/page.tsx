@@ -11,6 +11,47 @@ export default function SportsDashboard() {
 
   const [expandedMonth, setExpandedMonth] = useState<string | null>(null);
 
+  const chartData = useMemo(() => {
+  const map: Record<string, any> = {};
+
+  activities.forEach((a) => {
+    if (!a.start_time) return;
+
+    const d = new Date(a.start_time);
+    const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
+
+    if (!map[key]) {
+      map[key] = {
+        month: formatMonth(key),
+        anu_km: 0,
+        onski_km: 0,
+        anu_kcal: 0,
+        onski_kcal: 0,
+        anu_time: 0,
+        onski_time: 0,
+      };
+    }
+
+    const km = (a.distance_meters || 0) / 1000;
+    const kcal = a.calories || 0;
+    const time = a.duration_seconds || 0;
+
+    if (a.member_id === "f30cb5de-b062-41b9-8e95-270452f943d7") {
+      map[key].anu_km += km;
+      map[key].anu_kcal += kcal;
+      map[key].anu_time += time;
+    }
+
+    if (a.member_id === "aba7be53-d988-4d70-aa62-67a2148f640f") {
+      map[key].onski_km += km;
+      map[key].onski_kcal += kcal;
+      map[key].onski_time += time;
+    }
+  });
+
+  return Object.values(map);
+}, [activities]);
+
   useEffect(() => {
     fetchActivities();
   }, []);
@@ -88,6 +129,33 @@ export default function SportsDashboard() {
   return (
     <main className="p-6 space-y-6 max-w-3xl">
       <h1 className="text-2xl font-bold">Urheiluyhteenveto</h1>
+
+     <div className="mt-4">
+  <h2 className="text-lg font-semibold mb-2">
+    Kuukausittainen liikunta (km)
+  </h2>
+
+<div className="grid grid-cols-2 gap-4 mt-4">
+  {chartData.map((m: any) => (
+    <div key={m.month} className="border p-3 rounded bg-gray-900">
+      <div className="font-semibold">{m.month}</div>
+
+      <div className="mt-2 text-sm">
+        <div>
+          <b>Anu:</b> {m.anu_km.toFixed(1)} km · {m.anu_kcal} kcal ·{" "}
+          {formatDuration(m.anu_time)}
+        </div>
+
+        <div>
+          <b>Onski:</b> {m.onski_km.toFixed(1)} km · {m.onski_kcal} kcal ·{" "}
+          {formatDuration(m.onski_time)}
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
+  
+</div> 
 
       {/* ---------------- FILTERS ---------------- */}
 
