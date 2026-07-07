@@ -65,32 +65,51 @@ export default function SportsDashboard() {
 
       if (!map[key]) {
         map[key] = {
-          key,
-          month: formatMonth(key),
-          anu_km: 0,
-          onski_km: 0,
-          anu_kcal: 0,
-          onski_kcal: 0,
-          anu_time: 0,
-          onski_time: 0,
-        };
+  key,
+  month: formatMonth(key),
+
+  anu_km: 0,
+  onski_km: 0,
+  anu_kcal: 0,
+  onski_kcal: 0,
+  anu_time: 0,
+  onski_time: 0,
+
+  byType: {}, // 👈 uusi
+};
       }
 
       const km = (a.distance_meters ?? 0) / 1000;
       const kcal = a.calories ?? 0;
       const time = a.duration_seconds ?? 0;
+      const type = a.activity_type || "other";
 
-      if (a.member_id === "f30cb5de-b062-41b9-8e95-270452f943d7") {
-        map[key].anu_km += km;
-        map[key].anu_kcal += kcal;
-        map[key].anu_time += time;
-      }
+if (!map[key].byType[type]) {
+  map[key].byType[type] = {
+    anu: { km: 0, kcal: 0, time: 0 },
+    onski: { km: 0, kcal: 0, time: 0 },
+  };
+}
 
-      if (a.member_id === "aba7be53-d988-4d70-aa62-67a2148f640f") {
-        map[key].onski_km += km;
-        map[key].onski_kcal += kcal;
-        map[key].onski_time += time;
-      }
+     if (a.member_id === "f30cb5de-b062-41b9-8e95-270452f943d7") {
+  map[key].anu_km += km;
+  map[key].anu_kcal += kcal;
+  map[key].anu_time += time;
+
+  map[key].byType[type].anu.km += km;
+  map[key].byType[type].anu.kcal += kcal;
+  map[key].byType[type].anu.time += time;
+}
+
+     if (a.member_id === "aba7be53-d988-4d70-aa62-67a2148f640f") {
+  map[key].onski_km += km;
+  map[key].onski_kcal += kcal;
+  map[key].onski_time += time;
+
+  map[key].byType[type].onski.km += km;
+  map[key].byType[type].onski.kcal += kcal;
+  map[key].byType[type].onski.time += time;
+}
     });
 
     return Object.entries(map)
@@ -129,7 +148,10 @@ export default function SportsDashboard() {
             setSelectedActivity(null);
             router.push("/sports");
           }}
-          onClose={() => router.push("/sports")}
+          onClose={() => {
+  setSelectedActivity(null);
+  router.push("/sports");
+}}
         />
       )}
 
@@ -145,6 +167,24 @@ export default function SportsDashboard() {
               {m.month}
               <span>{openMonth === m.key ? "▲" : "▼"}</span>
             </div>
+
+<div className="grid grid-cols-3 gap-2 text-sm mb-4 bg-gray-800 p-3 rounded">
+  <div></div>
+  <div className="font-semibold text-center">Anu</div>
+  <div className="font-semibold text-center">Onski</div>
+
+  <div className="text-gray-400">km</div>
+  <div className="text-center">{m.anu_km}</div>
+  <div className="text-center">{m.onski_km}</div>
+
+  <div className="text-gray-400">kcal</div>
+  <div className="text-center">{m.anu_kcal}</div>
+  <div className="text-center">{m.onski_kcal}</div>
+
+  <div className="text-gray-400">aika</div>
+  <div className="text-center">{formatHours(m.anu_time)}</div>
+  <div className="text-center">{formatHours(m.onski_time)}</div>
+</div>
 
             {openMonth === m.key && (
               <div className="space-y-2">
