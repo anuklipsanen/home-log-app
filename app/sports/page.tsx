@@ -2,11 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { getSportType } from "@/lib/sportTypes";
+import { useRouter } from "next/navigation";
 
 export default function SportsDashboard() {
   const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [openMonth, setOpenMonth] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     fetchActivities();
@@ -168,9 +170,10 @@ export default function SportsDashboard() {
 
                       return (
                         <div
-                          key={a.id}
-                          className="border p-3 rounded bg-gray-800"
-                        >
+  key={a.id}
+  onClick={() => router.push(`/sports?id=${a.id}`)}
+  className="border p-3 rounded bg-gray-800 cursor-pointer hover:bg-gray-700 transition active:scale-[0.99]"
+>
                           <div className="flex items-center gap-2">
                             <span style={{ color: sport.color }}>
                               {sport.emoji}

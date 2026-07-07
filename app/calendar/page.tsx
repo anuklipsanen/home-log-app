@@ -453,7 +453,20 @@ if (eventDate === dateString) {
                               {getEventTypeLabel(event.maintenance_type)}
                             </strong>
                             <br />
-                            {getEntryText({ event, kind })}
+                            {event.source_type === "sport" ? (
+  <Link
+    href={`/sports?id=${event.sport_activity_id}`}
+    style={{
+      textDecoration: "none",
+      color: "inherit",
+      display: "block",
+    }}
+  >
+    {getEntryText({ event, kind })}
+  </Link>
+) : (
+  getEntryText({ event, kind })
+)}
                           </button>
                         ))}
                       </div>
