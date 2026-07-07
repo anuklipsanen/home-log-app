@@ -80,6 +80,7 @@ export default function SportsImportPage() {
     <main className="p-6 space-y-4 max-w-xl">
       <h1 className="text-xl font-bold">Urheilusuorituksen tuonti</h1>
 
+      {/* 👤 henkilö */}
       <select
         value={memberId}
         onChange={(e) => setMemberId(e.target.value)}
@@ -90,12 +91,14 @@ export default function SportsImportPage() {
         <option value="aba7be53-d988-4d70-aa62-67a2148f640f">Onski</option>
       </select>
 
+      {/* 📂 tiedosto */}
       <input
         type="file"
         accept=".fit,.gpx,.tcx"
         onChange={(e) => setFile(e.target.files?.[0] ?? null)}
       />
 
+      {/* ➕ lisää listaan */}
       <button
         onClick={handleUpload}
         className="bg-blue-600 text-white px-4 py-2 rounded"
@@ -103,14 +106,37 @@ export default function SportsImportPage() {
         {loading ? "Ladataan..." : "Lisää listaan"}
       </button>
 
-      {/* 🔥 PREVIEW LISTA */}
+      {/* 🔥 PREVIEW */}
       {activities.map((a) => (
-        <div key={a.id} className="border p-4 rounded space-y-2">
-          <div className="font-bold">
+        <div key={a.id} className="border p-4 rounded space-y-3">
+
+          {/* 📅 päivämäärä */}
+          <div className="text-sm text-gray-400">
+            {formatDate(a.parsed.startTime)}
+          </div>
+
+          {/* 🏷️ tyyppi */}
+          <div className="font-semibold">
+            {formatActivityType(a.parsed.activityType)}{" "}
+            {a.parsed.activitySubType
+              ? `(${formatActivitySubType(a.parsed.activitySubType)})`
+              : ""}
+          </div>
+
+          {/* 📏 matka + aika */}
+          <div className="font-bold text-lg">
             {(a.parsed.distanceMeters / 1000).toFixed(1)} km ·{" "}
             {formatDuration(a.parsed.durationSeconds)}
           </div>
 
+          {/* ❤️ syke */}
+          {a.parsed.avgHeartRate && (
+            <div className="text-sm text-gray-400">
+              keskisyke {a.parsed.avgHeartRate}
+            </div>
+          )}
+
+          {/* ✏️ otsikko */}
           <input
             value={a.title}
             onChange={(e) =>
@@ -120,9 +146,10 @@ export default function SportsImportPage() {
                 )
               )
             }
-            className="border p-2 w-full"
+            className="border p-2 w-full rounded"
           />
 
+          {/* 📝 notes */}
           <textarea
             value={a.notes}
             onChange={(e) =>
@@ -132,20 +159,25 @@ export default function SportsImportPage() {
                 )
               )
             }
-            className="border p-2 w-full"
+            className="border p-2 w-full rounded"
+            placeholder="Lisätiedot..."
           />
 
+          {/* 💾 save */}
           <button
             onClick={() => saveActivity(a)}
             className="bg-green-600 text-white px-3 py-1 rounded"
           >
             Tallenna
           </button>
+
         </div>
       ))}
     </main>
   );
 }
+
+/* ---------------- HELPERS ---------------- */
 
 function formatDuration(seconds?: number) {
   if (!seconds) return "";
@@ -157,4 +189,42 @@ function formatDuration(seconds?: number) {
   return [h, m, s]
     .map((v) => String(v).padStart(2, "0"))
     .join(":");
+}
+
+function formatDate(dateString?: string) {
+  if (!dateString) return "";
+
+  const d = new Date(dateString);
+
+  return d.toLocaleString("fi-FI", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function formatActivityType(type?: string) {
+  switch (type) {
+    case "cycling":
+      return "Pyöräily";
+    case "running":
+      return "Juoksu";
+    case "walking":
+      return "Kävely";
+    default:
+      return "Urheilu";
+  }
+}
+
+function formatActivitySubType(sub?: string) {
+  switch (sub) {
+    case "mountain":
+      return "maasto";
+    case "road":
+      return "maantie";
+    default:
+      return sub || "";
+  }
 }
