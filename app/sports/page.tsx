@@ -6,6 +6,7 @@ import { getSportType } from "@/lib/sportTypes";
 export default function SportsDashboard() {
   const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [openMonth, setOpenMonth] = useState<string | null>(null);
 
   useEffect(() => {
     fetchActivities();
@@ -80,13 +81,19 @@ export default function SportsDashboard() {
       }));
   }, [activities]);
 
+  /* 🔥 avaa uusin kuukausi automaattisesti */
+  useEffect(() => {
+    if (chartData.length > 0 && !openMonth) {
+      setOpenMonth(chartData[0].key);
+    }
+  }, [chartData]);
+
   if (loading) return <div className="p-6">Ladataan...</div>;
 
   return (
     <main className="p-6 space-y-6 max-w-3xl">
       <h1 className="text-2xl font-bold">Urheiluyhteenveto</h1>
 
-      {/* 🔥 KUUKAUSIKOHTAINEN YHTEENVETO */}
       <div className="space-y-4">
         {chartData.map((m: any) => {
           const winner =
@@ -101,20 +108,29 @@ export default function SportsDashboard() {
               key={m.key}
               className="border p-4 rounded bg-gray-900"
             >
-              {/* 📅 kuukausi */}
-              <div className="font-semibold text-lg mb-2">
+              {/* 📅 KUUKAUSI */}
+              <div
+                className="font-semibold text-lg mb-3 cursor-pointer flex justify-between items-center"
+                onClick={() =>
+                  setOpenMonth(openMonth === m.key ? null : m.key)
+                }
+              >
                 {m.month}
+
+                <span className="text-sm text-gray-400">
+                  {openMonth === m.key ? "▲" : "▼"}
+                </span>
               </div>
 
-              {/* 🏆 voittaja */}
+              {/* 🏆 VOITTAJA */}
               {winner && (
                 <div className="text-xs text-yellow-400 mb-3">
                   🏆 {winner} johti tässä kuussa
                 </div>
               )}
 
-              {/* 🔥 GRID */}
-              <div className="grid grid-cols-3 gap-2 text-sm mb-4">
+              {/* 🔥 VERTAILULAATIKKO */}
+              <div className="grid grid-cols-3 gap-2 text-sm mb-4 bg-gray-800 p-3 rounded">
                 <div></div>
                 <div className="font-semibold text-center">Anu</div>
                 <div className="font-semibold text-center">Onski</div>
@@ -136,55 +152,56 @@ export default function SportsDashboard() {
                 </div>
               </div>
 
-              {/* 🔥 TAPAHTUMAT */}
-              <div className="space-y-2">
-                {activities
-                  .filter((a) => {
-                    const d = new Date(a.start_time);
-                    const key = `${d.getFullYear()}-${String(
-                      d.getMonth() + 1
-                    ).padStart(2, "0")}`;
+              {/* 🔽 TAPAHTUMAT */}
+              {openMonth === m.key && (
+                <div className="space-y-2">
+                  {activities
+                    .filter((a) => {
+                      const d = new Date(a.start_time);
+                      const key = `${d.getFullYear()}-${String(
+                        d.getMonth() + 1
+                      ).padStart(2, "0")}`;
+                      return key === m.key;
+                    })
+                    .map((a) => {
+                      const sport = getSportType(a.activity_type);
 
-                    return key === m.key;
-                  })
-                  .map((a) => {
-                    const sport = getSportType(a.activity_type);
+                      return (
+                        <div
+                          key={a.id}
+                          className="border p-3 rounded bg-gray-800"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span style={{ color: sport.color }}>
+                              {sport.emoji}
+                            </span>
+                            <span className="text-sm text-gray-400">
+                              {sport.label}
+                            </span>
+                          </div>
 
-                    return (
-                      <div
-                        key={a.id}
-                        className="border p-3 rounded bg-gray-800"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span style={{ color: sport.color }}>
-                            {sport.emoji}
-                          </span>
-                          <span className="text-sm text-gray-400">
-                            {sport.label}
-                          </span>
+                          <div className="text-sm text-gray-400">
+                            {formatDate(a.start_time)}
+                          </div>
+
+                          <div className="font-semibold">
+                            {a.title}
+                          </div>
+
+                          <div>
+                            {(a.distance_meters / 1000).toFixed(1)} km ·{" "}
+                            {formatDuration(a.duration_seconds)} ·{" "}
+                            {a.calories} kcal
+                          </div>
+
+                          {a.notes && (
+                            <div className="text-sm">{a.notes}</div>
+                          )}
                         </div>
-
-                        <div className="text-sm text-gray-400">
-                          {formatDate(a.start_time)}
-                        </div>
-
-                        <div className="font-semibold">
-                          {a.title}
-                        </div>
-
-                        <div>
-                          {(a.distance_meters / 1000).toFixed(1)} km ·{" "}
-                          {formatDuration(a.duration_seconds)} ·{" "}
-                          {a.calories} kcal
-                        </div>
-
-                        {a.notes && (
-                          <div className="text-sm">{a.notes}</div>
-                        )}
-                      </div>
-                    );
-                  })}
-              </div>
+                      );
+                    })}
+                </div>
+              )}
             </div>
           );
         })}
