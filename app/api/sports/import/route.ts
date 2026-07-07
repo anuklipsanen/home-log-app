@@ -143,24 +143,21 @@ export async function POST(req: Request) {
       .filter(Boolean)
       .join(" · ");
 
-    const { error: eventError } = await supabase
-      .from("events")
-      .insert({
-        title: `${sport.emoji} ${title || sport.label}`,
+    const { error: eventError } = await supabase.from("events").insert({
+  // 🔥 EI titlea
+  description: `${sport.emoji} ${title || sport.label} ${
+    description ? "· " + description : ""
+  }`,
 
-        // 🔥 KRIITTINEN KALENTERILLE
-        event_date: eventDate,
-        date: eventDate,
+  event_date: eventDate,
+  date: eventDate,
 
-        description,
+  source_type: "sport",
+  sport_activity_id: activity.id,
 
-        source_type: "sport",
-        sport_activity_id: activity.id,
-
-        // 🔥 ettei kaadu NOT NULL kenttiin
-        usage_place: "muu",
-        maintenance_type: "muu",
-      });
+  usage_place: "muu",
+  maintenance_type: "muu",
+});
 
     if (eventError) {
       console.error("EVENT ERROR:", eventError);
