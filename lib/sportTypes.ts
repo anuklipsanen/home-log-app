@@ -23,3 +23,13 @@ export const sportTypes = {
     color: "#a855f7",
   },
 } as const;
+
+/* 🔥 TÄMÄ PUUTTUI SINULTA */
+export function getSportType(type?: string) {
+  if (!type) return sportTypes.other;
+
+  return (
+    sportTypes[type as keyof typeof sportTypes] ||
+    sportTypes.other
+  );
+}
