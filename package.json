@@ -12,6 +12,7 @@
     "@napi-rs/canvas": "^1.0.1",
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.108.2",
+    "adm-zip": "^0.5.18",
     "fast-xml-parser": "^5.9.3",
     "fit-file-parser": "^3.0.2",
     "next": "16.2.9",
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/adm-zip": "^0.5.8",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

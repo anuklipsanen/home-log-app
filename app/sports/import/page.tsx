@@ -7,7 +7,7 @@ export default function SportsImportPage() {
   const [memberId, setMemberId] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleMultipleUpload(files: File[]) {
+  async function handleFiles(files: File[]) {
     if (!memberId) {
       alert("Valitse henkilö ensin");
       return;
@@ -16,49 +16,71 @@ export default function SportsImportPage() {
     setLoading(true);
 
     for (const file of files) {
-      const formData = new FormData();
-      formData.append("file", file);
+      // 🔥 ZIP
+      if (file.name.endsWith(".zip")) {
+        const formData = new FormData();
+        formData.append("file", file);
 
-      const res = await fetch("/api/sports/parse", {
-        method: "POST",
-        body: formData,
-      });
+        const res = await fetch("/api/sports/parse-zip", {
+          method: "POST",
+          body: formData,
+        });
 
-      const data = await res.json();
+        const data = await res.json();
 
-      if (!data.success) continue;
+        if (!data.success) continue;
 
-      const checkRes = await fetch("/api/sports/check", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          memberId,
-          startTime: data.parsed.startTime,
-          duration: Math.round(data.parsed.durationSeconds ?? 0),
-        }),
-      });
+        for (const parsed of data.activities) {
+          await addParsedActivity(parsed);
+        }
 
-      const check = await checkRes.json();
+      } else {
+        // 🔹 normaali tiedosto
+        const formData = new FormData();
+        formData.append("file", file);
 
-      setActivities((prev) => [
-  ...prev,
-  {
-    id: crypto.randomUUID(),
-    parsed: data.parsed,
+        const res = await fetch("/api/sports/parse", {
+          method: "POST",
+          body: formData,
+        });
 
-    // 🔥 TÄRKEIN FIX
-    title: check.activity?.title ?? data.parsed.title,
-    notes: check.activity?.notes ?? "",
+        const data = await res.json();
 
-    exists: check.exists,
-    existingId: check.activity?.id ?? null,
-  },
-]);
+        if (!data.success) continue;
+
+        await addParsedActivity(data.parsed);
+      }
     }
 
     setLoading(false);
+  }
+
+  async function addParsedActivity(parsed: any) {
+    const checkRes = await fetch("/api/sports/check", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        memberId,
+        startTime: parsed.startTime,
+        duration: Math.round(parsed.durationSeconds ?? 0),
+      }),
+    });
+
+    const check = await checkRes.json();
+
+    setActivities((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        parsed,
+        title: check.activity?.title ?? parsed.title,
+        notes: check.activity?.notes ?? "",
+        exists: check.exists,
+        existingId: check.activity?.id ?? null,
+      },
+    ]);
   }
 
   async function saveActivity(a: any) {
@@ -85,12 +107,32 @@ export default function SportsImportPage() {
     setActivities((prev) => prev.filter((x) => x.id !== a.id));
   }
 
-  async function saveAll() {
-    if (!memberId) {
-      alert("Valitse henkilö");
+  async function updateActivity(a: any) {
+    const res = await fetch("/api/sports/update", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: a.existingId,
+        title: a.title,
+        notes: a.notes,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+      alert(data.error);
       return;
     }
 
+    alert("Päivitetty ✅");
+
+    setActivities((prev) => prev.filter((x) => x.id !== a.id));
+  }
+
+  async function saveAll() {
     const toSave = activities.filter((a) => !a.exists);
 
     if (toSave.length === 0) {
@@ -101,28 +143,10 @@ export default function SportsImportPage() {
     setLoading(true);
 
     for (const a of toSave) {
-      const res = await fetch("/api/sports/import", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          memberId,
-          title: a.title,
-          notes: a.notes,
-          parsed: a.parsed,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!data.success) {
-        console.log("Virhe:", data.error);
-      }
+      await saveActivity(a);
     }
 
     alert(`Tallennettu ${toSave.length} suoritusta ✅`);
-
     setActivities([]);
     setLoading(false);
   }
@@ -131,7 +155,6 @@ export default function SportsImportPage() {
     <main className="p-6 space-y-4 max-w-xl">
       <h1 className="text-xl font-bold">Urheilusuorituksen tuonti</h1>
 
-      {/* 👤 henkilö */}
       <select
         value={memberId}
         onChange={(e) => setMemberId(e.target.value)}
@@ -142,20 +165,18 @@ export default function SportsImportPage() {
         <option value="aba7be53-d988-4d70-aa62-67a2148f640f">Onski</option>
       </select>
 
-      {/* 📂 tiedostot */}
       <input
         type="file"
-        accept=".fit,.gpx,.tcx"
+        accept=".fit,.gpx,.tcx,.zip"
         multiple
         onChange={(e) => {
           const files = Array.from(e.target.files || []);
-          handleMultipleUpload(files);
+          handleFiles(files);
         }}
       />
 
-      {loading && <div className="text-gray-400">Ladataan...</div>}
+      {loading && <div>Ladataan...</div>}
 
-      {/* 🔥 BULK SAVE */}
       {activities.length > 0 && (
         <button
           onClick={saveAll}
@@ -165,7 +186,6 @@ export default function SportsImportPage() {
         </button>
       )}
 
-      {/* 🔥 PREVIEW */}
       {activities.map((a) => (
         <div
           key={a.id}
@@ -179,35 +199,17 @@ export default function SportsImportPage() {
             </div>
           )}
 
-          {a.exists && (
-  <div className="text-xs text-gray-400">
-    Näytetään aiemmin tallennetut tiedot
-  </div>
-)}
+          <div>{formatDate(a.parsed.startTime)}</div>
 
-          <div className="text-sm text-gray-400">
-            {formatDate(a.parsed.startTime)}
+          <div>
+            {a.parsed.activityType} ({a.parsed.activitySubType})
           </div>
 
-          <div className="font-semibold">
-            {formatActivityType(a.parsed.activityType)}{" "}
-            {a.parsed.activitySubType
-              ? `(${formatActivitySubType(a.parsed.activitySubType)})`
-              : ""}
-          </div>
-
-          <div className="font-bold text-lg">
+          <div>
             {(a.parsed.distanceMeters / 1000).toFixed(1)} km ·{" "}
             {formatDuration(a.parsed.durationSeconds)}
           </div>
 
-          {a.parsed.avgHeartRate && (
-            <div className="text-sm text-gray-400">
-              keskisyke {a.parsed.avgHeartRate}
-            </div>
-          )}
-
-          {/* ✏️ otsikko */}
           <input
             value={a.title}
             onChange={(e) =>
@@ -217,10 +219,8 @@ export default function SportsImportPage() {
                 )
               )
             }
-            className="border p-2 w-full rounded"
           />
 
-          {/* 📝 notes */}
           <textarea
             value={a.notes}
             onChange={(e) =>
@@ -230,18 +230,18 @@ export default function SportsImportPage() {
                 )
               )
             }
-            className="border p-2 w-full rounded"
-            placeholder="Lisätiedot..."
           />
 
-          {/* 🔥 NAPIT */}
           <div className="flex gap-2">
             {!a.exists && (
-              <button
-                onClick={() => saveActivity(a)}
-                className="bg-green-600 text-white px-3 py-1 rounded"
-              >
+              <button onClick={() => saveActivity(a)}>
                 Tallenna
+              </button>
+            )}
+
+            {a.exists && (
+              <button onClick={() => updateActivity(a)}>
+                Päivitä
               </button>
             )}
 
@@ -251,7 +251,6 @@ export default function SportsImportPage() {
                   prev.filter((x) => x.id !== a.id)
                 )
               }
-              className="bg-gray-600 text-white px-3 py-1 rounded"
             >
               Hylkää
             </button>
@@ -262,7 +261,7 @@ export default function SportsImportPage() {
   );
 }
 
-/* HELPERS */
+/* helpers */
 
 function formatDuration(seconds?: number) {
   if (!seconds) return "";
@@ -274,36 +273,5 @@ function formatDuration(seconds?: number) {
 
 function formatDate(dateString?: string) {
   if (!dateString) return "";
-  const d = new Date(dateString);
-  return d.toLocaleString("fi-FI", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-function formatActivityType(type?: string) {
-  switch (type) {
-    case "cycling":
-      return "Pyöräily";
-    case "running":
-      return "Juoksu";
-    case "walking":
-      return "Kävely";
-    default:
-      return "Urheilu";
-  }
-}
-
-function formatActivitySubType(sub?: string) {
-  switch (sub) {
-    case "mountain":
-      return "maasto";
-    case "road":
-      return "maantie";
-    default:
-      return sub || "";
-  }
+  return new Date(dateString).toLocaleString("fi-FI");
 }
