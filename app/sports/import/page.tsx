@@ -11,28 +11,47 @@ export default function SportsImportPage() {
   const [loading, setLoading] = useState(false);
 
   async function handleUpload() {
-    if (!file || !memberId) {
-      alert("Valitse henkilö ja tiedosto");
-      return;
-    }
+  if (!file || !memberId) {
+    alert("Valitse henkilö ja tiedosto");
+    return;
+  }
 
-    setLoading(true);
+  setLoading(true);
 
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("memberId", memberId);
-    formData.append("title", title);
-    formData.append("notes", notes);
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("memberId", memberId);
+  formData.append("title", title);
+  formData.append("notes", notes);
 
+  try {
     const res = await fetch("/api/sports/import", {
       method: "POST",
       body: formData,
     });
 
     const data = await res.json();
+
     setResult(data);
-    setLoading(false);
+
+    // 🔥 TÄRKEIN LISÄYS
+    if (!data.success) {
+      alert(data.error || "Virhe tuonnissa");
+    } else {
+      alert("Suoritus tallennettu ✅");
+
+      // reset form
+      setFile(null);
+      setTitle("");
+      setNotes("");
+    }
+
+  } catch (err) {
+    alert("Yhteysvirhe");
   }
+
+  setLoading(false);
+}
 
   return (
     <main className="p-6 space-y-4 max-w-xl">
@@ -88,6 +107,17 @@ export default function SportsImportPage() {
           {JSON.stringify(result, null, 2)}
         </pre>
       )}
+      {result?.error && (
+  <div className="text-red-600 font-medium">
+    {result.error}
+  </div>
+)}
+
+{result?.success && (
+  <div className="text-green-600 font-medium">
+    Tallennettu onnistuneesti!
+  </div>
+)}
     </main>
   );
 }

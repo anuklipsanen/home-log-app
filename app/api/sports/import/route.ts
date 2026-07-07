@@ -6,7 +6,6 @@ export async function POST(req: Request) {
   const supabase = await createSupabaseServerClient();
 
   try {
-    // 📦 FormData
     const formData = await req.formData();
 
     const file = formData.get("file") as File | null;
@@ -21,23 +20,37 @@ export async function POST(req: Request) {
       );
     }
 
-    // 🔄 buffer
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // 🧠 parse
     const parsed = await parseActivityFile({
       buffer,
       filename: file.name,
     });
 
-    // 👤 hae jäsen
+    const duration = Math.round(parsed.durationSeconds ?? 0);
+
+    // 🔍 DUPLIKAATTICHECK
+    const { data: existing } = await supabase
+      .from("sport_activities")
+      .select("id")
+      .eq("member_id", memberId)
+      .eq("start_time", parsed.startTime)
+      .eq("duration_seconds", duration)
+      .maybeSingle();
+
+    if (existing) {
+      return NextResponse.json({
+        success: false,
+        error: "Tämä suoritus on jo tuotu",
+      });
+    }
+
     const { data: member } = await supabase
       .from("household_members")
       .select("name")
       .eq("id", memberId)
       .single();
 
-    // 💾 tallenna activity
     const { data: activity, error: activityError } = await supabase
       .from("sport_activities")
       .insert({
@@ -54,7 +67,7 @@ export async function POST(req: Request) {
         start_time: parsed.startTime,
         end_time: parsed.endTime ?? null,
 
-        duration_seconds: Math.round(parsed.durationSeconds ?? 0),
+        duration_seconds: duration,
 
         distance_meters: parsed.distanceMeters
           ? Math.round(parsed.distanceMeters)
@@ -74,15 +87,24 @@ export async function POST(req: Request) {
       .single();
 
     if (activityError || !activity) {
+      // 👇 jos DB constraint laukeaa
+      if (activityError?.code === "23505") {
+        return NextResponse.json({
+          success: false,
+          error: "Tämä suoritus on jo tuotu (duplikaatti)",
+        });
+      }
+
       return NextResponse.json(
         { error: activityError?.message ?? "Insert failed" },
         { status: 500 }
       );
     }
 
-    // 🗓️ event
     await supabase.from("events").insert({
-      title: `${member?.name ?? "Urheilu"} – ${titleInput || "Urheilusuoritus"}`,
+      title: `${member?.name ?? "Urheilu"} – ${
+        titleInput || "Urheilusuoritus"
+      }`,
 
       start_time: parsed.startTime,
       end_time: parsed.endTime ?? null,
