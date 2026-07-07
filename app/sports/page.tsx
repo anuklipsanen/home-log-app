@@ -194,7 +194,53 @@ export default function SportsDashboard() {
                         : "bg-gray-800 hover:bg-gray-700"
                     }`}
                   >
-                    <div>{sport.emoji} {a.title}</div>
+                    <div
+  key={a.id}
+  onClick={() =>
+    setSelectedActivity(
+      selectedActivity?.id === a.id ? null : a
+    )
+  }
+  className={`border p-3 rounded cursor-pointer transition ${
+    selectedActivity?.id === a.id
+      ? "bg-blue-900 border-blue-500"
+      : "bg-gray-800 hover:bg-gray-700"
+  }`}
+>
+  {/* 🏷️ LAJI */}
+  <div className="flex gap-2 items-center">
+    <span style={{ color: sport.color }}>
+      {sport.emoji}
+    </span>
+    <span className="text-sm text-gray-400">
+      {sport.label}
+    </span>
+  </div>
+
+  {/* 📅 AIKA */}
+  <div className="text-sm text-gray-400">
+    {formatDate(a.start_time)}
+  </div>
+
+  {/* 📝 OTSIKKO */}
+  <div className="font-semibold">
+    {a.title}
+  </div>
+
+  {/* 📊 DATA */}
+  <div>
+    {((a.distance_meters ?? 0) / 1000).toFixed(1)} km ·{" "}
+    {formatDuration(a.duration_seconds)} ·{" "}
+    {a.calories} kcal
+  </div>
+
+  {/* 🧠 NOTES */}
+  {a.notes && (
+    <div className="text-sm text-gray-400 mt-1">
+      {a.notes}
+    </div>
+  )}
+</div>
                   </div>
                 );
               })}
@@ -287,4 +333,31 @@ function formatHours(seconds?: number) {
   const h = Math.floor(seconds / 3600);
   const m = Math.round((seconds % 3600) / 60);
   return `${h} h ${m} min`;
+}
+
+function formatDate(dateString?: string) {
+  if (!dateString) return "";
+
+  const d = new Date(dateString);
+
+  return `${d.toLocaleDateString("fi-FI")} ${d.toLocaleTimeString("fi-FI", {
+    hour: "2-digit",
+    minute: "2-digit",
+  })}`;
+}
+
+function formatDuration(seconds?: number) {
+  if (!seconds) return "";
+
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+
+  if (h === 0) {
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  }
+
+  return [h, m, s]
+    .map((v) => String(v).padStart(2, "0"))
+    .join(":");
 }
