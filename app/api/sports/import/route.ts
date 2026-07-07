@@ -5,7 +5,8 @@ import { NextResponse } from "next/server";
 import { normalizeSportType } from "@/lib/normalizeSportType";
 import { getSportType } from "@/lib/sportTypes";
 
-/* 🔥 helper */
+/* ---------------- HELPERS ---------------- */
+
 function formatDuration(seconds?: number) {
   if (!seconds) return "";
 
@@ -21,6 +22,8 @@ function formatDuration(seconds?: number) {
     .map((v) => String(v).padStart(2, "0"))
     .join(":");
 }
+
+/* ---------------- ROUTE ---------------- */
 
 export async function POST(req: Request) {
   try {
@@ -51,6 +54,27 @@ export async function POST(req: Request) {
       });
     }
 
+    console.log("PARSED:", parsed);
+
+    /* ---------------- START TIME FIX ---------------- */
+
+    const startTime =
+      parsed.startTime ||
+      parsed.start_time ||
+      parsed.timestamp ||
+      null;
+
+    if (!startTime) {
+      return NextResponse.json({
+        success: false,
+        error: "Start time puuttuu tiedostosta",
+      });
+    }
+
+    const eventDate = new Date(startTime)
+      .toISOString()
+      .slice(0, 10);
+
     /* ---------------- NORMALISOINTI ---------------- */
 
     const activityType = normalizeSportType(parsed.activityType);
@@ -71,6 +95,9 @@ export async function POST(req: Request) {
         notes: notes || null,
         notes_imported: parsed.notesImported ?? null,
 
+        start_time: startTime,
+        end_time: parsed.endTime ?? null,
+
         duration_seconds: Math.round(parsed.durationSeconds ?? 0),
 
         distance_meters: parsed.distanceMeters
@@ -82,7 +109,8 @@ export async function POST(req: Request) {
         avg_heart_rate: parsed.avgHeartRate ?? null,
         max_heart_rate: parsed.maxHeartRate ?? null,
 
-        elevation_gain_meters: parsed.elevationGainMeters ?? null,
+        elevation_gain_meters:
+          parsed.elevationGainMeters ?? null,
 
         file_type: parsed.fileType,
         original_filename: parsed.fileName ?? null,
@@ -93,7 +121,7 @@ export async function POST(req: Request) {
     if (error || !activity) {
       return NextResponse.json({
         success: false,
-        error: error?.message || "Insert failed",
+        error: error?.message || "Sport insert failed",
       });
     }
 
@@ -108,36 +136,40 @@ export async function POST(req: Request) {
         ? formatDuration(parsed.durationSeconds)
         : null,
 
-      parsed.calories ? `${parsed.calories} kcal` : null,
+      parsed.calories
+        ? `${parsed.calories} kcal`
+        : null,
     ]
       .filter(Boolean)
       .join(" · ");
 
-    const { error: eventError } = await supabase.from("events").insert({
-  title: `${sport.emoji} ${title || sport.label}`,
+    const { error: eventError } = await supabase
+      .from("events")
+      .insert({
+        title: `${sport.emoji} ${title || sport.label}`,
 
-  // 🔥 TÄMÄ ON KRIITTINEN
-  event_date: parsed.startTime.slice(0, 10),
-  date: parsed.startTime.slice(0, 10),
+        // 🔥 KRIITTINEN KALENTERILLE
+        event_date: eventDate,
+        date: eventDate,
 
-  description,
+        description,
 
-  source_type: "sport",
-  sport_activity_id: activity.id,
+        source_type: "sport",
+        sport_activity_id: activity.id,
 
-  // 🔥 ettei RLS tai NOT NULL kaada
-  usage_place: "muu",
-  maintenance_type: "muu",
-    });
+        // 🔥 ettei kaadu NOT NULL kenttiin
+        usage_place: "muu",
+        maintenance_type: "muu",
+      });
 
     if (eventError) {
-  console.error("Event insert error:", eventError);
+      console.error("EVENT ERROR:", eventError);
 
-  return NextResponse.json({
-    success: false,
-    error: "Event insert failed: " + eventError.message,
-  });
-}
+      return NextResponse.json({
+        success: false,
+        error: "Event insert failed: " + eventError.message,
+      });
+    }
 
     /* ---------------- DONE ---------------- */
 
@@ -146,6 +178,8 @@ export async function POST(req: Request) {
       activity,
     });
   } catch (err: any) {
+    console.error("IMPORT ERROR:", err);
+
     return NextResponse.json({
       success: false,
       error: err.message,
