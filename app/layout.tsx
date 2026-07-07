@@ -38,21 +38,27 @@ export default function RootLayout({
             position: "sticky",
             top: 0,
             zIndex: 1000,
-
-            // 🔥 mobiili fix
             overflowX: "auto",
             whiteSpace: "nowrap",
           }}
         >
+          {/* 🔥 NAV LINKS */}
           <Link href="/" style={navLinkStyle}>🏠 Koti</Link>
           <Link href="/events/new" style={navLinkStyle}>➕ Lisää</Link>
           <Link href="/upload" style={navLinkStyle}>📤 Upload</Link>
           <Link href="/events" style={navLinkStyle}>📋 Tapahtumat</Link>
           <Link href="/calendar" style={navLinkStyle}>📅 Kalenteri</Link>
           <Link href="/reports" style={navLinkStyle}>📊 Raportit</Link>
-          {/* 🔥 tämä oikeaan reunaan */}
-  <LogoutButton />
-</header>
+
+          {/* 🔥 UUSI */}
+          <Link href="/sports" style={navLinkStyle}>🏃 Liikunta</Link>
+
+          {/* 🔥 spacer työntää logout oikealle */}
+          <div style={{ flex: 1 }} />
+
+          {/* 🔥 LOGOUT OIKEALLE */}
+          <LogoutButton />
+        </header>
 
         {/* 🔐 AUTH */}
         <AuthGuard>
@@ -61,17 +67,13 @@ export default function RootLayout({
               width: "100%",
               display: "flex",
               justifyContent: "center",
-
-              // 🔥 mobiili spacing
               padding: "16px 12px",
             }}
           >
             <div
               style={{
                 width: "100%",
-                maxWidth: 900, // 🔥 estää liiallisen leveyden desktopissa
-
-                // 🔥 tärkeä: ei liian keskitetty fiilis
+                maxWidth: 900,
                 margin: "0 auto",
               }}
             >
