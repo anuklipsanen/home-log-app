@@ -54,11 +54,12 @@ export default function RootLayout({
           <Link href="/events/new" style={getNavLinkStyle(usePathname() === "/events/new")}>➕ Lisää</Link>
           <Link href="/upload" style={getNavLinkStyle(usePathname() === "/upload")}>📤 Upload</Link>
           <Link href="/events" style={getNavLinkStyle(usePathname() === "/events")}>📋 Tapahtumat</Link>
+          <Link href="/sports" style={getNavLinkStyle(usePathname() === "/sports")}>🏃 Liikunta</Link>
           <Link href="/calendar" style={getNavLinkStyle(usePathname() === "/calendar")}>📅 Kalenteri</Link>
           <Link href="/reports" style={getNavLinkStyle(usePathname() === "/reports")}>📊 Raportit</Link>
 
           {/* 🔥 UUSI */}
-          <Link href="/sports" style={getNavLinkStyle(usePathname() === "/sports")}>🏃 Liikunta</Link>
+          
 
           {/* 🔥 spacer työntää logout oikealle */}
           <div style={{ flex: 1 }} />
