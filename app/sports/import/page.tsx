@@ -43,15 +43,15 @@ export default function SportsImportPage() {
       const check = await checkRes.json();
 
       setActivities((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          parsed: data.parsed,
-          title: data.parsed.title,
-          notes: "",
-          exists: check.exists,
-        },
-      ]);
+  ...prev,
+  {
+    id: crypto.randomUUID(),
+    parsed: data.parsed,
+    title: check.activity?.title || data.parsed.title,
+    notes: check.activity?.notes || "",
+    exists: check.exists,
+  },
+]);
     }
 
     setLoading(false);
@@ -174,6 +174,12 @@ export default function SportsImportPage() {
               ⚠️ Tämä suoritus on jo tuotu
             </div>
           )}
+
+          {a.exists && (
+  <div className="text-xs text-gray-400">
+    Näytetään aiemmin tallennetut tiedot
+  </div>
+)}
 
           <div className="text-sm text-gray-400">
             {formatDate(a.parsed.startTime)}
