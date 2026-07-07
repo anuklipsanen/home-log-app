@@ -5,7 +5,15 @@ export async function POST(req: Request) {
   const supabase = await createSupabaseServerClient();
 
   try {
-    const { id, title, notes } = await req.json();
+    const {
+  id,
+  title,
+  notes,
+  distance_meters,
+  duration_seconds,
+  calories,
+  activity_type,
+} = await req.json();
 
     if (!id) {
       return NextResponse.json(
@@ -19,6 +27,10 @@ export async function POST(req: Request) {
       .update({
         title,
         notes,
+        distance_meters,
+        duration_seconds,
+        calories,
+        activity_type,
       })
       .eq("id", id);
 

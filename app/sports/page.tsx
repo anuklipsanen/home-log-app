@@ -256,23 +256,37 @@ function EditableActivity({ activity, onUpdated, onDeleted, onClose }: any) {
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(activity.title);
   const [notes, setNotes] = useState(activity.notes || "");
+  const [distance, setDistance] = useState(
+  activity.distance_meters || 0
+);
+const [duration, setDuration] = useState(
+  activity.duration_seconds || 0
+);
+const [calories, setCalories] = useState(
+  activity.calories || 0
+);
+const [type, setType] = useState(activity.activity_type || "other");
 
   useEffect(() => {
-    setTitle(activity.title);
-    setNotes(activity.notes || "");
-  }, [activity]);
+  setTitle(activity.title);
+  setNotes(activity.notes || "");
+  setDistance(activity.distance_meters || 0);
+  setDuration(activity.duration_seconds || 0);
+  setCalories(activity.calories || 0);
+  setType(activity.activity_type || "other");
+}, [activity]);
 
   async function save() {
     const res = await fetch("/api/sports/update", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: activity.id, title, notes }),
+      body: JSON.stringify({ id: activity.id, title, notes, distance, duration, calories, type }),
     });
 
     const data = await res.json();
     if (!data.success) return alert(data.error);
 
-    onUpdated({ ...activity, title, notes });
+    onUpdated({ ...activity, title, notes, distance, duration, calories, type });
     setEditing(false);
   }
 
@@ -291,7 +305,44 @@ function EditableActivity({ activity, onUpdated, onDeleted, onClose }: any) {
   return (
     <div className="border p-4 rounded bg-blue-950/40">
       <button onClick={onClose}>Sulje</button>
+{editing && (
+  <div className="space-y-2">
+    {/* 🏷️ LAJI */}
+    <input
+      value={type}
+      onChange={(e) => setType(e.target.value)}
+      className="border p-2 w-full rounded"
+      placeholder="Laji (esim. cycling)"
+    />
 
+    {/* 📏 MATKA */}
+    <input
+      type="number"
+      value={distance}
+      onChange={(e) => setDistance(Number(e.target.value))}
+      className="border p-2 w-full rounded"
+      placeholder="Matka metreinä"
+    />
+
+    {/* ⏱️ AIKA */}
+    <input
+      type="number"
+      value={duration}
+      onChange={(e) => setDuration(Number(e.target.value))}
+      className="border p-2 w-full rounded"
+      placeholder="Kesto sekunteina"
+    />
+
+    {/* 🔥 KCAL */}
+    <input
+      type="number"
+      value={calories}
+      onChange={(e) => setCalories(Number(e.target.value))}
+      className="border p-2 w-full rounded"
+      placeholder="Kalorit"
+    />
+  </div>
+)}
       {editing ? (
         <input value={title} onChange={(e) => setTitle(e.target.value)} />
       ) : (
