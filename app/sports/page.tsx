@@ -384,67 +384,97 @@ function EditableActivity({
 
       {/* EDIT */}
       {editing && (
-        <div className="space-y-3">
-          <select
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-            className="border p-2 w-full rounded bg-gray-900"
-          >
-            {Object.entries(sportTypes).map(([key, val]: any) => (
-              <optgroup key={key} label={`${val.emoji} ${val.label}`}>
-                {!val.children && (
-                  <option value={key}>{val.label}</option>
-                )}
-                {val.children &&
-                  Object.entries(val.children).map(
-                    ([subKey, subLabel]: any) => (
-                      <option key={subKey} value={subKey}>
-                        {subLabel}
-                      </option>
-                    )
-                  )}
-              </optgroup>
-            ))}
-          </select>
+  <div className="space-y-4">
 
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="border p-2 w-full rounded"
-            placeholder="Otsikko"
-          />
+    {/* LAJI */}
+    <div>
+      <label className="text-sm text-gray-400">Laji</label>
+      <select
+        value={type}
+        onChange={(e) => setType(e.target.value)}
+        className="border p-2 w-full rounded bg-gray-900"
+      >
+        {Object.entries(sportTypes).map(([key, val]: any) => (
+          <optgroup key={key} label={`${val.emoji} ${val.label}`}>
+            {!val.children && (
+              <option value={key}>{val.label}</option>
+            )}
+            {val.children &&
+              Object.entries(val.children).map(
+                ([subKey, subLabel]: any) => (
+                  <option key={subKey} value={subKey}>
+                    {subLabel}
+                  </option>
+                )
+              )}
+          </optgroup>
+        ))}
+      </select>
+    </div>
 
-          <input
-            type="number"
-            value={distance}
-            onChange={(e) => setDistance(Number(e.target.value))}
-            className="border p-2 w-full rounded"
-            placeholder="Metrit"
-          />
+    {/* OTSIKKO */}
+    <div>
+      <label className="text-sm text-gray-400">Otsikko</label>
+      <input
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        className="border p-2 w-full rounded"
+      />
+    </div>
 
-          <input
-            type="number"
-            value={duration}
-            onChange={(e) => setDuration(Number(e.target.value))}
-            className="border p-2 w-full rounded"
-            placeholder="Sekunnit"
-          />
+    {/* MATKA */}
+    <div>
+      <label className="text-sm text-gray-400">
+        Matka (metriä)
+      </label>
+      <input
+        type="number"
+        value={distance}
+        onChange={(e) => setDistance(Number(e.target.value))}
+        className="border p-2 w-full rounded"
+      />
+    </div>
 
-          <input
-            type="number"
-            value={calories}
-            onChange={(e) => setCalories(Number(e.target.value))}
-            className="border p-2 w-full rounded"
-            placeholder="Kalorit"
-          />
+    {/* KESTO */}
+    <div>
+      <label className="text-sm text-gray-400">
+        Kesto (sekuntia)
+      </label>
+      <input
+        type="number"
+        value={duration}
+        onChange={(e) => setDuration(Number(e.target.value))}
+        className="border p-2 w-full rounded"
+      />
+    </div>
 
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            className="border p-2 w-full rounded"
-          />
-        </div>
-      )}
+    {/* KCAL */}
+    <div>
+      <label className="text-sm text-gray-400">
+        Kalorit
+      </label>
+      <input
+        type="number"
+        value={calories}
+        onChange={(e) => setCalories(Number(e.target.value))}
+        className="border p-2 w-full rounded"
+      />
+    </div>
+
+    {/* NOTES */}
+    <div>
+      <label className="text-sm text-gray-400">
+        Muistiinpanot
+      </label>
+      <textarea
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        className="border p-2 w-full rounded"
+      />
+    </div>
+
+  </div>
+)}
 
       <div className="flex gap-3">
         {!editing ? (
