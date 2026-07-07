@@ -118,7 +118,7 @@ export default function SportsDashboard() {
   </div>
 
   <a
-    href="/upload"
+    href="/sports/import"
     className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded whitespace-nowrap"
   >
     📤 Lataa tiedostoja
