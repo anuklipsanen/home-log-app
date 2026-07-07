@@ -290,7 +290,7 @@ function EditableActivity({
     setType(activity.activity_type || "other");
   }, [activity]);
 
-  const selectedSport = getSportType(type);
+  const sport = getSportType(type);
 
   async function save() {
     const res = await fetch("/api/sports/update", {
@@ -343,195 +343,143 @@ function EditableActivity({
   }
 
   return (
-    <div className="border p-4 rounded bg-blue-950/40 space-y-3">
+    <div className="border p-4 rounded bg-blue-950/40 space-y-4">
+      {/* HEADER */}
       <div className="flex justify-between">
         <span className="text-blue-400 text-sm">
           Valittu suoritus
         </span>
-
-        <button
-          onClick={onClose}
-          className="text-gray-400 text-sm"
-        >
+        <button onClick={onClose} className="text-gray-400 text-sm">
           Sulje
         </button>
       </div>
 
-      {/* 📅 AIKA */}
+      {/* AIKA */}
       <div className="text-sm text-gray-400">
         {formatDate(activity.start_time)}
       </div>
 
-      {/* 📅 AIKA */}
-<div className="text-sm text-gray-400">
-  {formatDate(activity.start_time)}
-</div>
-
-{/* 🔥 TÄHÄN KOHTAAN */}
-{editing && (
-  <div className="space-y-3">
-
-    <div>
-      <label className="text-sm text-gray-400">Laji</label>
-      <select
-        value={type}
-        onChange={(e) => setType(e.target.value)}
-        className="border p-2 w-full rounded bg-gray-900"
-      >
-        {Object.entries(sportTypes).map(([key, val]) => (
-          <option key={key} value={key}>
-            {val.emoji} {val.label}
-          </option>
-        ))}
-      </select>
-    </div>
-
-    <div>
-      <label className="text-sm text-gray-400">Matka (metriä)</label>
-      <input
-        type="number"
-        value={distance}
-        onChange={(e) => setDistance(Number(e.target.value))}
-        className="border p-2 w-full rounded"
-      />
-    </div>
-
-    <div>
-      <label className="text-sm text-gray-400">Kesto (sekuntia)</label>
-      <input
-        type="number"
-        value={duration}
-        onChange={(e) => setDuration(Number(e.target.value))}
-        className="border p-2 w-full rounded"
-      />
-    </div>
-
-    <div>
-      <label className="text-sm text-gray-400">Kalorit</label>
-      <input
-        type="number"
-        value={calories}
-        onChange={(e) => setCalories(Number(e.target.value))}
-        className="border p-2 w-full rounded"
-      />
-    </div>
-
-  </div>
-)}
-
-{/* 📝 TITLE */}
-{editing ? (
-  <div>
-    <label className="text-sm text-gray-400">Otsikko</label>
-    <input
-      value={title}
-      onChange={(e) => setTitle(e.target.value)}
-      className="border p-2 w-full rounded"
-    />
-  </div>
-) : (
-  <div className="font-bold text-lg">
-    {activity.title}
-  </div>
-)}
-
-      {/* 🏷️ LAJI */}
-      {editing ? (
+      {/* 🔥 VIEW MODE */}
+      {!editing && (
         <>
-          <select
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-            className="border p-2 w-full rounded bg-gray-900"
-          >
-            {Object.entries(sportTypes).map(([key, val]) => (
-              <option key={key} value={key}>
-                {val.emoji} {val.label}
-              </option>
-            ))}
-          </select>
-
-          <div className="text-sm text-gray-400 flex gap-2 items-center">
-            <span style={{ color: selectedSport.color }}>
-              {selectedSport.emoji}
+          <div className="flex gap-2 items-center text-sm text-gray-400">
+            <span style={{ color: sport.color }}>
+              {sport.emoji}
             </span>
-            {selectedSport.label}
+            {sport.label}
           </div>
+
+          <div className="font-bold text-lg">{activity.title}</div>
+
+          <div>
+            {((activity.distance_meters ?? 0) / 1000).toFixed(1)} km ·{" "}
+            {formatDuration(activity.duration_seconds)} ·{" "}
+            {activity.calories} kcal
+          </div>
+
+          {activity.notes && <div>{activity.notes}</div>}
         </>
-      ) : (
-        <div className="flex gap-2 items-center text-sm text-gray-400">
-          <span style={{ color: selectedSport.color }}>
-            {selectedSport.emoji}
-          </span>
-          {selectedSport.label}
+      )}
+
+      {/* 🔥 EDIT MODE */}
+      {editing && (
+        <div className="space-y-3">
+          {/* LAJI */}
+          <div>
+            <label className="text-sm text-gray-400">Laji</label>
+            <select
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+              className="border p-2 w-full rounded bg-gray-900"
+            >
+              {Object.entries(sportTypes).map(([key, val]: any) => (
+                <optgroup
+                  key={key}
+                  label={`${val.emoji} ${val.label}`}
+                >
+                  {!val.children && (
+                    <option value={key}>{val.label}</option>
+                  )}
+
+                  {val.children &&
+                    Object.entries(val.children).map(
+                      ([subKey, subLabel]: any) => (
+                        <option key={subKey} value={subKey}>
+                          {subLabel}
+                        </option>
+                      )
+                    )}
+                </optgroup>
+              ))}
+            </select>
+          </div>
+
+          {/* MATKA */}
+          <div>
+            <label className="text-sm text-gray-400">
+              Matka (metriä)
+            </label>
+            <input
+              type="number"
+              value={distance}
+              onChange={(e) => setDistance(Number(e.target.value))}
+              className="border p-2 w-full rounded"
+            />
+          </div>
+
+          {/* KESTO */}
+          <div>
+            <label className="text-sm text-gray-400">
+              Kesto (sekuntia)
+            </label>
+            <input
+              type="number"
+              value={duration}
+              onChange={(e) => setDuration(Number(e.target.value))}
+              className="border p-2 w-full rounded"
+            />
+          </div>
+
+          {/* KCAL */}
+          <div>
+            <label className="text-sm text-gray-400">
+              Kalorit
+            </label>
+            <input
+              type="number"
+              value={calories}
+              onChange={(e) => setCalories(Number(e.target.value))}
+              className="border p-2 w-full rounded"
+            />
+          </div>
+
+          {/* TITLE */}
+          <div>
+            <label className="text-sm text-gray-400">
+              Otsikko
+            </label>
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="border p-2 w-full rounded"
+            />
+          </div>
+
+          {/* NOTES */}
+          <div>
+            <label className="text-sm text-gray-400">
+              Muistiinpanot
+            </label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="border p-2 w-full rounded"
+            />
+          </div>
         </div>
       )}
 
-      {/* 📝 TITLE */}
-      {editing ? (
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="border p-2 w-full rounded"
-        />
-      ) : (
-        <div className="font-bold text-lg">
-          {activity.title}
-        </div>
-      )}
-
-      {/* 📊 DATA */}
-      {editing ? (
-        <div className="grid grid-cols-3 gap-2">
-          <input
-            type="number"
-            value={distance}
-            onChange={(e) =>
-              setDistance(Number(e.target.value))
-            }
-            className="border p-2 rounded"
-            placeholder="metrit"
-          />
-
-          <input
-            type="number"
-            value={duration}
-            onChange={(e) =>
-              setDuration(Number(e.target.value))
-            }
-            className="border p-2 rounded"
-            placeholder="sekunnit"
-          />
-
-          <input
-            type="number"
-            value={calories}
-            onChange={(e) =>
-              setCalories(Number(e.target.value))
-            }
-            className="border p-2 rounded"
-            placeholder="kcal"
-          />
-        </div>
-      ) : (
-        <div>
-          {((activity.distance_meters ?? 0) / 1000).toFixed(1)} km ·{" "}
-          {formatDuration(activity.duration_seconds)} ·{" "}
-          {activity.calories} kcal
-        </div>
-      )}
-
-      {/* 🧠 NOTES */}
-      {editing ? (
-        <textarea
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          className="border p-2 w-full rounded"
-        />
-      ) : (
-        activity.notes && <div>{activity.notes}</div>
-      )}
-
-      {/* 🔘 ACTIONS */}
+      {/* ACTIONS */}
       <div className="flex gap-3">
         {!editing ? (
           <>
@@ -547,10 +495,7 @@ function EditableActivity({
           </>
         ) : (
           <>
-            <button
-              onClick={save}
-              className="text-green-400"
-            >
+            <button onClick={save} className="text-green-400">
               Tallenna
             </button>
             <button onClick={() => setEditing(false)}>
