@@ -109,12 +109,17 @@ if (!showSports && event.source_type === "sport") {
 }
 
 // 🔥 käyttöpaikka filter
-if (
-  selectedPlaces.length > 0 &&
-  event.source_type !== "sport" &&
-  !selectedPlaces.includes(event.usage_place || "muu")
-) {
-  return [];
+// 🔥 sport filter
+if (event.source_type === "sport") {
+  if (!showSports) return [];
+} else {
+  // 🔥 normaalit eventit
+  if (
+    selectedPlaces.length > 0 &&
+    !selectedPlaces.includes(event.usage_place || "muu")
+  ) {
+    return [];
+  }
 }
 
       const entries: CalendarEntry[] = [];
@@ -122,7 +127,7 @@ if (
       const eventDate =
   event.event_date ??
   (event.start_time
-    ? event.start_time.slice(0, 10)
+    ? new Date(event.start_time).toISOString().slice(0, 10)
     : null);
 
 if (eventDate === dateString) {
@@ -264,14 +269,35 @@ if (eventDate === dateString) {
       >
         <div style={{ fontWeight: 700, marginBottom: 10 }}>Käyttöpaikka</div>
 <div style={{ marginTop: 12 }}>
-  <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
-    <input
-      type="checkbox"
-      checked={showSports}
-      onChange={() => setShowSports(!showSports)}
-    />
-    🏃 Liikunta
-  </label>
+  <label
+  style={{
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 6,
+    padding: "7px 10px",
+    borderRadius: 999,
+    border: showSports ? "1px solid #86efac" : "1px solid #444",
+    background: showSports ? "#052e16" : "#111",
+    cursor: "pointer",
+  }}
+>
+  <input
+    type="checkbox"
+    checked={showSports}
+    onChange={() => setShowSports(!showSports)}
+  />
+
+  <span
+    style={{
+      width: 10,
+      height: 10,
+      borderRadius: "50%",
+      background: "#22c55e",
+    }}
+  />
+
+  <span>🏃 Liikunta</span>
+</label>
 </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {Object.entries(usagePlaces).map(([key, value]) => {
