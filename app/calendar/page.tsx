@@ -218,12 +218,7 @@ export default function CalendarPage() {
                       }}
                     >
                       {entry.event.source_type === "sport" ? (
-                        <Link
-                          href={`/sports?id=${entry.event.sport_activity_id}`}
-                          style={{ textDecoration: "none", color: "inherit" }}
-                        >
-                          {getEntryText(entry)}
-                        </Link>
+                        <span>{getEntryText(entry)}</span>
                       ) : (
                         getEntryText(entry)
                       )}
@@ -258,12 +253,17 @@ export default function CalendarPage() {
           </p>
 
           {selectedEntry.event.source_type === "sport" && (
-            <Link
-              href={`/sports?id=${selectedEntry.event.sport_activity_id}`}
-            >
-              Avaa suoritus →
-            </Link>
-          )}
+  <Link
+    href={`/sports?id=${selectedEntry.event.sport_activity_id}`}
+    style={{
+      display: "inline-block",
+      marginTop: 10,
+      color: "#2563eb",
+    }}
+  >
+    Avaa muokkaukseen →
+  </Link>
+)}
         </div>
       )}
     </main>
