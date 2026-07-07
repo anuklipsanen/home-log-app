@@ -7,16 +7,17 @@ export async function GET() {
   const { data, error } = await supabase
     .from("sport_activities")
     .select(`
-      id,
-      title,
-      notes,
-      start_time,
-      duration_seconds,
-      distance_meters,
-      avg_heart_rate,
-      member_id,
-      household_members(name)
-    `)
+  id,
+  title,
+  notes,
+  start_time,
+  duration_seconds,
+  distance_meters,
+  calories,              -- 🔥 LISÄTTY
+  avg_heart_rate,
+  member_id,
+  household_members(name)
+`)
     .order("start_time", { ascending: false })
     .limit(50);
 

@@ -55,9 +55,15 @@ export default function SportsDashboard() {
 
           {/* 📏 data */}
           <div className="font-bold">
-            {(a.distance_meters / 1000).toFixed(1)} km ·{" "}
-            {formatDuration(a.duration_seconds)}
-          </div>
+  {(a.distance_meters / 1000).toFixed(1)} km ·{" "}
+  {formatDuration(a.duration_seconds)}
+</div>
+
+{a.calories && (
+  <div className="text-sm text-gray-400">
+    {a.calories} kcal
+  </div>
+)}
 
           {/* ❤️ syke */}
           {a.avg_heart_rate && (
