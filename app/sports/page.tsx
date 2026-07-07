@@ -2,11 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { getSportType, sportTypes } from "@/lib/sportTypes";
-import { useRouter } from "next/navigation";
 
 export default function SportsDashboard() {
-  const router = useRouter();
-
   const [activities, setActivities] = useState<any[]>([]);
   const [selectedActivity, setSelectedActivity] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -30,7 +27,7 @@ export default function SportsDashboard() {
     setLoading(false);
   }
 
-  /* ---------------- CHART DATA ---------------- */
+  /* ---------------- DATA ---------------- */
 
   const chartData = useMemo(() => {
     const map: Record<string, any> = {};
@@ -69,7 +66,12 @@ export default function SportsDashboard() {
         };
       }
 
-      if (a.member_id === "f30cb5de-b062-41b9-8e95-270452f943d7") {
+      const isAnu =
+        a.member_id === "f30cb5de-b062-41b9-8e95-270452f943d7";
+      const isOnski =
+        a.member_id === "aba7be53-d988-4d70-aa62-67a2148f640f";
+
+      if (isAnu) {
         map[key].anu_km += km;
         map[key].anu_kcal += kcal;
         map[key].anu_time += time;
@@ -79,7 +81,7 @@ export default function SportsDashboard() {
         map[key].byType[type].anu.time += time;
       }
 
-      if (a.member_id === "aba7be53-d988-4d70-aa62-67a2148f640f") {
+      if (isOnski) {
         map[key].onski_km += km;
         map[key].onski_kcal += kcal;
         map[key].onski_time += time;
@@ -107,65 +109,67 @@ export default function SportsDashboard() {
     <main className="p-6 space-y-6 max-w-3xl">
       <h1 className="text-2xl font-bold">Urheiluyhteenveto</h1>
 
-      {/* 🔥 DETAIL */}
+      {/* DETAIL */}
       {selectedActivity && (
         <EditableActivity
           activity={selectedActivity}
-          onUpdated={(updated: any) => {
-            setActivities((prev) =>
-              prev.map((a) => (a.id === updated.id ? updated : a))
-            );
-            setSelectedActivity(updated);
-          }}
-          onDeleted={(id: string) => {
-            setActivities((prev) => prev.filter((a) => a.id !== id));
-            setSelectedActivity(null);
-          }}
           onClose={() => setSelectedActivity(null)}
         />
       )}
 
       {chartData.map((m: any) => (
         <div key={m.key} className="border p-4 rounded bg-gray-900">
+          {/* KUUKAUSI */}
           <div
-            className="font-semibold text-lg mb-3 cursor-pointer flex justify-between"
+            className="flex justify-between cursor-pointer mb-3"
             onClick={() =>
               setOpenMonth(openMonth === m.key ? null : m.key)
             }
           >
-            {m.month}
+            <span className="font-semibold text-lg">{m.month}</span>
             <span>{openMonth === m.key ? "▲" : "▼"}</span>
           </div>
 
-          {/* TOTAL */}
-          <div className="grid grid-cols-3 gap-2 text-sm mb-4 bg-gray-800 p-3 rounded">
-            <div></div>
-            <div className="text-center font-semibold">Anu</div>
-            <div className="text-center font-semibold">Onski</div>
-
-            <div>km</div>
-            <div className="text-center">{m.anu_km.toFixed(1)}</div>
-            <div className="text-center">{m.onski_km.toFixed(1)}</div>
-
-            <div>kcal</div>
-            <div className="text-center">{m.anu_kcal}</div>
-            <div className="text-center">{m.onski_kcal}</div>
-
-            <div>aika</div>
-            <div className="text-center">{formatHours(m.anu_time)}</div>
-            <div className="text-center">{formatHours(m.onski_time)}</div>
-          </div>
+          {/* KAIKKI YHTEENSÄ */}
+          <SummaryTable
+            title="Kaikki yhteensä"
+            anu={{
+              km: m.anu_km,
+              kcal: m.anu_kcal,
+              time: m.anu_time,
+            }}
+            onski={{
+              km: m.onski_km,
+              kcal: m.onski_kcal,
+              time: m.onski_time,
+            }}
+          />
 
           {/* LAJIT */}
-          {Object.entries(m.byType).map(([type, data]: any) => {
-            const sport = getSportType(type);
+          {Object.entries(m.byType)
+            .filter(([_, d]: any) => {
+              const total =
+                d.anu.km +
+                d.onski.km +
+                d.anu.kcal +
+                d.onski.kcal +
+                d.anu.time +
+                d.onski.time;
 
-            return (
-              <div key={type} className="text-sm mb-2">
-                <div>{sport.emoji} {sport.label}</div>
-              </div>
-            );
-          })}
+              return total > 0;
+            })
+            .map(([type, data]: any) => {
+              const sport = getSportType(type);
+
+              return (
+                <SummaryTable
+                  key={type}
+                  title={`${sport.emoji} ${sport.label}`}
+                  anu={data.anu}
+                  onski={data.onski}
+                />
+              );
+            })}
 
           {/* EVENTS */}
           {openMonth === m.key &&
@@ -188,59 +192,28 @@ export default function SportsDashboard() {
                         selectedActivity?.id === a.id ? null : a
                       )
                     }
-                    className={`border p-3 rounded cursor-pointer ${
-                      selectedActivity?.id === a.id
-                        ? "bg-blue-900"
-                        : "bg-gray-800 hover:bg-gray-700"
-                    }`}
+                    className="border p-3 rounded bg-gray-800 hover:bg-gray-700 cursor-pointer"
                   >
-                    <div
-  key={a.id}
-  onClick={() =>
-    setSelectedActivity(
-      selectedActivity?.id === a.id ? null : a
-    )
-  }
-  className={`border p-3 rounded cursor-pointer transition ${
-    selectedActivity?.id === a.id
-      ? "bg-blue-900 border-blue-500"
-      : "bg-gray-800 hover:bg-gray-700"
-  }`}
->
-  {/* 🏷️ LAJI */}
-  <div className="flex gap-2 items-center">
-    <span style={{ color: sport.color }}>
-      {sport.emoji}
-    </span>
-    <span className="text-sm text-gray-400">
-      {sport.label}
-    </span>
-  </div>
+                    <div className="flex gap-2">
+                      <span style={{ color: sport.color }}>
+                        {sport.emoji}
+                      </span>
+                      <span className="text-sm text-gray-400">
+                        {sport.label}
+                      </span>
+                    </div>
 
-  {/* 📅 AIKA */}
-  <div className="text-sm text-gray-400">
-    {formatDate(a.start_time)}
-  </div>
+                    <div className="text-sm text-gray-400">
+                      {formatDate(a.start_time)}
+                    </div>
 
-  {/* 📝 OTSIKKO */}
-  <div className="font-semibold">
-    {a.title}
-  </div>
+                    <div className="font-semibold">{a.title}</div>
 
-  {/* 📊 DATA */}
-  <div>
-    {((a.distance_meters ?? 0) / 1000).toFixed(1)} km ·{" "}
-    {formatDuration(a.duration_seconds)} ·{" "}
-    {a.calories} kcal
-  </div>
-
-  {/* 🧠 NOTES */}
-  {a.notes && (
-    <div className="text-sm text-gray-400 mt-1">
-      {a.notes}
-    </div>
-  )}
-</div>
+                    <div>
+                      {(a.distance_meters / 1000).toFixed(1)} km ·{" "}
+                      {formatDuration(a.duration_seconds)} ·{" "}
+                      {a.calories} kcal
+                    </div>
                   </div>
                 );
               })}
@@ -250,265 +223,51 @@ export default function SportsDashboard() {
   );
 }
 
-/* ---------------- EDITABLE ---------------- */
+/* ---------------- COMPONENTS ---------------- */
 
-function EditableActivity({
-  activity,
-  onUpdated,
-  onDeleted,
-  onClose,
-}: {
-  activity: any;
-  onUpdated: (a: any) => void;
-  onDeleted: (id: string) => void;
-  onClose: () => void;
-}) {
-  const [editing, setEditing] = useState(false);
-
-  const [title, setTitle] = useState(activity.title);
-  const [notes, setNotes] = useState(activity.notes || "");
-
-  const [distance, setDistance] = useState(
-    activity.distance_meters || 0
-  );
-  const [duration, setDuration] = useState(
-    activity.duration_seconds || 0
-  );
-  const [calories, setCalories] = useState(
-    activity.calories || 0
-  );
-  const [type, setType] = useState(
-    activity.activity_type || "other"
-  );
-
-  useEffect(() => {
-    setTitle(activity.title);
-    setNotes(activity.notes || "");
-    setDistance(activity.distance_meters || 0);
-    setDuration(activity.duration_seconds || 0);
-    setCalories(activity.calories || 0);
-    setType(activity.activity_type || "other");
-  }, [activity]);
-
-  const sport = getSportType(type);
-
-  async function save() {
-    const res = await fetch("/api/sports/update", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        id: activity.id,
-        title,
-        notes,
-        distance_meters: distance,
-        duration_seconds: duration,
-        calories,
-        activity_type: type,
-      }),
-    });
-
-    const data = await res.json();
-    if (!data.success) return alert(data.error);
-
-    onUpdated({
-      ...activity,
-      title,
-      notes,
-      distance_meters: distance,
-      duration_seconds: duration,
-      calories,
-      activity_type: type,
-    });
-
-    setEditing(false);
-  }
-
-  async function remove() {
-    if (!confirm("Poistetaanko suoritus?")) return;
-
-    const res = await fetch("/api/sports/delete", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ id: activity.id }),
-    });
-
-    const data = await res.json();
-    if (!data.success) return alert(data.error);
-
-    onDeleted(activity.id);
-  }
-
+function SummaryTable({ title, anu, onski }: any) {
   return (
-    <div className="border p-4 rounded bg-blue-950/40 space-y-4">
-      {/* HEADER */}
-      <div className="flex justify-between">
-        <span className="text-blue-400 text-sm">
-          Valittu suoritus
-        </span>
-        <button onClick={onClose} className="text-gray-400 text-sm">
-          Sulje
-        </button>
-      </div>
+    <div className="bg-gray-800 p-3 rounded mb-3 text-sm">
+      <div className="font-semibold mb-2">{title}</div>
 
-      {/* AIKA */}
-      <div className="text-sm text-gray-400">
-        {formatDate(activity.start_time)}
-      </div>
+      <div className="grid grid-cols-3">
+        <div></div>
+        <div className="text-center font-semibold">Anu</div>
+        <div className="text-center font-semibold">Onski</div>
 
-      {/* 🔥 VIEW MODE */}
-      {!editing && (
-        <>
-          <div className="flex gap-2 items-center text-sm text-gray-400">
-            <span style={{ color: sport.color }}>
-              {sport.emoji}
-            </span>
-            {sport.label}
-          </div>
+        <div>km</div>
+        <div className="text-center">{anu.km.toFixed(1)}</div>
+        <div className="text-center">{onski.km.toFixed(1)}</div>
 
-          <div className="font-bold text-lg">{activity.title}</div>
+        <div>kcal</div>
+        <div className="text-center">{anu.kcal}</div>
+        <div className="text-center">{onski.kcal}</div>
 
-          <div>
-            {((activity.distance_meters ?? 0) / 1000).toFixed(1)} km ·{" "}
-            {formatDuration(activity.duration_seconds)} ·{" "}
-            {activity.calories} kcal
-          </div>
-
-          {activity.notes && <div>{activity.notes}</div>}
-        </>
-      )}
-
-      {/* 🔥 EDIT MODE */}
-      {editing && (
-        <div className="space-y-3">
-          {/* LAJI */}
-          <div>
-            <label className="text-sm text-gray-400">Laji</label>
-            <select
-  value={type}
-  onChange={(e) => setType(e.target.value)}
-  className="border p-2 w-full rounded bg-gray-900"
->
-  {Object.entries(sportTypes).map(([key, val]: any) => (
-    <optgroup key={key} label={`${val.emoji} ${val.label}`}>
-      
-      {/* jos EI alatyyppiä */}
-      {!val.children && (
-        <option value={key}>{val.label}</option>
-      )}
-
-      {/* alatyyppi */}
-      {val.children &&
-        Object.entries(val.children).map(
-          ([subKey, subLabel]: any) => (
-            <option key={subKey} value={subKey}>
-              {subLabel}
-            </option>
-          )
-        )}
-    </optgroup>
-  ))}
-</select>
-          </div>
-
-          {/* MATKA */}
-          <div>
-            <label className="text-sm text-gray-400">
-              Matka (metriä)
-            </label>
-            <input
-              type="number"
-              value={distance}
-              onChange={(e) => setDistance(Number(e.target.value))}
-              className="border p-2 w-full rounded"
-            />
-          </div>
-
-          {/* KESTO */}
-          <div>
-            <label className="text-sm text-gray-400">
-              Kesto (sekuntia)
-            </label>
-            <input
-              type="number"
-              value={duration}
-              onChange={(e) => setDuration(Number(e.target.value))}
-              className="border p-2 w-full rounded"
-            />
-          </div>
-
-          {/* KCAL */}
-          <div>
-            <label className="text-sm text-gray-400">
-              Kalorit
-            </label>
-            <input
-              type="number"
-              value={calories}
-              onChange={(e) => setCalories(Number(e.target.value))}
-              className="border p-2 w-full rounded"
-            />
-          </div>
-
-          {/* TITLE */}
-          <div>
-            <label className="text-sm text-gray-400">
-              Otsikko
-            </label>
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="border p-2 w-full rounded"
-            />
-          </div>
-
-          {/* NOTES */}
-          <div>
-            <label className="text-sm text-gray-400">
-              Muistiinpanot
-            </label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="border p-2 w-full rounded"
-            />
-          </div>
-        </div>
-      )}
-
-      {/* ACTIONS */}
-      <div className="flex gap-3">
-        {!editing ? (
-          <>
-            <button onClick={() => setEditing(true)}>
-              Muokkaa
-            </button>
-            <button
-              onClick={remove}
-              className="text-red-400"
-            >
-              Poista
-            </button>
-          </>
-        ) : (
-          <>
-            <button onClick={save} className="text-green-400">
-              Tallenna
-            </button>
-            <button onClick={() => setEditing(false)}>
-              Peruuta
-            </button>
-          </>
-        )}
+        <div>aika</div>
+        <div className="text-center">{formatHours(anu.time)}</div>
+        <div className="text-center">{formatHours(onski.time)}</div>
       </div>
     </div>
   );
 }
 
-/* helpers */
+/* ---------------- EDIT ---------------- */
+
+function EditableActivity({ activity, onClose }: any) {
+  return (
+    <div className="border p-4 rounded bg-blue-950/40">
+      <div className="flex justify-between">
+        <span className="text-blue-400">Valittu suoritus</span>
+        <button onClick={onClose}>Sulje</button>
+      </div>
+
+      <div className="mt-2">{activity.title}</div>
+    </div>
+  );
+}
+
+/* ---------------- HELPERS ---------------- */
+
 function formatMonth(key: string) {
   const [y, m] = key.split("-");
   return new Date(Number(y), Number(m) - 1).toLocaleDateString("fi-FI", {
@@ -526,9 +285,7 @@ function formatHours(seconds?: number) {
 
 function formatDate(dateString?: string) {
   if (!dateString) return "";
-
   const d = new Date(dateString);
-
   return `${d.toLocaleDateString("fi-FI")} ${d.toLocaleTimeString("fi-FI", {
     hour: "2-digit",
     minute: "2-digit",
@@ -537,16 +294,8 @@ function formatDate(dateString?: string) {
 
 function formatDuration(seconds?: number) {
   if (!seconds) return "";
-
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
   const s = Math.floor(seconds % 60);
-
-  if (h === 0) {
-    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-  }
-
-  return [h, m, s]
-    .map((v) => String(v).padStart(2, "0"))
-    .join(":");
+  return [h, m, s].map((v) => String(v).padStart(2, "0")).join(":");
 }
