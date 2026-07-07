@@ -2,16 +2,17 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { getSportType } from "@/lib/sportTypes";
-import { useRouter } from "next/navigation";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function SportsDashboard() {
   const searchParams = useSearchParams();
-const selectedId = searchParams.get("id");
-const [selectedActivity, setSelectedActivity] = useState<any>(null);
+  const selectedId = searchParams.get("id");
+
+  const [selectedActivity, setSelectedActivity] = useState<any>(null);
   const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [openMonth, setOpenMonth] = useState<string | null>(null);
+
   const router = useRouter();
 
   useEffect(() => {
@@ -19,14 +20,17 @@ const [selectedActivity, setSelectedActivity] = useState<any>(null);
   }, []);
 
   useEffect(() => {
-  if (!selectedId || activities.length === 0) return;
+    if (!selectedId || activities.length === 0) return;
 
-  const found = activities.find((a) => a.id === selectedId);
+    const found = activities.find((a) => a.id === selectedId);
 
-  if (found) {
-    setSelectedActivity(found);
-  }
-}, [selectedId, activities]);
+    if (found) {
+      setSelectedActivity(found);
+
+      // 🔥 scroll ylös
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [selectedId, activities]);
 
   async function fetchActivities() {
     const res = await fetch("/api/sports/list", {
@@ -59,13 +63,10 @@ const [selectedActivity, setSelectedActivity] = useState<any>(null);
         map[key] = {
           key,
           month: formatMonth(key),
-
           anu_km: 0,
           onski_km: 0,
-
           anu_kcal: 0,
           onski_kcal: 0,
-
           anu_time: 0,
           onski_time: 0,
         };
@@ -88,30 +89,6 @@ const [selectedActivity, setSelectedActivity] = useState<any>(null);
       }
     });
 
-    {selectedActivity && (
-  <div className="border p-4 rounded bg-blue-950/40 mb-4">
-    <div className="text-sm text-gray-400">
-      {formatDate(selectedActivity.start_time)}
-    </div>
-
-    <div className="font-bold text-lg">
-      {selectedActivity.title}
-    </div>
-
-    <div className="mt-2">
-      {(selectedActivity.distance_meters / 1000).toFixed(1)} km ·{" "}
-      {formatDuration(selectedActivity.duration_seconds)} ·{" "}
-      {selectedActivity.calories} kcal
-    </div>
-
-    {selectedActivity.notes && (
-      <div className="mt-2 text-sm">
-        {selectedActivity.notes}
-      </div>
-    )}
-  </div>
-)}
-
     return Object.entries(map)
       .sort(([a], [b]) => b.localeCompare(a))
       .map(([key, val]) => ({
@@ -121,7 +98,7 @@ const [selectedActivity, setSelectedActivity] = useState<any>(null);
       }));
   }, [activities]);
 
-  /* 🔥 avaa uusin kuukausi automaattisesti */
+  /* 🔥 avaa uusin kuukausi */
   useEffect(() => {
     if (chartData.length > 0 && !openMonth) {
       setOpenMonth(chartData[0].key);
@@ -133,6 +110,26 @@ const [selectedActivity, setSelectedActivity] = useState<any>(null);
   return (
     <main className="p-6 space-y-6 max-w-3xl">
       <h1 className="text-2xl font-bold">Urheiluyhteenveto</h1>
+
+      {/* 🔥 SELECTED ACTIVITY (OIKEASSA PAIKASSA) */}
+      {selectedActivity && (
+  <EditableActivity
+    activity={selectedActivity}
+    onUpdated={(updated) => {
+      setActivities((prev) =>
+        prev.map((a) => (a.id === updated.id ? updated : a))
+      );
+      setSelectedActivity(updated);
+    }}
+    onDeleted={(id) => {
+      setActivities((prev) => prev.filter((a) => a.id !== id));
+      setSelectedActivity(null);
+
+      // 🔥 siivoa URL
+      router.push("/sports");
+    }}
+  />
+)}
 
       <div className="space-y-4">
         {chartData.map((m: any) => {
@@ -148,42 +145,36 @@ const [selectedActivity, setSelectedActivity] = useState<any>(null);
               key={m.key}
               className="border p-4 rounded bg-gray-900"
             >
-              {/* 📅 KUUKAUSI */}
               <div
-                className="font-semibold text-lg mb-3 cursor-pointer flex justify-between items-center"
+                className="font-semibold text-lg mb-3 cursor-pointer flex justify-between"
                 onClick={() =>
                   setOpenMonth(openMonth === m.key ? null : m.key)
                 }
               >
                 {m.month}
-
-                <span className="text-sm text-gray-400">
-                  {openMonth === m.key ? "▲" : "▼"}
-                </span>
+                <span>{openMonth === m.key ? "▲" : "▼"}</span>
               </div>
 
-              {/* 🏆 VOITTAJA */}
               {winner && (
                 <div className="text-xs text-yellow-400 mb-3">
                   🏆 {winner} johti tässä kuussa
                 </div>
               )}
 
-              {/* 🔥 VERTAILULAATIKKO */}
               <div className="grid grid-cols-3 gap-2 text-sm mb-4 bg-gray-800 p-3 rounded">
                 <div></div>
-                <div className="font-semibold text-center">Anu</div>
-                <div className="font-semibold text-center">Onski</div>
+                <div className="text-center font-semibold">Anu</div>
+                <div className="text-center font-semibold">Onski</div>
 
-                <div className="text-gray-400">km</div>
+                <div>km</div>
                 <div className="text-center">{m.anu_km}</div>
                 <div className="text-center">{m.onski_km}</div>
 
-                <div className="text-gray-400">kcal</div>
+                <div>kcal</div>
                 <div className="text-center">{m.anu_kcal}</div>
                 <div className="text-center">{m.onski_kcal}</div>
 
-                <div className="text-gray-400">aika</div>
+                <div>aika</div>
                 <div className="text-center">
                   {formatHours(m.anu_time)}
                 </div>
@@ -192,7 +183,6 @@ const [selectedActivity, setSelectedActivity] = useState<any>(null);
                 </div>
               </div>
 
-              {/* 🔽 TAPAHTUMAT */}
               {openMonth === m.key && (
                 <div className="space-y-2">
                   {activities
@@ -208,11 +198,17 @@ const [selectedActivity, setSelectedActivity] = useState<any>(null);
 
                       return (
                         <div
-  key={a.id}
-  onClick={() => router.push(`/sports?id=${a.id}`)}
-  className="border p-3 rounded bg-gray-800 cursor-pointer hover:bg-gray-700 transition active:scale-[0.99]"
->
-                          <div className="flex items-center gap-2">
+                          key={a.id}
+                          onClick={() =>
+                            router.push(`/sports?id=${a.id}`)
+                          }
+                          className={`border p-3 rounded cursor-pointer transition active:scale-[0.99] ${
+                            selectedId === a.id
+                              ? "bg-blue-900 border-blue-500"
+                              : "bg-gray-800 hover:bg-gray-700"
+                          }`}
+                        >
+                          <div className="flex gap-2 items-center">
                             <span style={{ color: sport.color }}>
                               {sport.emoji}
                             </span>
@@ -230,7 +226,7 @@ const [selectedActivity, setSelectedActivity] = useState<any>(null);
                           </div>
 
                           <div>
-                            {(a.distance_meters / 1000).toFixed(1)} km ·{" "}
+                            {((a.distance_meters ?? 0) / 1000).toFixed(1)} km ·{" "}
                             {formatDuration(a.duration_seconds)} ·{" "}
                             {a.calories} kcal
                           </div>
@@ -314,4 +310,158 @@ function formatHours(seconds?: number) {
   if (m === 0) return `${h} h`;
 
   return `${h} h ${m} min`;
+}
+
+function EditableActivity({
+  activity,
+  onUpdated,
+  onDeleted,
+}: {
+  activity: any;
+  onUpdated: (a: any) => void;
+  onDeleted: (id: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [title, setTitle] = useState(activity.title);
+  const [notes, setNotes] = useState(activity.notes || "");
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  async function save() {
+    setSaving(true);
+
+    const res = await fetch("/api/sports/update", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: activity.id,
+        title,
+        notes,
+      }),
+    });
+
+    const data = await res.json();
+    setSaving(false);
+
+    if (!data.success) {
+      alert(data.error);
+      return;
+    }
+
+    onUpdated({
+      ...activity,
+      title,
+      notes,
+    });
+
+    setEditing(false);
+  }
+
+  async function remove() {
+    if (!confirm("Poistetaanko suoritus?")) return;
+
+    setDeleting(true);
+
+    const res = await fetch("/api/sports/delete", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: activity.id,
+      }),
+    });
+
+    const data = await res.json();
+    setDeleting(false);
+
+    if (!data.success) {
+      alert(data.error);
+      return;
+    }
+
+    onDeleted(activity.id);
+  }
+
+  return (
+    <div className="border p-4 rounded bg-blue-950/40 mb-4 space-y-3">
+      <div className="text-xs text-blue-400">
+        Valittu suoritus
+      </div>
+
+      <div className="text-sm text-gray-400">
+        {formatDate(activity.start_time)}
+      </div>
+
+      {/* TITLE */}
+      {editing ? (
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="border p-2 w-full rounded"
+        />
+      ) : (
+        <div className="font-bold text-lg">{activity.title}</div>
+      )}
+
+      {/* DATA */}
+      <div>
+        {((activity.distance_meters ?? 0) / 1000).toFixed(1)} km ·{" "}
+        {formatDuration(activity.duration_seconds)} ·{" "}
+        {activity.calories} kcal
+      </div>
+
+      {/* NOTES */}
+      {editing ? (
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          className="border p-2 w-full rounded"
+        />
+      ) : (
+        activity.notes && <div className="text-sm">{activity.notes}</div>
+      )}
+
+      {/* ACTIONS */}
+      <div className="flex gap-4">
+        {!editing ? (
+          <>
+            <button
+              onClick={() => setEditing(true)}
+              className="text-sm text-blue-400"
+            >
+              Muokkaa
+            </button>
+
+            <button
+              onClick={remove}
+              disabled={deleting}
+              className="text-sm text-red-400"
+            >
+              {deleting ? "Poistetaan..." : "Poista"}
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={save}
+              disabled={saving}
+              className="text-sm text-green-400"
+            >
+              {saving ? "Tallennetaan..." : "Tallenna"}
+            </button>
+
+            <button
+              onClick={() => setEditing(false)}
+              className="text-sm text-gray-400"
+            >
+              Peruuta
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
 }
