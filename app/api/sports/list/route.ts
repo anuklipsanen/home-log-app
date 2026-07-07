@@ -13,10 +13,9 @@ export async function GET() {
   start_time,
   duration_seconds,
   distance_meters,
-  calories,              -- 🔥 LISÄTTY
+  calories,
   avg_heart_rate,
-  member_id,
-  household_members(name)
+  member_id
 `)
     .order("start_time", { ascending: false })
     .limit(50);
