@@ -45,8 +45,8 @@ export default function SportsImportPage() {
         className="border p-2 rounded w-full"
       >
         <option value="">Valitse henkilö</option>
-        <option value="ANU_UUID">Anu</option>
-        <option value="ONSKI_UUID">Onski</option>
+        <option value="f30cb5de-b062-41b9-8e95-270452f943d7">Anu</option>
+        <option value="aba7be53-d988-4d70-aa62-67a2148f640f">Onski</option>
       </select>
 
       {/* 📂 tiedosto */}
