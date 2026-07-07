@@ -1,31 +1,54 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
-import { parseActivityFile } from "@/lib/sports/parseActivityFile";
 
 export async function POST(req: Request) {
   const supabase = await createSupabaseServerClient();
 
   try {
-    const formData = await req.formData();
+    let memberId: string | null = null;
+    let titleInput: string | null = null;
+    let notesInput: string | null = null;
+    let parsed: any;
 
-    const file = formData.get("file") as File | null;
-    const memberId = formData.get("memberId") as string | null;
-    const titleInput = formData.get("title") as string | null;
-    const notesInput = formData.get("notes") as string | null;
+    // 🔥 JSON flow (preview → save)
+    if (req.headers.get("content-type")?.includes("application/json")) {
+      const body = await req.json();
 
-    if (!file || !memberId) {
+      memberId = body.memberId;
+      titleInput = body.title;
+      notesInput = body.notes;
+      parsed = body.parsed;
+
+    } else {
+      // fallback (vanha tapa)
+      const formData = await req.formData();
+
+      const file = formData.get("file") as File | null;
+      memberId = formData.get("memberId") as string | null;
+
+      if (!file || !memberId) {
+        return NextResponse.json(
+          { error: "Tiedosto tai henkilö puuttuu" },
+          { status: 400 }
+        );
+      }
+
+      const buffer = Buffer.from(await file.arrayBuffer());
+
+      const { parseActivityFile } = await import("@/lib/sports/parseActivityFile");
+
+      parsed = await parseActivityFile({
+        buffer,
+        filename: file.name,
+      });
+    }
+
+    if (!memberId || !parsed) {
       return NextResponse.json(
-        { error: "Tiedosto tai henkilö puuttuu" },
+        { error: "Virheellinen data" },
         { status: 400 }
       );
     }
-
-    const buffer = Buffer.from(await file.arrayBuffer());
-
-    const parsed = await parseActivityFile({
-      buffer,
-      filename: file.name,
-    });
 
     const duration = Math.round(parsed.durationSeconds ?? 0);
 
@@ -51,7 +74,7 @@ export async function POST(req: Request) {
       .eq("id", memberId)
       .single();
 
-    const { data: activity, error: activityError } = await supabase
+    const { data: activity, error } = await supabase
       .from("sport_activities")
       .insert({
         member_id: memberId,
@@ -60,7 +83,6 @@ export async function POST(req: Request) {
         activity_sub_type: parsed.activitySubType,
 
         title: titleInput || parsed.title,
-
         notes_imported: parsed.notesImported ?? null,
         notes: notesInput || null,
 
@@ -68,70 +90,35 @@ export async function POST(req: Request) {
         end_time: parsed.endTime ?? null,
 
         duration_seconds: duration,
-
         distance_meters: parsed.distanceMeters
           ? Math.round(parsed.distanceMeters)
           : null,
 
         calories: parsed.calories ?? null,
-
         avg_heart_rate: parsed.avgHeartRate ?? null,
         max_heart_rate: parsed.maxHeartRate ?? null,
-
         elevation_gain_meters: parsed.elevationGainMeters ?? null,
-
-        file_type: parsed.fileType,
-        original_filename: file.name,
       })
       .select()
       .single();
 
-    if (activityError || !activity) {
-      // 👇 jos DB constraint laukeaa
-      if (activityError?.code === "23505") {
-        return NextResponse.json({
-          success: false,
-          error: "Tämä suoritus on jo tuotu (duplikaatti)",
-        });
-      }
-
+    if (error || !activity) {
       return NextResponse.json(
-        { error: activityError?.message ?? "Insert failed" },
+        { error: error?.message ?? "Insert failed" },
         { status: 500 }
       );
     }
 
     await supabase.from("events").insert({
-      title: `${member?.name ?? "Urheilu"} – ${
-        titleInput || "Urheilusuoritus"
-      }`,
-
+      title: `${member?.name ?? "Urheilu"} – ${titleInput || "Urheilusuoritus"}`,
       start_time: parsed.startTime,
       end_time: parsed.endTime ?? null,
-
       source_type: "sport",
       sport_activity_id: activity.id,
-
-      description: [
-        parsed.distanceMeters
-          ? `${(parsed.distanceMeters / 1000).toFixed(1)} km`
-          : null,
-
-        parsed.durationSeconds
-          ? formatDuration(parsed.durationSeconds)
-          : null,
-
-        parsed.avgHeartRate
-          ? `keskisyke ${parsed.avgHeartRate}`
-          : null,
-      ]
-        .filter(Boolean)
-        .join(" · "),
     });
 
     return NextResponse.json({
       success: true,
-      activity,
     });
 
   } catch (err: any) {
@@ -140,16 +127,4 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
-}
-
-function formatDuration(seconds?: number) {
-  if (!seconds) return "";
-
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = Math.floor(seconds % 60);
-
-  return [h, m, s]
-    .map((v) => String(v).padStart(2, "0"))
-    .join(":");
 }
