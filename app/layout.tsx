@@ -1,16 +1,23 @@
+"use client";
+
 import "./globals.css";
 import Link from "next/link";
 import AuthGuard from "@/components/AuthGuard";
 import LogoutButton from "@/components/LogoutButton";
+import { usePathname } from "next/navigation";
 
-const navLinkStyle = {
-  color: "#d1d5db",
-  textDecoration: "none",
-  fontWeight: 600,
-  whiteSpace: "nowrap" as const,
-  padding: "6px 10px",
-  borderRadius: 8,
-};
+function getNavLinkStyle(active: boolean) {
+  return {
+    color: active ? "#fff" : "#d1d5db",
+    textDecoration: "none",
+    fontWeight: 600,
+    whiteSpace: "nowrap" as const,
+    padding: "6px 10px",
+    borderRadius: 8,
+
+    background: active ? "#2563eb" : "transparent",
+  };
+}
 
 export default function RootLayout({
   children,
@@ -43,15 +50,15 @@ export default function RootLayout({
           }}
         >
           {/* 🔥 NAV LINKS */}
-          <Link href="/" style={navLinkStyle}>🏠 Koti</Link>
-          <Link href="/events/new" style={navLinkStyle}>➕ Lisää</Link>
-          <Link href="/upload" style={navLinkStyle}>📤 Upload</Link>
-          <Link href="/events" style={navLinkStyle}>📋 Tapahtumat</Link>
-          <Link href="/calendar" style={navLinkStyle}>📅 Kalenteri</Link>
-          <Link href="/reports" style={navLinkStyle}>📊 Raportit</Link>
+          <Link href="/" style={getNavLinkStyle(usePathname() === "/")}>🏠 Koti</Link>
+          <Link href="/events/new" style={getNavLinkStyle(usePathname() === "/events/new")}>➕ Lisää</Link>
+          <Link href="/upload" style={getNavLinkStyle(usePathname() === "/upload")}>📤 Upload</Link>
+          <Link href="/events" style={getNavLinkStyle(usePathname() === "/events")}>📋 Tapahtumat</Link>
+          <Link href="/calendar" style={getNavLinkStyle(usePathname() === "/calendar")}>📅 Kalenteri</Link>
+          <Link href="/reports" style={getNavLinkStyle(usePathname() === "/reports")}>📊 Raportit</Link>
 
           {/* 🔥 UUSI */}
-          <Link href="/sports" style={navLinkStyle}>🏃 Liikunta</Link>
+          <Link href="/sports" style={getNavLinkStyle(usePathname() === "/sports")}>🏃 Liikunta</Link>
 
           {/* 🔥 spacer työntää logout oikealle */}
           <div style={{ flex: 1 }} />
