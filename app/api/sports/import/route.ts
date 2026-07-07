@@ -132,8 +132,13 @@ export async function POST(req: Request) {
     });
 
     if (eventError) {
-      console.error("Event insert error:", eventError);
-    }
+  console.error("Event insert error:", eventError);
+
+  return NextResponse.json({
+    success: false,
+    error: "Event insert failed: " + eventError.message,
+  });
+}
 
     /* ---------------- DONE ---------------- */
 
