@@ -107,7 +107,23 @@ export default function SportsDashboard() {
 
   return (
     <main className="p-6 space-y-6 max-w-3xl">
-      <h1 className="text-2xl font-bold">Urheiluyhteenveto</h1>
+      <div className="flex justify-between items-start gap-4 flex-wrap">
+  <div>
+    <h1 className="text-2xl font-bold">Urheiluyhteenveto</h1>
+
+    <div className="text-sm text-gray-400 mt-1">
+      Voit ladata urheilusuorituksia tiedostoista (esim. Garmin, Strava).
+      Tuettu formaatti: .fit, .gpx, .tcx
+    </div>
+  </div>
+
+  <a
+    href="/upload"
+    className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded whitespace-nowrap"
+  >
+    📤 Lataa tiedostoja
+  </a>
+</div>
 
       {/* DETAIL */}
       {selectedActivity && (
