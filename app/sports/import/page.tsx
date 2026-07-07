@@ -5,6 +5,8 @@ import { useState } from "react";
 export default function SportsImportPage() {
   const [file, setFile] = useState<File | null>(null);
   const [memberId, setMemberId] = useState("");
+  const [title, setTitle] = useState("");
+  const [notes, setNotes] = useState("");
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
@@ -19,6 +21,8 @@ export default function SportsImportPage() {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("memberId", memberId);
+    formData.append("title", title);
+    formData.append("notes", notes);
 
     const res = await fetch("/api/sports/import", {
       method: "POST",
@@ -26,24 +30,23 @@ export default function SportsImportPage() {
     });
 
     const data = await res.json();
-
     setResult(data);
     setLoading(false);
   }
 
   return (
-    <main className="p-6 space-y-4">
+    <main className="p-6 space-y-4 max-w-xl">
       <h1 className="text-xl font-bold">Urheilusuorituksen tuonti</h1>
 
       {/* 👤 henkilö */}
       <select
         value={memberId}
         onChange={(e) => setMemberId(e.target.value)}
-        className="border p-2 rounded"
+        className="border p-2 rounded w-full"
       >
         <option value="">Valitse henkilö</option>
-        <option value="f30cb5de-b062-41b9-8e95-270452f943d7">Anu</option>
-        <option value="aba7be53-d988-4d70-aa62-67a2148f640f">Onski</option>
+        <option value="ANU_UUID">Anu</option>
+        <option value="ONSKI_UUID">Onski</option>
       </select>
 
       {/* 📂 tiedosto */}
@@ -51,6 +54,23 @@ export default function SportsImportPage() {
         type="file"
         accept=".fit,.gpx,.tcx"
         onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+      />
+
+      {/* ✏️ otsikko */}
+      <input
+        type="text"
+        placeholder="Otsikko (esim. Aamulenkki)"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        className="border p-2 rounded w-full"
+      />
+
+      {/* 📝 lisätiedot */}
+      <textarea
+        placeholder="Lisätiedot (fiilis, sää, tms.)"
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        className="border p-2 rounded w-full"
       />
 
       {/* 🚀 nappi */}
@@ -62,7 +82,7 @@ export default function SportsImportPage() {
         {loading ? "Tuodaan..." : "Tuo suoritus"}
       </button>
 
-      {/* 📊 debug tulos */}
+      {/* 📊 debug */}
       {result && (
         <pre className="bg-gray-900 text-green-400 p-4 rounded text-sm overflow-auto">
           {JSON.stringify(result, null, 2)}
