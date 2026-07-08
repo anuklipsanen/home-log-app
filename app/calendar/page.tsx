@@ -450,12 +450,26 @@ export default function CalendarPage() {
 ),
                             }}
                           >
-                            <strong>
-                              {kind === "reminder" ? "🔔 Muistutus: " : ""}
-                              {getEventTypeLabel(event.maintenance_type)}
-                            </strong>
-                            <br />
-                            {getEntryText({ event, kind })}
+                            {event.source_type === "sport" ? (
+  <>
+    <strong>{event.title || "Urheilusuoritus"}</strong>
+    <br />
+    {event.description && (
+      <span style={{ opacity: 0.75 }}>
+        {event.description}
+      </span>
+    )}
+  </>
+) : (
+  <>
+    <strong>
+      {kind === "reminder" ? "🔔 Muistutus: " : ""}
+      {getEventTypeLabel(event.maintenance_type)}
+    </strong>
+    <br />
+    {getEntryText({ event, kind })}
+  </>
+)}
                           </button>
                         ))}
                       </div>
