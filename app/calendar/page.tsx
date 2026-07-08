@@ -177,7 +177,7 @@ export default function CalendarPage() {
   if (event.source_type === "sport") {
     return (
       <>
-        <span>{event.title}</span>
+        <span>{event.title || "Urheilusuoritus"}</span>
 
         {event.description && (
           <>

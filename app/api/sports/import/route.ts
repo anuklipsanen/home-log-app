@@ -100,8 +100,8 @@ let finalType =
         activity_type: finalType,
         activity_sub_type: parsed.activitySubType ?? null,
 
-        title: title || parsed.title || sport.label,
-
+        title: title || sport.label,
+        
         notes: notes || null,
         notes_imported: parsed.notesImported ?? null,
 
@@ -154,6 +154,7 @@ let finalType =
       .join(" · ");
 
     const { error: eventError } = await supabase.from("events").insert({
+      title: title || sport.label,
       description: `${sport.emoji} ${title || sport.label} ${
         description ? "· " + description : ""
       }`,
