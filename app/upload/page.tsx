@@ -114,18 +114,20 @@ function copyInvoiceDateToEventDate() {
         return;
       }
 
-      const url = supabase.storage
-        .from("attachments")
-        .getPublicUrl(data.path).data.publicUrl;
+      const attachmentPath = data.path;
 
-      setFileUrl(url);
+const publicUrl = supabase.storage
+  .from("attachments")
+  .getPublicUrl(attachmentPath).data.publicUrl;
+
+setFileUrl(attachmentPath);
 
       const res = await fetch("/api/ai/parse", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ fileUrl: url }),
+        body: JSON.stringify({ fileUrl: publicUrl }),
       });
 
       const json = await res.json();
@@ -262,9 +264,17 @@ function copyInvoiceDateToEventDate() {
         {fileUrl && (
           <p style={{ marginTop: 14 }}>
             ✅ Upload valmis:{" "}
-            <a href={fileUrl} target="_blank" rel="noopener noreferrer">
-              Avaa tiedosto
-            </a>
+            <a
+  href={
+    fileUrl.startsWith("http")
+      ? fileUrl
+      : supabase.storage.from("attachments").getPublicUrl(fileUrl).data.publicUrl
+  }
+  target="_blank"
+  rel="noopener noreferrer"
+>
+  Avaa tiedosto
+</a>
           </p>
         )}
       </section>
