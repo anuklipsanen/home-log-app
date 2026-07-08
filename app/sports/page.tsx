@@ -314,8 +314,13 @@ onski={{
 
 function SummaryTable({ title, anu, onski }: any) {
   const isTotal = title === "Kaikki yhteensä";
-
+<div className="mb-3 flex items-center gap-2">
+  <span className="text-lg font-semibold tracking-wide">
+    {title}
+  </span>
+</div>
   return (
+    
     <div className="rounded-xl p-4 mb-4 bg-gradient-to-r from-blue-900/40 to-slate-800 border border-blue-500/30">
 
   {/* HEADER */}
@@ -343,10 +348,10 @@ function SummaryTable({ title, anu, onski }: any) {
   <span className="w-5 text-center">📏</span>
   <span>km</span>
 </div>
-    <div className="text-center text-xl font-semibold tabular-nums">
+    <div className="text-center text-2xl font-bold tracking-tight tabular-nums">
       {anu.km.toFixed(1)}
     </div>
-    <div className="text-center text-xl font-semibold tabular-nums">
+    <div className="text-center text-2xl font-bold tracking-tight tabular-nums">
       {onski.km.toFixed(1)}
     </div>
 
@@ -355,10 +360,10 @@ function SummaryTable({ title, anu, onski }: any) {
   <span className="w-5 text-center">🔥</span>
   <span>kcal</span>
 </div>
-    <div className="text-center text-xl font-semibold tabular-nums">
+    <div className="text-center text-2xl font-bold tracking-tight tabular-nums">
       {anu.kcal}
     </div>
-    <div className="text-center text-xl font-semibold tabular-nums">
+    <div className="text-center text-2xl font-bold tracking-tight tabular-nums">
       {onski.kcal}
     </div>
 
@@ -367,10 +372,10 @@ function SummaryTable({ title, anu, onski }: any) {
   <span className="w-5 text-center">⏱</span>
   <span>aika</span>
 </div>
-    <div className="text-center text-xl font-semibold tabular-nums">
+    <div className="text-center text-2xl font-bold tracking-tight tabular-nums">
       {formatHours(anu.time)}
     </div>
-    <div className="text-center text-xl font-semibold tabular-nums">
+    <div className="text-center text-2xl font-bold tracking-tight tabular-nums">
       {formatHours(onski.time)}
     </div>
 
@@ -379,10 +384,10 @@ function SummaryTable({ title, anu, onski }: any) {
   <span className="w-5 text-center">❤️</span>
   <span>syke</span>
 </div>
-    <div className="text-center text-xl font-semibold tabular-nums">
+    <div className="text-center text-2xl font-bold tracking-tight tabular-nums">
       {anu.hr ? `${anu.hr} bpm` : "-"}
     </div>
-    <div className="text-center text-xl font-semibold tabular-nums">
+    <div className="text-center text-2xl font-bold tracking-tight tabular-nums">
       {onski.hr ? `${onski.hr} bpm` : "-"}
     </div>
 
