@@ -50,6 +50,10 @@ export default function SportsDashboard() {
           onski_kcal: 0,
           anu_time: 0,
           onski_time: 0,
+          anu_hr_sum: 0,
+  anu_hr_count: 0,
+  onski_hr_sum: 0,
+  onski_hr_count: 0,
           byType: {},
         };
       }
@@ -61,9 +65,9 @@ export default function SportsDashboard() {
 
       if (!map[key].byType[type]) {
         map[key].byType[type] = {
-          anu: { km: 0, kcal: 0, time: 0 },
-          onski: { km: 0, kcal: 0, time: 0 },
-        };
+  anu: { km: 0, kcal: 0, time: 0, hr_sum: 0, hr_count: 0 },
+  onski: { km: 0, kcal: 0, time: 0, hr_sum: 0, hr_count: 0 },
+};
       }
 
       const isAnu =
@@ -75,10 +79,19 @@ export default function SportsDashboard() {
         map[key].anu_km += km;
         map[key].anu_kcal += kcal;
         map[key].anu_time += time;
+        
 
         map[key].byType[type].anu.km += km;
         map[key].byType[type].anu.kcal += kcal;
         map[key].byType[type].anu.time += time;
+
+        if (a.avg_heart_rate) {
+  map[key].anu_hr_sum += a.avg_heart_rate;
+  map[key].anu_hr_count += 1;
+
+  map[key].byType[type].anu.hr_sum += a.avg_heart_rate;
+  map[key].byType[type].anu.hr_count += 1;
+}
       }
 
       if (isOnski) {
@@ -89,12 +102,51 @@ export default function SportsDashboard() {
         map[key].byType[type].onski.km += km;
         map[key].byType[type].onski.kcal += kcal;
         map[key].byType[type].onski.time += time;
+        if (a.avg_heart_rate) {
+  map[key].onski_hr_sum += a.avg_heart_rate;
+  map[key].onski_hr_count += 1;
+
+  map[key].byType[type].onski.hr_sum += a.avg_heart_rate;
+  map[key].byType[type].onski.hr_count += 1;
+}
       }
     });
 
-    return Object.values(map).sort((a: any, b: any) =>
-      b.key.localeCompare(a.key)
-    );
+    return Object.values(map).map((m: any) => ({
+  ...m,
+
+  anu_hr:
+    m.anu_hr_count > 0
+      ? Math.round(m.anu_hr_sum / m.anu_hr_count)
+      : null,
+
+  onski_hr:
+    m.onski_hr_count > 0
+      ? Math.round(m.onski_hr_sum / m.onski_hr_count)
+      : null,
+
+  byType: Object.fromEntries(
+    Object.entries(m.byType).map(([type, d]: any) => [
+      type,
+      {
+        anu: {
+          ...d.anu,
+          hr:
+            d.anu.hr_count > 0
+              ? Math.round(d.anu.hr_sum / d.anu.hr_count)
+              : null,
+        },
+        onski: {
+          ...d.onski,
+          hr:
+            d.onski.hr_count > 0
+              ? Math.round(d.onski.hr_sum / d.onski.hr_count)
+              : null,
+        },
+      },
+    ])
+  ),
+}));
   }, [activities]);
 
   useEffect(() => {
@@ -162,15 +214,17 @@ export default function SportsDashboard() {
           <SummaryTable
             title="Kaikki yhteensä"
             anu={{
-              km: m.anu_km,
-              kcal: m.anu_kcal,
-              time: m.anu_time,
-            }}
-            onski={{
-              km: m.onski_km,
-              kcal: m.onski_kcal,
-              time: m.onski_time,
-            }}
+  km: m.anu_km,
+  kcal: m.anu_kcal,
+  time: m.anu_time,
+  hr: m.anu_hr,
+}}
+onski={{
+  km: m.onski_km,
+  kcal: m.onski_kcal,
+  time: m.onski_time,
+  hr: m.onski_hr,
+}}
           />
 
           {/* LAJIT */}
@@ -286,23 +340,40 @@ function SummaryTable({ title, anu, onski }: any) {
         </div>
 
         {/* KM */}
-        <div className="text-gray-400">km</div>
-        <div className="text-center text-lg font-semibold">
-          {anu.km.toFixed(1)}
-        </div>
-        <div className="text-center text-lg font-semibold">
-          {onski.km.toFixed(1)}
-        </div>
+<div className="text-gray-400">km</div>
+<div className="text-center text-lg font-semibold">
+  {anu.km.toFixed(1)}
+</div>
+<div className="text-center text-lg font-semibold">
+  {onski.km.toFixed(1)}
+</div>
 
-        {/* KCAL */}
-        <div className="text-gray-400">kcal</div>
-        <div className="text-center">{anu.kcal}</div>
-        <div className="text-center">{onski.kcal}</div>
+{/* KCAL */}
+<div className="text-gray-400">kcal</div>
+<div className="text-center text-lg font-semibold">
+  {anu.kcal}
+</div>
+<div className="text-center text-lg font-semibold">
+  {onski.kcal}
+</div>
 
-        {/* TIME */}
-        <div className="text-gray-400">aika</div>
-        <div className="text-center">{formatHours(anu.time)}</div>
-        <div className="text-center">{formatHours(onski.time)}</div>
+{/* AIKA */}
+<div className="text-gray-400">aika</div>
+<div className="text-center text-lg font-semibold">
+  {formatHours(anu.time)}
+</div>
+<div className="text-center text-lg font-semibold">
+  {formatHours(onski.time)}
+</div>
+
+{/* SYKE */}
+<div className="text-gray-400">syke</div>
+<div className="text-center text-lg font-semibold">
+  {anu.hr ? `${anu.hr} bpm` : "-"}
+</div>
+<div className="text-center text-lg font-semibold">
+  {onski.hr ? `${onski.hr} bpm` : "-"}
+</div>
       </div>
     </div>
   );
