@@ -231,6 +231,7 @@ export default function CalendarPage() {
   return event.description || event.company || "Ei kuvausta";
 }
 
+
   return (
     <main
       style={{
@@ -400,13 +401,13 @@ export default function CalendarPage() {
           </div>
 
           <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(7, 140px)",
-              gap: 6,
-              marginTop: 8,
-            }}
-          >
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
+    gap: 8,
+    width: "100%",
+  }}
+>
             {days.map((day, index) => {
               const dayEntries = day ? entriesForDay(day) : [];
 
