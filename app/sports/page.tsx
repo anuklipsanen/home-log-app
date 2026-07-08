@@ -316,66 +316,74 @@ function SummaryTable({ title, anu, onski }: any) {
   const isTotal = title === "Kaikki yhteensä";
 
   return (
-    <div
-      className={`
-        rounded-xl mb-4
-        ${isTotal
-          ? "p-4 bg-gradient-to-r from-blue-900/40 to-slate-800 border border-blue-500/30"
-          : "p-3 bg-gray-800 border border-gray-700"}
-      `}
-    >
-      <div className="font-semibold mb-3 flex items-center gap-2">
-        {title}
-      </div>
+    <div className="rounded-xl p-4 mb-4 bg-gradient-to-r from-blue-900/40 to-slate-800 border border-blue-500/30">
 
-      <div className="grid grid-cols-3 text-sm">
-        <div></div>
+  {/* HEADER */}
+  <div className="grid grid-cols-3 mb-3 items-center">
+    <div></div>
 
-        <div className="text-center font-semibold text-gray-300">
-          Anu
-        </div>
-
-        <div className="text-center font-semibold text-gray-300">
-          Onski
-        </div>
-
-        {/* KM */}
-<div className="text-blue-400">km 📏 </div>
-<div className="text-center text-lg font-semibold">
-  {anu.km.toFixed(1)}
-</div>
-<div className="text-center text-lg font-semibold">
-  {onski.km.toFixed(1)}
-</div>
-
-{/* KCAL */}
-<div className="text-orange-400">kcal 🔥 </div>
-<div className="text-center text-lg font-semibold">
-  {anu.kcal}
-</div>
-<div className="text-center text-lg font-semibold">
-  {onski.kcal}
-</div>
-
-{/* AIKA */}
-<div className="text-yellow-400">aika ⏱ </div>
-<div className="text-center text-lg font-semibold">
-  {formatHours(anu.time)}
-</div>
-<div className="text-center text-lg font-semibold">
-  {formatHours(onski.time)}
-</div>
-
-{/* SYKE */}
-<div className="text-red-400">syke ❤️ </div>
-<div className="text-center text-lg font-semibold">
-  {anu.hr ? `${anu.hr} bpm` : "-"}
-</div>
-<div className="text-center text-lg font-semibold">
-  {onski.hr ? `${onski.hr} bpm` : "-"}
-</div>
+    <div className="text-center">
+      <div className="inline-block px-3 py-1 rounded-lg bg-blue-600/20 text-blue-300 font-semibold text-sm">
+        Anu
       </div>
     </div>
+
+    <div className="text-center">
+      <div className="inline-block px-3 py-1 rounded-lg bg-purple-600/20 text-purple-300 font-semibold text-sm">
+        Onski
+      </div>
+    </div>
+  </div>
+
+  {/* DATA */}
+  <div className="grid grid-cols-3 gap-y-3 items-center text-sm">
+
+    {/* KM */}
+    <div className="flex items-center gap-2 text-blue-400">
+      📏 <span>km</span>
+    </div>
+    <div className="text-center text-xl font-semibold tabular-nums">
+      {anu.km.toFixed(1)}
+    </div>
+    <div className="text-center text-xl font-semibold tabular-nums">
+      {onski.km.toFixed(1)}
+    </div>
+
+    {/* KCAL */}
+    <div className="flex items-center gap-2 text-orange-400">
+      🔥 <span>kcal</span>
+    </div>
+    <div className="text-center text-xl font-semibold tabular-nums">
+      {anu.kcal}
+    </div>
+    <div className="text-center text-xl font-semibold tabular-nums">
+      {onski.kcal}
+    </div>
+
+    {/* AIKA */}
+    <div className="flex items-center gap-2 text-yellow-400">
+      ⏱ <span>aika</span>
+    </div>
+    <div className="text-center text-xl font-semibold tabular-nums">
+      {formatHours(anu.time)}
+    </div>
+    <div className="text-center text-xl font-semibold tabular-nums">
+      {formatHours(onski.time)}
+    </div>
+
+    {/* SYKE */}
+    <div className="flex items-center gap-2 text-red-400">
+      ❤️ <span>syke</span>
+    </div>
+    <div className="text-center text-xl font-semibold tabular-nums">
+      {anu.hr ? `${anu.hr} bpm` : "-"}
+    </div>
+    <div className="text-center text-xl font-semibold tabular-nums">
+      {onski.hr ? `${onski.hr} bpm` : "-"}
+    </div>
+
+  </div>
+</div>
   );
 }
 
