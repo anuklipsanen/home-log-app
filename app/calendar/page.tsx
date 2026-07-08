@@ -176,30 +176,40 @@ export default function CalendarPage() {
 
   // 🔥 SPORT EVENT
   if (event.source_type === "sport") {
-  const activity =
-  (event as any).sport_activities;
+  const activity = (event as any).sport_activities;
 
-const sport = getSportType(
-  activity?.activity_sub_type || activity?.activity_type
-);
+  const sport = getSportType(
+    activity?.activity_sub_type || activity?.activity_type
+  );
 
   return (
     <>
+      {/* 🟢 LAJI */}
       <div style={{ fontWeight: 600 }}>
         {sport.emoji} {sport.label}
       </div>
 
-      {event.title && (
-        <div style={{ fontSize: 12, opacity: 0.8 }}>
-          {event.title}
+      {/* 🟢 OTSIKKO */}
+      {activity?.title && (
+        <div style={{ fontSize: 12, opacity: 0.85 }}>
+          {activity.title}
         </div>
       )}
 
-      {event.description && (
-        <div style={{ fontSize: 11, opacity: 0.7 }}>
-          {event.description}
-        </div>
-      )}
+      {/* 🟢 STATS (SAMA KUIN SPORTS-SIVU) */}
+      <div style={{ fontSize: 11, opacity: 0.7 }}>
+        {activity?.distance_meters
+          ? `${(activity.distance_meters / 1000).toFixed(1)} km`
+          : ""}
+
+        {activity?.duration_seconds
+          ? ` · ${formatDuration(activity.duration_seconds)}`
+          : ""}
+
+        {activity?.calories
+          ? ` · ${activity.calories} kcal`
+          : ""}
+      </div>
     </>
   );
 }
@@ -208,15 +218,6 @@ const sport = getSportType(
     return (
       <>
         <span>{event.reminder_text || "Ei muistutustekstiä"}</span>
-
-        {event.description && (
-          <>
-            <br />
-            <span style={{ opacity: 0.75 }}>
-              {event.description}
-            </span>
-          </>
-        )}
       </>
     );
   }
@@ -619,4 +620,19 @@ const sport = getSportType(
       </p>
     </main>
   );
+}
+function formatDuration(seconds?: number) {
+  if (!seconds) return "";
+
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+
+  if (h === 0) {
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  }
+
+  return [h, m, s]
+    .map((v) => String(v).padStart(2, "0"))
+    .join(":");
 }
