@@ -321,7 +321,15 @@ function SummaryTable({ title, anu, onski }: any) {
 </div>
   return (
     
-    <div className="rounded-xl p-4 mb-4 bg-gradient-to-r from-blue-900/40 to-slate-800 border border-blue-500/30">
+    <div 
+    className="rounded-xl p-4 mb-4 bg-gradient-to-r from-blue-900/40 to-slate-800 border border-blue-500/30">
+      {title && (
+  <div className="mb-4 flex items-center gap-2">
+    <span className="text-lg font-semibold tracking-wide">
+      {title}
+    </span>
+  </div>
+)}
 
   {/* HEADER */}
   <div className="grid grid-cols-3 mb-3 items-center">
