@@ -281,7 +281,6 @@ export default function CalendarPage() {
           padding: 14,
           background: "#181818",
           marginBottom: 20,
-          maxWidth: 1000,
         }}
       >
         <div style={{ fontWeight: 700, marginBottom: 10 }}>Käyttöpaikka</div>
@@ -390,7 +389,7 @@ export default function CalendarPage() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
+              gridTemplateColumns: "repeat(7, minmax(120px, 1fr))",
               gap: 6,
               fontWeight: "bold",
             }}
@@ -416,6 +415,7 @@ export default function CalendarPage() {
                   key={index}
                   style={{
                     minHeight: 120,
+                    width: "100%",
                     borderRadius: 8,
                     padding: 8,
                     background: day
