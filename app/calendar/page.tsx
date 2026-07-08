@@ -28,6 +28,8 @@ type Event = {
   source_type?: string | null;
   sport_activity_id?: string | null;
   title?: string | null;
+
+  sport_activities?: any;
   
 };
 
@@ -41,7 +43,7 @@ export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEntry, setSelectedEntry] = useState<CalendarEntry | null>(null);
   const [selectedPlaces, setSelectedPlaces] = useState<string[]>([]);
-  const [showSports, setShowSports] = useState(true);
+
 
   useEffect(() => {
     fetchEvents();
@@ -85,6 +87,15 @@ export default function CalendarPage() {
     return result;
   }, [year, month]);
 
+  function getEventDate(event: Event) {
+  return (
+    event.event_date ||
+    (event.start_time
+      ? new Date(event.start_time).toISOString().slice(0, 10)
+      : null)
+  );
+}
+
   function toDateString(date: Date) {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -100,31 +111,26 @@ export default function CalendarPage() {
     );
   }
 
+
   function entriesForDay(date: Date): CalendarEntry[] {
   const dateString = toDateString(date);
 
   return events.flatMap((event) => {
-    // 🔥 sport filter
-    if (event.source_type === "sport" && !showSports) {
-      return [];
-    }
+    const placeKey =
+      event.source_type === "sport"
+        ? "liikunta"
+        : event.usage_place || "muu";
 
-    // 🔥 käyttöpaikka (vain ei-sport)
     if (
-      event.source_type !== "sport" &&
       selectedPlaces.length > 0 &&
-      !selectedPlaces.includes(event.usage_place || "muu")
+      !selectedPlaces.includes(placeKey)
     ) {
       return [];
     }
 
     const entries: CalendarEntry[] = [];
 
-    const eventDate =
-      event.event_date ??
-      (event.start_time
-        ? new Date(event.start_time).toISOString().slice(0, 10)
-        : null);
+    const eventDate = getEventDate(event);
 
     if (eventDate === dateString) {
       entries.push({ event, kind: "event" });
@@ -225,6 +231,8 @@ export default function CalendarPage() {
   return event.description || event.company || "Ei kuvausta";
 }
 
+const isSportSelected = selectedPlaces.includes("liikunta");
+
   return (
     <main
       style={{
@@ -286,15 +294,15 @@ export default function CalendarPage() {
     gap: 6,
     padding: "7px 10px",
     borderRadius: 999,
-    border: showSports ? "1px solid #86efac" : "1px solid #444",
-    background: showSports ? "#052e16" : "#111",
+    border: isSportSelected ? "1px solid #86efac" : "1px solid #444",
+    background: isSportSelected ? "#052e16" : "#111",
     cursor: "pointer",
   }}
 >
   <input
     type="checkbox"
-    checked={showSports}
-    onChange={() => setShowSports(!showSports)}
+    checked={isSportSelected}
+    onChange={() => togglePlace("liikunta")}
   />
 
   <span
