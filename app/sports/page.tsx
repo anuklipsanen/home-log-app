@@ -340,7 +340,7 @@ function SummaryTable({ title, anu, onski }: any) {
         </div>
 
         {/* KM */}
-<div className="text-gray-400">km</div>
+<div className="text-blue-500 text-xs uppercase tracking-wide">📏 km</div>
 <div className="text-center text-lg font-semibold">
   {anu.km.toFixed(1)}
 </div>
@@ -349,7 +349,7 @@ function SummaryTable({ title, anu, onski }: any) {
 </div>
 
 {/* KCAL */}
-<div className="text-gray-400">kcal</div>
+<div className="text-orange-500 text-xs uppercase tracking-wide">🔥 kcal</div>
 <div className="text-center text-lg font-semibold">
   {anu.kcal}
 </div>
@@ -358,7 +358,7 @@ function SummaryTable({ title, anu, onski }: any) {
 </div>
 
 {/* AIKA */}
-<div className="text-gray-400">aika</div>
+<div className="text-yellow-500 text-xs uppercase tracking-wide">⏱ aika</div>
 <div className="text-center text-lg font-semibold">
   {formatHours(anu.time)}
 </div>
@@ -367,7 +367,7 @@ function SummaryTable({ title, anu, onski }: any) {
 </div>
 
 {/* SYKE */}
-<div className="text-gray-400">syke</div>
+<div className="text-red-500 text-xs uppercase tracking-wide">❤️ syke</div>
 <div className="text-center text-lg font-semibold">
   {anu.hr ? `${anu.hr} bpm` : "-"}
 </div>
