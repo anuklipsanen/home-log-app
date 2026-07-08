@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 
 import { normalizeSportType } from "@/lib/normalizeSportType";
 import { getSportType } from "@/lib/sportTypes";
+import { detectSportType } from "@/lib/detectSportType";
 
 /* ---------------- HELPERS ---------------- */
 
@@ -76,14 +77,16 @@ export async function POST(req: Request) {
     /* ---------------- ACTIVITY TYPE (FIX) ---------------- */
 
     // 🔥 PRIORITEETTI:
-    // 1. UI valinta
-    // 2. parsed
-    // 3. fallback
+// 1. UI valinta
+// 2. auto detect (paras)
+// 3. parsed fallback
+// 4. other
 
-    let finalType =
-      activity_type ||
-      normalizeSportType(parsed.activityType) ||
-      "other";
+let finalType =
+  activity_type ||
+  detectSportType(parsed) ||
+  normalizeSportType(parsed.activityType) ||
+  "other";
 
     const sport = getSportType(finalType);
 
