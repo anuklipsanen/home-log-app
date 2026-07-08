@@ -45,7 +45,7 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
-    const { memberId, title, notes, parsed } = body;
+    const { memberId, title, notes, parsed, activity_type } = body;
 
     if (!memberId || !parsed) {
       return NextResponse.json({
@@ -54,9 +54,7 @@ export async function POST(req: Request) {
       });
     }
 
-    console.log("PARSED:", parsed);
-
-    /* ---------------- START TIME FIX ---------------- */
+    /* ---------------- START TIME ---------------- */
 
     const startTime =
       parsed.startTime ||
@@ -75,10 +73,19 @@ export async function POST(req: Request) {
       .toISOString()
       .slice(0, 10);
 
-    /* ---------------- NORMALISOINTI ---------------- */
-const { activity_type } = body;
-    const activityType = normalizeSportType(parsed.activityType);
-    const sport = getSportType(activityType);
+    /* ---------------- ACTIVITY TYPE (FIX) ---------------- */
+
+    // 🔥 PRIORITEETTI:
+    // 1. UI valinta
+    // 2. parsed
+    // 3. fallback
+
+    let finalType =
+      activity_type ||
+      normalizeSportType(parsed.activityType) ||
+      "other";
+
+    const sport = getSportType(finalType);
 
     /* ---------------- INSERT SPORT ACTIVITY ---------------- */
 
@@ -87,7 +94,7 @@ const { activity_type } = body;
       .insert({
         member_id: memberId,
 
-        activity_type: activityType,
+        activity_type: finalType,
         activity_sub_type: parsed.activitySubType ?? null,
 
         title: title || parsed.title || sport.label,
@@ -144,20 +151,19 @@ const { activity_type } = body;
       .join(" · ");
 
     const { error: eventError } = await supabase.from("events").insert({
-  // 🔥 EI titlea
-  description: `${sport.emoji} ${title || sport.label} ${
-    description ? "· " + description : ""
-  }`,
+      description: `${sport.emoji} ${title || sport.label} ${
+        description ? "· " + description : ""
+      }`,
 
-  event_date: eventDate,
-  date: eventDate,
+      event_date: eventDate,
+      date: eventDate,
 
-  source_type: "sport",
-  sport_activity_id: activity.id,
+      source_type: "sport",
+      sport_activity_id: activity.id,
 
-  usage_place: "muu",
-  maintenance_type: "muu",
-});
+      usage_place: "muu",
+      maintenance_type: "muu",
+    });
 
     if (eventError) {
       console.error("EVENT ERROR:", eventError);

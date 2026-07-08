@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { detectSportType } from "@/lib/detectSportType";
+import { sportTypes, getSportType } from "@/lib/sportTypes";
 
 export default function SportsImportPage() {
   const [activities, setActivities] = useState<any[]>([]);
@@ -158,6 +159,45 @@ setActivities((prev) => [
     setActivities([]);
     setLoading(false);
   }
+function SportTypeSelect({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+}) {
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="border p-2 w-full rounded bg-gray-900 text-white"
+    >
+      {Object.entries(sportTypes).map(([parentKey, parent]: any) => (
+        <optgroup
+          key={parentKey}
+          label={`${parent.emoji} ${parent.label}`}
+        >
+          {/* ilman alatyyppejä */}
+          {!parent.children && (
+            <option value={parentKey}>
+              {parent.emoji} {parent.label}
+            </option>
+          )}
+
+          {/* alatyyppien kanssa */}
+          {parent.children &&
+            Object.entries(parent.children).map(
+              ([childKey, childLabel]: any) => (
+                <option key={childKey} value={childKey}>
+                  {parent.emoji} {childLabel}
+                </option>
+              )
+            )}
+        </optgroup>
+      ))}
+    </select>
+  );
+}
 
   return (
     <main className="p-6 space-y-4 max-w-xl">
