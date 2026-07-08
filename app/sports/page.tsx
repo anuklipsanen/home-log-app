@@ -106,7 +106,7 @@ export default function SportsDashboard() {
   if (loading) return <div className="p-6">Ladataan...</div>;
 
   return (
-    <main className="p-6 space-y-6 max-w-3xl">
+    <main className="p-6 space-y-8 max-w-3xl">
       <div className="flex justify-between items-start gap-4 flex-wrap">
   <div>
     <h1 className="text-2xl font-bold">Urheiluyhteenveto</h1>
@@ -144,7 +144,7 @@ export default function SportsDashboard() {
       )}
 
       {chartData.map((m: any) => (
-        <div key={m.key} className="border p-4 rounded bg-gray-900">
+        <div key={m.key} className="rounded-2xl p-4 bg-gray-900/60 border border-gray-800">
           {/* KUUKAUSI */}
           <div
             className="flex justify-between cursor-pointer mb-3"
@@ -152,7 +152,9 @@ export default function SportsDashboard() {
               setOpenMonth(openMonth === m.key ? null : m.key)
             }
           >
-            <span className="font-semibold text-lg">{m.month}</span>
+            <span className="font-semibold text-lg tracking-wide">
+  {m.month}
+</span>
             <span>{openMonth === m.key ? "▲" : "▼"}</span>
           </div>
 
@@ -212,35 +214,40 @@ export default function SportsDashboard() {
 
                 return (
                   <div
-                    key={a.id}
-                    onClick={() =>
-                      setSelectedActivity(
-                        selectedActivity?.id === a.id ? null : a
-                      )
-                    }
-                    className="border p-3 rounded bg-gray-800 hover:bg-gray-700 cursor-pointer"
-                  >
-                    <div className="flex gap-2">
-                      <span style={{ color: sport.color }}>
-                        {sport.emoji}
-                      </span>
-                      <span className="text-sm text-gray-400">
-                        {sport.label}
-                      </span>
-                    </div>
+  key={a.id}
+  onClick={() =>
+    setSelectedActivity(
+      selectedActivity?.id === a.id ? null : a
+    )
+  }
+  className="rounded-xl mb-2 overflow-hidden border border-gray-700 hover:border-gray-500 transition cursor-pointer"
+>
+  <div
+    className="p-3"
+    style={{
+      borderLeft: `4px solid ${sport.color}`,
+    }}
+  >
+    <div className="flex gap-2 items-center text-sm text-gray-400">
+      <span>{sport.emoji}</span>
+      <span>{sport.label}</span>
+    </div>
 
-                    <div className="text-sm text-gray-400">
-                      {formatDate(a.start_time)}
-                    </div>
+    <div className="text-xs text-gray-500">
+      {formatDate(a.start_time)}
+    </div>
 
-                    <div className="font-semibold">{a.title}</div>
+    <div className="font-semibold text-base">
+      {a.title}
+    </div>
 
-                    <div>
-                      {(a.distance_meters / 1000).toFixed(1)} km ·{" "}
-                      {formatDuration(a.duration_seconds)} ·{" "}
-                      {a.calories} kcal
-                    </div>
-                  </div>
+    <div className="text-sm text-gray-300">
+      {(a.distance_meters / 1000).toFixed(1)} km ·{" "}
+      {formatDuration(a.duration_seconds)} ·{" "}
+      {a.calories} kcal
+    </div>
+  </div>
+</div>
                 );
               })}
         </div>
@@ -252,24 +259,48 @@ export default function SportsDashboard() {
 /* ---------------- COMPONENTS ---------------- */
 
 function SummaryTable({ title, anu, onski }: any) {
+  const isTotal = title === "Kaikki yhteensä";
+
   return (
-    <div className="bg-gray-800 p-3 rounded mb-3 text-sm">
-      <div className="font-semibold mb-2">{title}</div>
+    <div
+      className={`
+        rounded-xl mb-4
+        ${isTotal
+          ? "p-4 bg-gradient-to-r from-blue-900/40 to-slate-800 border border-blue-500/30"
+          : "p-3 bg-gray-800 border border-gray-700"}
+      `}
+    >
+      <div className="font-semibold mb-3 flex items-center gap-2">
+        {title}
+      </div>
 
-      <div className="grid grid-cols-3">
+      <div className="grid grid-cols-3 text-sm">
         <div></div>
-        <div className="text-center font-semibold">Anu</div>
-        <div className="text-center font-semibold">Onski</div>
 
-        <div>km</div>
-        <div className="text-center">{anu.km.toFixed(1)}</div>
-        <div className="text-center">{onski.km.toFixed(1)}</div>
+        <div className="text-center font-semibold text-gray-300">
+          Anu
+        </div>
 
-        <div>kcal</div>
+        <div className="text-center font-semibold text-gray-300">
+          Onski
+        </div>
+
+        {/* KM */}
+        <div className="text-gray-400">km</div>
+        <div className="text-center text-lg font-semibold">
+          {anu.km.toFixed(1)}
+        </div>
+        <div className="text-center text-lg font-semibold">
+          {onski.km.toFixed(1)}
+        </div>
+
+        {/* KCAL */}
+        <div className="text-gray-400">kcal</div>
         <div className="text-center">{anu.kcal}</div>
         <div className="text-center">{onski.kcal}</div>
 
-        <div>aika</div>
+        {/* TIME */}
+        <div className="text-gray-400">aika</div>
         <div className="text-center">{formatHours(anu.time)}</div>
         <div className="text-center">{formatHours(onski.time)}</div>
       </div>
