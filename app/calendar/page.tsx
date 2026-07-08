@@ -231,8 +231,6 @@ export default function CalendarPage() {
   return event.description || event.company || "Ei kuvausta";
 }
 
-const isSportSelected = selectedPlaces.includes("liikunta");
-
   return (
     <main
       style={{
@@ -289,7 +287,9 @@ const isSportSelected = selectedPlaces.includes("liikunta");
 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
 
   {/* 🔥 NORMAALIT KÄYTTÖPAIKAT */}
-  {Object.entries(usagePlaces).map(([key, value]) => {
+  {Object.entries(usagePlaces)
+  .filter(([key]) => key !== "liikunta")
+  .map(([key, value]) => {
     const selected = selectedPlaces.includes(key);
 
     return (
@@ -365,47 +365,6 @@ const isSportSelected = selectedPlaces.includes("liikunta");
   })()}
 
 </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {Object.entries(usagePlaces).map(([key, value]) => {
-            const selected = selectedPlaces.includes(key);
-
-            return (
-              <label
-                key={key}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "7px 10px",
-                  borderRadius: 999,
-                  border: selected ? "1px solid #93c5fd" : "1px solid #444",
-                  background: selected ? "#1f2937" : "#111",
-                  cursor: "pointer",
-                  userSelect: "none",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={selected}
-                  onChange={() => togglePlace(key)}
-                />
-
-                <span
-                  style={{
-                    width: 10,
-                    height: 10,
-                    borderRadius: "50%",
-                    background: getUsagePlaceColor(key),
-                    display: "inline-block",
-                    flexShrink: 0,
-                  }}
-                />
-
-                <span>{value.label}</span>
-              </label>
-            );
-          })}
-        </div>
 
         {selectedPlaces.length > 0 && (
           <button
