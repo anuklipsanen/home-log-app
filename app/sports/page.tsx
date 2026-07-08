@@ -165,7 +165,7 @@ export default function SportsDashboard() {
 
     <div className="text-sm text-gray-400 mt-1">
       Voit ladata urheilusuorituksia tiedostoista (esim. Garmin, Strava).
-      Tuettu formaatti: .fit, .gpx, .tcx
+      Tuettu formaatti: .fit, .gpx, .tcx (jopa .zip)
     </div>
   </div>
 
