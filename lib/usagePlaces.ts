@@ -38,6 +38,11 @@ export const usagePlaces = {
     label: "📍 Muu",
     color: "#adb5bd",
   },
+
+    liikunta: {
+    label: "🏃 Liikunta",
+    color: "#22c55e",
+  },
 };
 
 export type UsagePlaceKey = keyof typeof usagePlaces;
