@@ -176,19 +176,17 @@ export default function CalendarPage() {
 
   // 🔥 SPORT EVENT
   if (event.source_type === "sport") {
-  const text = event.description || "";
+  const activity =
+  (event as any).sport_activities;
 
-  // 🔥 yritetään parsia laji descriptionista
-  // esim "🚴 Koirapyöräily · 2.8 km · ..."
-  const parts = text.split("·").map(p => p.trim());
-
-  const main = parts[0] || "Suoritus"; // 🚴 Koirapyöräily
-  const details = parts.slice(1).join(" · ");
+const sport = getSportType(
+  activity?.activity_sub_type || activity?.activity_type
+);
 
   return (
     <>
       <div style={{ fontWeight: 600 }}>
-        {main}
+        {sport.emoji} {sport.label}
       </div>
 
       {event.title && (
@@ -197,9 +195,9 @@ export default function CalendarPage() {
         </div>
       )}
 
-      {details && (
+      {event.description && (
         <div style={{ fontSize: 11, opacity: 0.7 }}>
-          {details}
+          {event.description}
         </div>
       )}
     </>
@@ -466,15 +464,7 @@ export default function CalendarPage() {
                             }}
                           >
                             {event.source_type === "sport" ? (
-  <>
-    <strong>{event.title || "Urheilusuoritus"}</strong>
-    <br />
-    {event.description && (
-      <span style={{ opacity: 0.75 }}>
-        {event.description}
-      </span>
-    )}
-  </>
+  getEntryText({ event, kind })
 ) : (
   <>
     <strong>
