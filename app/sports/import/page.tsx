@@ -249,13 +249,68 @@ function SportTypeSelect({
 
           <div>{formatDate(a.parsed.startTime)}</div>
 
-          <div className="text-sm text-gray-400">
-  {a.activity_type}
-  {a.autoDetected && (
-    <span className="ml-2 text-xs text-gray-500">
-      (automaattinen)
+          <div className="space-y-2">
+  {/* 🔥 nykyinen valinta */}
+  <div className="flex items-center gap-2">
+    <span
+      style={{
+        color: getSportType(a.activity_type).color,
+      }}
+    >
+      {getSportType(a.activity_type).emoji}
     </span>
-  )}
+
+    <span>
+      {getSportType(a.activity_type).label}
+    </span>
+
+    {a.autoDetected && (
+      <span className="text-xs text-gray-500">
+        (automaattinen)
+      </span>
+    )}
+  </div>
+
+  {/* 🔥 TÄMÄ PUUTTUU SINULTA */}
+  <select
+    value={a.activity_type}
+    onChange={(e) =>
+      setActivities((prev) =>
+        prev.map((x) =>
+          x.id === a.id
+            ? {
+                ...x,
+                activity_type: e.target.value,
+                autoDetected: false,
+              }
+            : x
+        )
+      )
+    }
+    className="border p-2 w-full rounded bg-gray-900 text-white"
+  >
+    {Object.entries(sportTypes).map(([parentKey, parent]: any) => (
+      <optgroup
+        key={parentKey}
+        label={`${parent.emoji} ${parent.label}`}
+      >
+        {!parent.children && (
+          <option value={parentKey}>
+            {parent.emoji} {parent.label}
+          </option>
+        )}
+
+        {parent.children &&
+          Object.entries(parent.children).map(
+            ([childKey, childLabel]: any) => (
+              <option key={childKey} value={childKey}>
+                {parent.emoji} {childLabel}
+              </option>
+            )
+          )}
+      </optgroup>
+    ))}
+  </select>
 </div>
 
           <div>
