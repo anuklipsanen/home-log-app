@@ -9,6 +9,7 @@ import {
   getUsagePlaceLabel,
   getUsagePlaceColor,
 } from "@/lib/usagePlaces";
+import { getSportType } from "@/lib/sportTypes";
 
 type Event = {
   id: string;
@@ -49,7 +50,7 @@ export default function CalendarPage() {
   async function fetchEvents() {
     const { data, error } = await supabase
       .from("events")
-      .select("*")
+      .select("*, sport_activities(*)")
       .order("event_date", { ascending: true });
 
     if (error) {
@@ -175,21 +176,35 @@ export default function CalendarPage() {
 
   // 🔥 SPORT EVENT
   if (event.source_type === "sport") {
-    return (
-      <>
-        <span>{event.title || "Urheilusuoritus"}</span>
+  const text = event.description || "";
 
-        {event.description && (
-          <>
-            <br />
-            <span style={{ opacity: 0.75 }}>
-              {event.description}
-            </span>
-          </>
-        )}
-      </>
-    );
-  }
+  // 🔥 yritetään parsia laji descriptionista
+  // esim "🚴 Koirapyöräily · 2.8 km · ..."
+  const parts = text.split("·").map(p => p.trim());
+
+  const main = parts[0] || "Suoritus"; // 🚴 Koirapyöräily
+  const details = parts.slice(1).join(" · ");
+
+  return (
+    <>
+      <div style={{ fontWeight: 600 }}>
+        {main}
+      </div>
+
+      {event.title && (
+        <div style={{ fontSize: 12, opacity: 0.8 }}>
+          {event.title}
+        </div>
+      )}
+
+      {details && (
+        <div style={{ fontSize: 11, opacity: 0.7 }}>
+          {details}
+        </div>
+      )}
+    </>
+  );
+}
 
   if (kind === "reminder") {
     return (
