@@ -348,10 +348,10 @@ function SummaryTable({ title, anu, onski }: any) {
   <span className="w-5 text-center">📏</span>
   <span>km</span>
 </div>
-    <div className="text-center text-2xl font-bold tracking-tight tabular-nums">
+    <div className="text-center text-l font-bold tracking-tight tabular-nums">
       {anu.km.toFixed(1)}
     </div>
-    <div className="text-center text-2xl font-bold tracking-tight tabular-nums">
+    <div className="text-center text-l font-bold tracking-tight tabular-nums">
       {onski.km.toFixed(1)}
     </div>
 
@@ -360,10 +360,10 @@ function SummaryTable({ title, anu, onski }: any) {
   <span className="w-5 text-center">🔥</span>
   <span>kcal</span>
 </div>
-    <div className="text-center text-2xl font-bold tracking-tight tabular-nums">
+    <div className="text-center text-l font-bold tracking-tight tabular-nums">
       {anu.kcal}
     </div>
-    <div className="text-center text-2xl font-bold tracking-tight tabular-nums">
+    <div className="text-center text-l font-bold tracking-tight tabular-nums">
       {onski.kcal}
     </div>
 
@@ -372,10 +372,10 @@ function SummaryTable({ title, anu, onski }: any) {
   <span className="w-5 text-center">⏱</span>
   <span>aika</span>
 </div>
-    <div className="text-center text-2xl font-bold tracking-tight tabular-nums">
+    <div className="text-center text-l font-bold tracking-tight tabular-nums">
       {formatHours(anu.time)}
     </div>
-    <div className="text-center text-2xl font-bold tracking-tight tabular-nums">
+    <div className="text-center text-l font-bold tracking-tight tabular-nums">
       {formatHours(onski.time)}
     </div>
 
@@ -384,10 +384,10 @@ function SummaryTable({ title, anu, onski }: any) {
   <span className="w-5 text-center">❤️</span>
   <span>syke</span>
 </div>
-    <div className="text-center text-2xl font-bold tracking-tight tabular-nums">
+    <div className="text-center text-l font-bold tracking-tight tabular-nums">
       {anu.hr ? `${anu.hr} bpm` : "-"}
     </div>
-    <div className="text-center text-2xl font-bold tracking-tight tabular-nums">
+    <div className="text-center text-l font-bold tracking-tight tabular-nums">
       {onski.hr ? `${onski.hr} bpm` : "-"}
     </div>
 
