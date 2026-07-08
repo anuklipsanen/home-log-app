@@ -26,7 +26,8 @@ export default function EventsPage() {
   async function fetchData() {
     const { data, error } = await supabase
       .from("events")
-      .select("*")
+.select("*")
+.not("source_type", "eq", "sport")
       .order("event_date", { ascending: false });
 
     if (error) {
@@ -156,7 +157,9 @@ const filteredEvents = events.filter((e) => {
         <div style={{ fontWeight: 700, marginBottom: 10 }}>Käyttöpaikka</div>
 
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {Object.entries(usagePlaces).map(([key, value]) => {
+          {Object.entries(usagePlaces)
+  .filter(([key]) => key !== "liikunta")
+  .map(([key, value]) => {
             const selected = selectedPlaces.includes(key);
 
             return (

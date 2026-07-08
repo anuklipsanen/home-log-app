@@ -38,6 +38,7 @@ export default function HomePage() {
         .select(
           "id, description, event_date, reminder_date, reminder_text, company, maintenance_type, total_amount, usage_place"
         )
+        .not("source_type", "eq", "sport")
         .order("event_date", { ascending: false });
 
       if (error) {
@@ -216,7 +217,9 @@ export default function HomePage() {
             Kaikki
           </button>
 
-          {Object.entries(usagePlaces).map(([key, value]) => {
+          {Object.entries(usagePlaces)
+  .filter(([key]) => key !== "liikunta")
+  .map(([key, value]) => {
             const selected = selectedPlaces.includes(key);
 
             return (
