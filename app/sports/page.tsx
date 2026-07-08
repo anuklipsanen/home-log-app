@@ -323,13 +323,13 @@ function SummaryTable({ title, anu, onski }: any) {
     <div></div>
 
     <div className="text-center">
-      <div className="inline-block px-3 py-1 rounded-lg bg-blue-600/20 text-blue-300 font-semibold text-sm">
+      <div className="inline-block px-3 py-1 rounded-lg bg-blue-600/20 text-green-500 font-semibold text-sm">
         Anu
       </div>
     </div>
 
     <div className="text-center">
-      <div className="inline-block px-3 py-1 rounded-lg bg-purple-600/20 text-purple-300 font-semibold text-sm">
+      <div className="inline-block px-3 py-1 rounded-lg bg-purple-600/20 text-blue-500 font-semibold text-sm">
         Onski
       </div>
     </div>
@@ -339,9 +339,10 @@ function SummaryTable({ title, anu, onski }: any) {
   <div className="grid grid-cols-3 gap-y-3 items-center text-sm">
 
     {/* KM */}
-    <div className="flex items-center gap-2 text-blue-400">
-      📏 <span>km</span>
-    </div>
+<div className="flex items-center gap-2 w-24 text-blue-400">
+  <span className="w-5 text-center">📏</span>
+  <span>km</span>
+</div>
     <div className="text-center text-xl font-semibold tabular-nums">
       {anu.km.toFixed(1)}
     </div>
@@ -350,9 +351,10 @@ function SummaryTable({ title, anu, onski }: any) {
     </div>
 
     {/* KCAL */}
-    <div className="flex items-center gap-2 text-orange-400">
-      🔥 <span>kcal</span>
-    </div>
+<div className="flex items-center gap-2 w-24 text-orange-400">
+  <span className="w-5 text-center">🔥</span>
+  <span>kcal</span>
+</div>
     <div className="text-center text-xl font-semibold tabular-nums">
       {anu.kcal}
     </div>
@@ -361,9 +363,10 @@ function SummaryTable({ title, anu, onski }: any) {
     </div>
 
     {/* AIKA */}
-    <div className="flex items-center gap-2 text-yellow-400">
-      ⏱ <span>aika</span>
-    </div>
+<div className="flex items-center gap-2 w-24 text-yellow-400">
+  <span className="w-5 text-center">⏱</span>
+  <span>aika</span>
+</div>
     <div className="text-center text-xl font-semibold tabular-nums">
       {formatHours(anu.time)}
     </div>
@@ -372,9 +375,10 @@ function SummaryTable({ title, anu, onski }: any) {
     </div>
 
     {/* SYKE */}
-    <div className="flex items-center gap-2 text-red-400">
-      ❤️ <span>syke</span>
-    </div>
+    <div className="flex items-center gap-2 w-24 text-red-400">
+  <span className="w-5 text-center">❤️</span>
+  <span>syke</span>
+</div>
     <div className="text-center text-xl font-semibold tabular-nums">
       {anu.hr ? `${anu.hr} bpm` : "-"}
     </div>
