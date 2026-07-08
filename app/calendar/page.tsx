@@ -286,36 +286,84 @@ const isSportSelected = selectedPlaces.includes("liikunta");
         }}
       >
         <div style={{ fontWeight: 700, marginBottom: 10 }}>Käyttöpaikka</div>
-<div style={{ marginTop: 12 }}>
-  <label
-  style={{
-    display: "inline-flex",
-    alignItems: "center",
-    gap: 6,
-    padding: "7px 10px",
-    borderRadius: 999,
-    border: isSportSelected ? "1px solid #86efac" : "1px solid #444",
-    background: isSportSelected ? "#052e16" : "#111",
-    cursor: "pointer",
-  }}
->
-  <input
-    type="checkbox"
-    checked={isSportSelected}
-    onChange={() => togglePlace("liikunta")}
-  />
+<div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
 
-  <span
-    style={{
-      width: 10,
-      height: 10,
-      borderRadius: "50%",
-      background: "#22c55e",
-    }}
-  />
+  {/* 🔥 NORMAALIT KÄYTTÖPAIKAT */}
+  {Object.entries(usagePlaces).map(([key, value]) => {
+    const selected = selectedPlaces.includes(key);
 
-  <span>🏃 Liikunta</span>
-</label>
+    return (
+      <label
+        key={key}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          padding: "7px 10px",
+          borderRadius: 999,
+          border: selected ? "1px solid #93c5fd" : "1px solid #444",
+          background: selected ? "#1f2937" : "#111",
+          cursor: "pointer",
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={selected}
+          onChange={() => togglePlace(key)}
+        />
+
+        <span
+          style={{
+            width: 10,
+            height: 10,
+            borderRadius: "50%",
+            background: getUsagePlaceColor(key),
+          }}
+        />
+
+        <span>{value.label}</span>
+      </label>
+    );
+  })}
+
+  {/* 🔥 LIIKUNTA SAMAAN RIVIIN */}
+  {(() => {
+    const selected = selectedPlaces.includes("liikunta");
+
+    return (
+      <label
+        key="liikunta"
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          padding: "7px 10px",
+          borderRadius: 999,
+          border: selected ? "1px solid #86efac" : "1px solid #444",
+          background: selected ? "#052e16" : "#111",
+          cursor: "pointer",
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={selected}
+          onChange={() => togglePlace("liikunta")}
+        />
+
+        <span
+          style={{
+            width: 10,
+            height: 10,
+            borderRadius: "50%",
+            background: "#22c55e",
+          }}
+        />
+
+        <span>🏃 Liikunta</span>
+      </label>
+    );
+  })()}
+
 </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {Object.entries(usagePlaces).map(([key, value]) => {
