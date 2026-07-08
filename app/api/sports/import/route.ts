@@ -76,7 +76,7 @@ export async function POST(req: Request) {
       .slice(0, 10);
 
     /* ---------------- NORMALISOINTI ---------------- */
-
+const { activity_type } = body;
     const activityType = normalizeSportType(parsed.activityType);
     const sport = getSportType(activityType);
 

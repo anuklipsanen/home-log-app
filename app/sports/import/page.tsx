@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { detectSportType } from "@/lib/detectSportType";
 
 export default function SportsImportPage() {
   const [activities, setActivities] = useState<any[]>([]);
@@ -70,17 +71,23 @@ export default function SportsImportPage() {
 
     const check = await checkRes.json();
 
-    setActivities((prev) => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
-        parsed,
-        title: check.activity?.title ?? parsed.title,
-        notes: check.activity?.notes ?? "",
-        exists: check.exists,
-        existingId: check.activity?.id ?? null,
-      },
-    ]);
+    const detectedType = detectSportType(parsed);
+
+setActivities((prev) => [
+  ...prev,
+  {
+    id: crypto.randomUUID(),
+    parsed,
+    title: check.activity?.title ?? parsed.title,
+    notes: check.activity?.notes ?? "",
+    exists: check.exists,
+    existingId: check.activity?.id ?? null,
+
+    // 🔥 UUSI
+    activity_type: detectedType,
+    autoDetected: true,
+  },
+]);
   }
 
   async function saveActivity(a: any) {
@@ -94,6 +101,7 @@ export default function SportsImportPage() {
         title: a.title,
         notes: a.notes,
         parsed: a.parsed,
+        activity_type: a.activity_type,
       }),
     });
 
@@ -201,9 +209,14 @@ export default function SportsImportPage() {
 
           <div>{formatDate(a.parsed.startTime)}</div>
 
-          <div>
-            {a.parsed.activityType} ({a.parsed.activitySubType})
-          </div>
+          <div className="text-sm text-gray-400">
+  {a.activity_type}
+  {a.autoDetected && (
+    <span className="ml-2 text-xs text-gray-500">
+      (automaattinen)
+    </span>
+  )}
+</div>
 
           <div>
             {(a.parsed.distanceMeters / 1000).toFixed(1)} km ·{" "}
