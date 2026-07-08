@@ -74,19 +74,19 @@ export async function POST(req: Request) {
       .toISOString()
       .slice(0, 10);
 
-    /* ---------------- ACTIVITY TYPE (FIX) ---------------- */
+    /* ---------------- ACTIVITY TYPE ---------------- */
 
-    // 🔥 PRIORITEETTI:
-// 1. UI valinta
-// 2. auto detect (paras)
-// 3. parsed fallback
-// 4. other
+    // PRIORITEETTI:
+    // 1. UI valinta
+    // 2. detect
+    // 3. parsed fallback
+    // 4. other
 
-let finalType =
-  activity_type ||
-  detectSportType(parsed) ||
-  normalizeSportType(parsed.activityType) ||
-  "other";
+    const finalType =
+      activity_type ||
+      detectSportType(parsed) ||
+      normalizeSportType(parsed.activityType) ||
+      "other";
 
     const sport = getSportType(finalType);
 
@@ -97,11 +97,12 @@ let finalType =
       .insert({
         member_id: memberId,
 
+        // 🔥 TÄMÄ ON KRIITTINEN KORJAUS
         activity_type: finalType,
-        activity_sub_type: parsed.activitySubType ?? null,
+        activity_sub_type: finalType,
 
-        title: title || sport.label,
-        
+        title: title || parsed.title || sport.label,
+
         notes: notes || null,
         notes_imported: parsed.notesImported ?? null,
 
@@ -154,7 +155,9 @@ let finalType =
       .join(" · ");
 
     const { error: eventError } = await supabase.from("events").insert({
+      // 🔥 EI "Urheilusuoritus" enää
       title: title || sport.label,
+
       description: `${sport.emoji} ${title || sport.label} ${
         description ? "· " + description : ""
       }`,
