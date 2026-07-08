@@ -20,7 +20,12 @@ export default function EventDetail() {
 const getFileUrl = (path: string) => {
   if (!path) return "";
 
-  // poistaa väärän "attachments/" alun jos löytyy
+  // Jos tietokannassa on jo valmis URL, käytä sitä sellaisenaan
+  if (path.startsWith("http")) {
+    return path;
+  }
+
+  // Poista mahdollinen bucket-etuliite
   const cleanPath = path.replace(/^attachments\//, "");
 
   const { data } = supabase.storage
